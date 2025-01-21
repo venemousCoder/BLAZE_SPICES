@@ -14,8 +14,12 @@ const AccountScheme = mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ["user", "admin", "moderator"],
+      enum: ["user", "admin"],
       default: "user",
+    },
+    groups: {
+      type: [],
+      default: [],
     },
   },
   {
@@ -32,6 +36,11 @@ const Admin = Account.discriminator("Admin", {});
 const User = Account.discriminator(
   "User",
   new mongoose.Schema({
-    order: { type: [], default: [] },
+    groups: {
+      type: [{ id: mongoose.Schema.Types.ObjectId, ref: "Group" }],
+      role: { type: String },
+    },
   })
 );
+
+module.exports = { Account };

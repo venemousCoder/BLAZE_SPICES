@@ -10,7 +10,10 @@ let Router = require('./routes/index.routes');
 
 var store = new MongoDBstore({
     uri: process.env.DBURI,
-    collection: 'sessions'
+    collection: 'sessions',
+    expires: 24 * 60 * 60 * 1000,
+    
+
 })
 store.on('error', function(error) {
     throw new Error('Session store error: ' + error)
