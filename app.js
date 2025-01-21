@@ -1,14 +1,19 @@
-let express = require('express');
+const express = require('express');
 require('dotenv').config();
-let passport = require('passport');
-let mongoose = require('mongoose');
-let session = require('express-session');
-let app = express();
-const Admin = require("./models/user.models");
+const passport = require('passport');
+const mongoose = require('mongoose');
+const session = require('express-session');
+const app = express();
+const Admin = require("./models/user");
 const MongoDBstore = require('connect-mongodb-session')(session);
-let Router = require('./routes/index.routes');
+const Router = require('./routes/index.routes');
+const cors = require('cors');
+const ejs = require('ejs');
+const path = require('path');
 
-var store = new MongoDBstore({
+
+
+const store = new MongoDBstore({
     uri: process.env.DBURI,
     collection: 'sessions',
     expires: 24 * 60 * 60 * 1000,
@@ -34,10 +39,12 @@ mongoose.connect(process.env.DBURI)
         console.log(err)
     });
 
-let PORT = 4000 || process.env.PORT
+const PORT = 4000 || process.env.PORT
+app.use('/public', express.static(path.join(__dirname, '/public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(require('cors')({ origin: "*" }));
+app.set('view engine', 'ejs');
 
 app.use(passport.initialize());
 app.use(passport.session());

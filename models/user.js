@@ -37,7 +37,7 @@ const User = Account.discriminator(
   "User",
   new mongoose.Schema({
     groups: {
-      type: [{ id: mongoose.Schema.Types.ObjectId, ref: "Group" }],
+      id: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
       role: { type: String },
     },
   })
