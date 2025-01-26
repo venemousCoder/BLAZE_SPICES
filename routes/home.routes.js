@@ -24,4 +24,6 @@ router.get(
   })
 ); // Redirect to home page after successful login
 
+router.get("/auth/google/login", userControllers.googleLogin);
+
 module.exports = router;
