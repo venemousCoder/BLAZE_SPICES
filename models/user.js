@@ -43,4 +43,4 @@ const User = Account.discriminator(
   })
 );
 
-module.exports = { Account };
+module.exports = { Account, User, Admin };
