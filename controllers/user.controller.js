@@ -182,4 +182,8 @@ function logout(req, res, next) {
 
 }
 
-module.exports = {logout, userLogin, createUser, deleteUser, updateUserProfile}
+function googleLogin(req, res, next) {
+    passport.authenticate('google', { scope: ['profile'] })(req, res, next);
+}
+
+module.exports = {logout, userLogin, createUser, deleteUser, updateUserProfile, googleLogin}

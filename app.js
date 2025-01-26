@@ -1,6 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const passport = require('passport');
+const googleStrategy = require('passport-google-oauth20').Strategy;
 const mongoose = require('mongoose');
 const session = require('express-session');
 const app = express();
@@ -49,6 +50,31 @@ app.set('view engine', 'ejs');
 app.use(passport.initialize());
 app.use(passport.session());
 
+passport.use(new googleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "http://localhost:4000/auth/google/callback"
+}, (accessToken, refreshToken, profile, done) => {
+    Admin.Account.findOne({ googleId: profile.id })
+        .then((user) => {
+            if (user) {
+                done(null, user);
+            } else {
+                new Admin.Account({
+                    username: profile.displayName,
+                    googleId: profile.id,
+                    email: profile.emails[0].value // assuming the email is available in profile.emails
+                }).save()
+                    .then((user) => {
+                        done(null, user);
+                    }).catch((err) => {
+                        done(err, null);
+                    })
+            }
+        }).catch((err) => {
+            done(err, null);
+        })
+}))
 passport.use(Admin.Account.createStrategy());
 passport.serializeUser((user, done) => {
     console.log("serializing user")
