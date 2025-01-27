@@ -8,8 +8,10 @@ Welcome to the Blaze Spices project! This repository contains the source code an
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [File Structure](#file-structure)
 - [Contributing](#contributing)
 - [License](#license)
+- [Contact](#contact)
 
 ## Introduction
 
