@@ -15,7 +15,6 @@ const path = require("path");
 const store = new MongoDBstore({
   uri: process.env.DBURI,
   collection: "sessions",
-  expires: 24 * 60 * 60 * 1000,
 });
 store.on("error", function (error) {
   throw new Error("Session store error: " + error);
@@ -24,7 +23,11 @@ store.on("error", function (error) {
 app.use(
   session({
     store: store,
-    maxAge: 24 * 60 * 60 * 1000,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true, // Ensures cookies are sent only over HTTP(S), not client JS
+      secure: false, // Ensures cookies are sent only over HTTPS
+    },
     resave: false,
     saveUninitialized: false,
     secret: process.env.SECRET_KEY,
@@ -56,6 +59,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "http://localhost:4000/auth/google/callback",
+      profileFields: ['id', 'displayName', 'emails'],
     },
     (accessToken, refreshToken, profile, done) => {
       Admin.Account.findOne({ googleId: profile.id })
@@ -64,7 +68,13 @@ passport.use(
           if (user) {
             done(null, user);
           } else {
-            Admin.Account.findOne({ email: profile.emails[0].value })
+            console.log("PROFILE: ",profile);
+            Admin.Account.findOne({
+              email:
+                profile.emails && profile.emails.length > 0
+                  ? profile.emails[0].value
+                  : null,
+            })
 
               .then((existingUser) => {
                 if (existingUser) {
@@ -120,11 +130,12 @@ passport.deserializeUser((obj, done) => {
   console.log("in if");
   Admin.Account.findById(obj.id)
     .then((user) => {
-      console.log("done");
+      console.log("User deserialized successfully:", user);
       done(null, user);
     })
     .catch((err) => {
-      done(null, err);
+      console.error("Error during deserialization:", err);
+      done(err, null);
     });
 });
 
@@ -132,10 +143,11 @@ app.use("/", Router);
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   console.log(
-    "middleware",
+    "SESSION\n",
     req.session,
+    "Authenticated\n",
     req.isAuthenticated(),
-    "Session token ",
+    "SESSION TOKEN\n",
     req.session.token
   );
   return next();

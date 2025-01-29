@@ -170,3 +170,26 @@ body {
         font-size: 1.5rem;
     }
 }
+
+.message {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.message.success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.message.error {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.auth-form input::placeholder {
+    color: #999;
+    font-size: 0.9rem;
+}
