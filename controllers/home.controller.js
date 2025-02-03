@@ -47,17 +47,14 @@ function createUser(req, res, next) {
 
 function userLogin(req, res, next) {
   passport.authenticate("local", function (err, user) {
-    if (!user)
-      return res.status(403).json({
-        status: "fail",
-        message: "incorrect username or password ",
-      });
-    if (err)
-      return res.status(500).json({
-        status: "fail",
-        message: "failed to authenticate user",
-        error: err,
-      });
+    if (!user) {
+      res.locals.error = "User not found";
+      return res.status(404).redirect("/login");
+    }
+    if (err) {
+      res.locals.error = err;
+      return res.status(404).redirect("/login");
+    }
     req.login(user, function (err) {
       if (err)
         return res.status(500).json({
@@ -69,16 +66,10 @@ function userLogin(req, res, next) {
       res.locals.currentUser = req.user;
       req.session.token = jwt.generateToken(req.user);
       if (req.user.role === "admin") {
-        res.status(201).render("home", {
-          status: "success",
-          message: "successfully logged in",
-        });
+        res.status(200).redirect("/admin/dashboard");
         return next();
       }
-      res.status(201).render("home", {
-        status: "success",
-        message: "successfully logged in",
-      });
+      res.status(200).redirect("/user/dashboard");
       return next();
     });
   })(req, res, next);
@@ -177,11 +168,7 @@ function logout(req, res, next) {
         error: err,
       });
     }
-    res.status(200).render("login", {
-      status: "success",
-      message: "successfully logged out",
-      redirect: "/login",
-    });
+    res.status(200).redirect("/login");
     return next();
   });
 }
@@ -193,9 +180,18 @@ function googleLogin(req, res, next) {
 }
 
 function getHome(req, res) {
+  if (req.isAuthenticated()) {
+    console.log("true");
+    return res.render("home", {
+      title: "Home Page",
+      message: "Welcome to the Home Page",
+      user: req.user,
+    });
+  }
   return res.render("home", {
     title: "Home Page",
     message: "Welcome to the Home Page",
+    user: "",
   });
 }
 
@@ -278,7 +274,7 @@ async function forgetPassword(req, res, next) {
         // info: info,
         userId: user._id,
       });
-      req.session.create()
+      req.session.create();
       return next();
     });
   } catch (err) {

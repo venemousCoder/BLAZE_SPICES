@@ -1,6 +1,11 @@
 const router = require("express").Router();
-const userControllers = require("../controllers/home.controller");
+const homecontrollers = require("../controllers/home.controller");
+const usercontrollers = require("../controllers/user.controller");
+const jwtauth = require("../utils/jwt");
+const userModels = require("../models/user");
 
-router.get("logout", userControllers.logout);
+router.use(jwtauth.userVerifyJwt);
+router.get("/dashboard", usercontrollers.getDahsboard);
+router.get("/logout", homecontrollers.logout);
 
 module.exports = router;
