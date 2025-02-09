@@ -40,6 +40,12 @@ const User = Account.discriminator(
       id: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
       role: { type: String },
     },
+    tag: {
+      type: String,
+      required: true,
+      enum: ["World-Class Chef","Chef", "Apprentice Chef", "Modern Cook","Cooking Protoge", "Kitchen Helper"],
+      default: "Kitchen Helper",
+    }
   })
 );
 

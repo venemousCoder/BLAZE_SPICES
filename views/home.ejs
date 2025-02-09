@@ -9,33 +9,10 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="shortcut icon" href="../public/assets/favicon/favicon.ico" type="image/x-icon">
   </head>
   <body>
-    <header>
-      <nav class="navbar">
-        <div class="logo">
-          <img
-            src="../public/assets/cover-removebg-preview.png"
-            alt="Blaze LOGO"
-          />
-        </div>
-        <div class="nav-links">
-          <a id="nav-link1" href="/">Home</a>
-          <a id="nav-link2" href="/recipes">Recipes</a>
-          <a id="nav-link3" href="/about">About</a>
-          <a id="nav-link4" href="/contact">Contact</a>
-        </div>
-        <div class="auth-buttons">
-          <% if (user){ %>
-          <a href="/logout" class="signup-btn">Logout</a>
-          <% }else{ %>
-          <a href="/login" class="login-btn">Login</a>
-          <a href="/signup" class="signup-btn">Sign Up</a>
-          <% } %>
-        </div>
-      </nav>
-    </header>
-
+    <%- include('./partials/header.ejs') %>
     <main>
       <section class="hero">
         <div class="hero-content">

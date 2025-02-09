@@ -3,10 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>error</title>
+    <title>Error - Blaze Recipes</title>
+    <link rel="stylesheet" href="../public/css/auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .error-code {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .error-image {
+            width: 200px;
+            height: auto;
+            margin: 2rem 0;
+        }
+
+        .home-button {
+            margin-top: 2rem;
+        }
+        
+        .error-message {
+            color: #666;
+            margin: 1rem 0;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <h1>error <b><%= status %></b>  <%= error %></h1>
-    <a href="http://localhost:4000/">Go home</a>
+    <main class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="error-code">
+                    <%= status|| 404 %>
+                </div>
+                <h1><%= error || "Page Not Found" %></h1>
+                <p class="error-message">
+                    <%= description || "The page you're looking for doesn't exist or has been moved." %>
+                </p>
+            </div>
+
+            <img 
+                src="../public/assets/error.svg" 
+                alt="Error illustration" 
+                class="error-image"
+            >
+
+            <div class="home-button">
+                <a href="/" class="auth-button">
+                    Back to Home
+                </a>
+            </div>
+
+            <p class="auth-switch">
+                Need help? 
+                <a href="/contact">Contact Support</a>
+            </p>
+        </div>
+    </main>
 </body>
 </html>
