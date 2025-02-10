@@ -189,6 +189,29 @@ body {
     color: white;
 }
 
+.error-code {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.error-image {
+    width: 200px;
+    height: auto;
+    margin: 2rem 0;
+}
+
+.home-button {
+    margin-top: 2rem;
+}
+
+.error-message {
+    color: #666;
+    margin: 1rem 0;
+    text-align: center;
+}
+
 .auth-form input::placeholder {
     color: #999;
     font-size: 0.9rem;

@@ -21,4 +21,35 @@
         <% } %>
       </div>
     </nav>
+    <% if (message!=="") { %>
+      <main class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="error-code">
+                    Message
+                </div>
+                <p class="error-message">
+                    <%= message%>
+                </p>
+            </div>
+<!--   
+            <img 
+                src="../public/assets/error.svg" 
+                alt="Error illustration" 
+                class="error-image"
+            >
+
+            <div class="home-button">
+                <a href="/" class="auth-button">
+                    Back to Home
+                </a>
+            </div>
+ -->
+            <p class="auth-switch">
+                Need help? 
+                <a href="/contact">Contact Support</a>
+            </p>
+        </div>
+    </main>
+    <% } %>
   </header>

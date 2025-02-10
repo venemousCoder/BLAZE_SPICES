@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const userModels = require("../models/user")
+const userModels = require("../models/user");
 
 const secretKey = process.env.SECRET_KEY;
 
@@ -27,36 +27,27 @@ function verifyToken(req, res, next) {
   if (token) {
     jwt.verify(token, secretKey, (error, payload) => {
       if (payload) {
-        console.log(payload);
         userModels.Account.findById(payload.data).then((user) => {
           if (user) {
             if (user.role === "admin") {
               console.log("sync");
               return next();
             }
-            return res.status(401).json({
-              error: error,
-              message: "Unauthorized",
-            });
+            res.locals.message = "Unauthorized Access";
+            return res.status(401).redirect("/error");
           } else {
-            return res.status(401).json({
-              error: error,
-              message: "No User account found.",
-            });
+            res.locals.message = "User not found";
+            return res.status(401).redirect("/error");
           }
         });
       } else {
-        return res.status(401).json({
-          error: error,
-          message: "Cannot verify API token.",
-        });
+        res.locals.message = "Cannot verify API token";
+        return res.status(401).redirect("/error/");
       }
     });
   } else {
-    return res.status(401).json({
-      error: true,
-      message: "Provide Token",
-    });
+    res.locals.message = "Provide Token";
+    return res.status(401).redirect("/error");
   }
 }
 
@@ -66,30 +57,27 @@ function userVerifyJwt(req, res, next) {
   if (token) {
     jwt.verify(token, secretKey, (error, payload) => {
       if (payload) {
-        console.log(payload);
         userModels.Account.findById(payload.data).then((user) => {
           if (user) {
-            console.log("sync");
-            return next();
+            if (user.role === "admin") {
+              console.log("sync");
+              return next();
+            }
+            res.locals.message = "Unauthorized Access";
+            return res.status(401).redirect("/error");
           } else {
-            return res.status(401).json({
-              error: error,
-              message: "No User account found.",
-            });
+            res.locals.message = "User not found";
+            return res.status(401).redirect("/error");
           }
         });
       } else {
-        return res.status(401).json({
-          error: error,
-          message: "Cannot verify API token.",
-        });
+        res.locals.message = "Cannot verify API token";
+        return res.status(401).redirect("/error/");
       }
     });
   } else {
-    return res.status(401).json({
-      error: true,
-      message: "Provide Token",
-    });
+    res.locals.message = "Provide Token";
+    return res.status(401).redirect("/error");
   }
 }
 

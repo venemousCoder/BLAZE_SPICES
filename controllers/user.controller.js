@@ -1,5 +1,7 @@
 // Description: This file contains the user controller.
 // It exports a function that renders the home view.
+const mongoose = require("mongoose");
+const userModels = require("../models/user");
 
 function getDahsboard(req, res, next) {
   if (req.user.role === "admin") {
@@ -9,15 +11,13 @@ function getDahsboard(req, res, next) {
 }
 
 function deleteUser(req, res, next) {
-  const uId = mongoose.Types.ObjectId.createFromHexString(req.query.id);
+  const uId = req.user._id;
+  // mongoose.Types.ObjectId.createFromHexString(req.user._id);
   userModels.User.findByIdAndDelete(uId)
     .then((deletedAccount) => {
-      res.status(200).json({
-        status: "success",
-        message: `Account: "${deletedAccount.username}" deleted successfully`,
-        redirect: "/signUp",
-      });
-      return next();
+      res.locals.message = `Account: "${deletedAccount.username}" deleted successfully`;
+      return res.status(200).redirect("/signup");
+      //  next();
     })
     .catch((err) => {
       return res.status(500).json({
@@ -90,9 +90,11 @@ function updateUserProfile(req, res, next) {
 function logout(req, res, next) {
   req.logout((error, user) => {
     if (error) {
-      return res.status(500).json({ error });
+      return res.status(500).redirect("/error/");
     }
-    res.redirect("/auth/login");
+    req.session.token = "";
+    req.session.destroy();
+    res.redirect("/login");
   });
 }
 

@@ -9,13 +9,13 @@ function getHome(req, res) {
     console.log("true");
     return res.render("home", {
       title: "Home Page",
-      message: "Welcome to the Home Page",
+      message: res.locals.message,
       user: req.user,
     });
   }
   return res.render("home", {
     title: "Home Page",
-    message: "Welcome to the Home Page",
+    message: "",
     user: "",
   });
 }
@@ -23,14 +23,14 @@ function getHome(req, res) {
 function getSignUp(req, res) {
   return res.render("signup", {
     title: "SignUp",
-    // message: "Welcome to the Home Page",
+    message: res.locals.message,
   });
 }
 
 function getLogin(req, res) {
   return res.render("login", {
     title: "Login",
-    // message: "Welcome to the Home Page",
+    message: res.locals.message,
   });
 }
 

@@ -32,23 +32,7 @@ function createUser(req, res, next) {
         message: " user not created  :try again",
       });
     }
-    req.login(user, function (err) {
-      if (err)
-        return res.status(500).json({
-          status: "fail",
-          message: "failed to create session",
-          error: err,
-        });
-
-      // Successfully authenticated and session created
-      req.session.token = jwt.generateToken(req.user);
-      res.status(201).render("home", {
-        user: req.user,
-        status: "success",
-        message: " user created",
-      });
-      return next();
-    });
+    return res.status(201).redirect("/login");
   });
 }
 
@@ -60,6 +44,7 @@ function createUser(req, res, next) {
 
 function userLogin(req, res, next) {
   passport.authenticate("local", function (err, user) {
+    console.log(user);
     if (!user) {
       res.locals.error = "User not found";
       return res.status(404).redirect("/login");

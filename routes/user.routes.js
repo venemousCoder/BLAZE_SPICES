@@ -6,7 +6,7 @@ const jwtauth = require("../utils/jwt");
 router.use(jwtauth.userVerifyJwt);
 router.get("/dashboard", usercontrollers.getDahsboard);
 router.get("/logout", usercontrollers.logout);
-router.delete("/deactivate", usercontrollers.deleteUser);
+router.get("/deactivate", usercontrollers.deleteUser);
 router.put("/updateacc", usercontrollers.updateUserProfile);
 
 module.exports = router;

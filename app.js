@@ -141,7 +141,6 @@ passport.deserializeUser((obj, done) => {
 
 app.use("/", Router);
 app.use((req, res, next) => {
-  res.locals.currentUser = req.user;
   console.log(
     "SESSION\n",
     req.session,

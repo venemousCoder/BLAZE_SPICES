@@ -1,7 +1,7 @@
-function renderError(req, res, next, error) {
+function renderError(req, res, next) {
   return res.render("error", {
-    error: error.err,
-    status: error.status,
+    error: res.locals.message,
+    status: res.locals.message,
   });
 }
 

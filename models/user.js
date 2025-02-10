@@ -45,6 +45,13 @@ const User = Account.discriminator(
       required: true,
       enum: ["World-Class Chef","Chef", "Apprentice Chef", "Modern Cook","Cooking Protoge", "Kitchen Helper"],
       default: "Kitchen Helper",
+    },
+    resetPasswordToken: {
+      type: String,
+      unique: true
+    },
+    resetPasswordExpires: {
+      type: Number,
     }
   })
 );
