@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const PassportLocalMongoose = require("passport-local-mongoose");
+const crypto = require("crypto");
+
 const AccountScheme = mongoose.Schema(
   {
     email: {
@@ -30,6 +32,9 @@ const AccountScheme = mongoose.Schema(
 AccountScheme.plugin(PassportLocalMongoose, {
   usernameField: "email",
 });
+AccountScheme.methods.generateVerificationToken = function () {
+  this.verificationToken = crypto.randomBytes(32).toString("hex");
+};
 
 const Account = mongoose.model("Account", AccountScheme);
 const Admin = Account.discriminator("Admin", {});
@@ -43,16 +48,27 @@ const User = Account.discriminator(
     tag: {
       type: String,
       required: true,
-      enum: ["World-Class Chef","Chef", "Apprentice Chef", "Modern Cook","Cooking Protoge", "Kitchen Helper"],
+      enum: [
+        "World-Class Chef",
+        "Chef",
+        "Apprentice Chef",
+        "Modern Cook",
+        "Cooking Protoge",
+        "Kitchen Helper",
+      ],
       default: "Kitchen Helper",
     },
     resetPasswordToken: {
       type: String,
-      unique: true
+      unique: true,
+      default: null,
     },
     resetPasswordExpires: {
       type: Number,
-    }
+      default: null,
+    },
+    verified: { type: Boolean, default: false }, // Default: not verified
+    verificationToken: { type: String }, // Stores email verification token
   })
 );
 

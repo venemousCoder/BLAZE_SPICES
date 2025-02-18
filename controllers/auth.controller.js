@@ -44,7 +44,7 @@ function createUser(req, res, next) {
 
 function userLogin(req, res, next) {
   passport.authenticate("local", function (err, user) {
-    console.log(user);
+    console.log("USER AUTH: ", user);
     if (!user) {
       res.locals.error = "User not found";
       return res.status(404).redirect("/login");
@@ -74,8 +74,36 @@ function userLogin(req, res, next) {
 }
 
 function googleLogin(req, res, next) {
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
+  console.log("Before passport");
+  passport.authenticate("google", { scope: ["profile", "email"] }, function (err, user) {
+    console.log("USER:GAUTH: ",user);
+    if (err) {
+      return res.status(500).json({
+        status: "fail",
+        message: "Google authentication failed",
+        error: err,
+      });
+    }
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+    req.login(user, function (err) {
+      if (err) {
+        return res.status(500).json({
+          status: "fail",
+          message: "Failed to create session",
+          error: err,
+        });
+      }
+      // Successfully authenticated and session created
+      res.locals.currentUser = req.user;
+      req.session.token = jwt.generateToken(req.user);
+      res.status(200).redirect("/user/dashboard");
+      return next();
+    });
   })(req, res, next);
 }
 
@@ -161,14 +189,15 @@ async function forgetPassword(req, res, next) {
     transporter.sendMail(mailOptions, (err, info) => {
       if (err) {
         res.locals.error = err;
-        return res.status(500).redirect("/forgotpassword");
+        return res.status(500).redirect("/error");
       }
       res.locals.success = "success";
-      return res.status(200).redirect(`/forgotpassword`);
+      return res.status(200).redirect(`/auth/resetpassword`);
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).redirect("/forgotpassword");
+    res.locals.error = err;
+    return res.status(500).redirect("/error");
   }
 }
 

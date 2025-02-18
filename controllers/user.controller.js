@@ -88,8 +88,10 @@ function updateUserProfile(req, res, next) {
     });
 }
 function logout(req, res, next) {
+  console.log("LOGOUT");
   req.logout((error, user) => {
     if (error) {
+      console.log("ERROR: ", error);
       return res.status(500).redirect("/error/");
     }
     req.session.token = "";

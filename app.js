@@ -59,7 +59,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "http://localhost:4000/auth/google/callback",
-      profileFields: ['id', 'displayName', 'emails'],
+      profileFields: ["id", "displayName", "emails"],
     },
     (accessToken, refreshToken, profile, done) => {
       Admin.Account.findOne({ googleId: profile.id })
@@ -68,7 +68,7 @@ passport.use(
           if (user) {
             done(null, user);
           } else {
-            console.log("PROFILE: ",profile);
+            // console.log("PROFILE: ", profile);
             Admin.Account.findOne({
               email:
                 profile.emails && profile.emails.length > 0
@@ -120,21 +120,21 @@ passport.use(
 );
 passport.use(Admin.Account.createStrategy());
 passport.serializeUser((user, done) => {
-  console.log("serializing user");
+  // console.log("serializing user");
   done(null, { id: user.id, type: user.role });
-  console.log("serialized user");
+  // console.log("serialized user");
 });
 
 passport.deserializeUser((obj, done) => {
-  console.log("deserial");
-  console.log("in if");
+  // console.log("deserial");
+  // console.log("in if");
   Admin.Account.findById(obj.id)
     .then((user) => {
-      console.log("User deserialized successfully:", user);
+      // console.log("User deserialized successfully:", user);
       done(null, user);
     })
     .catch((err) => {
-      console.error("Error during deserialization:", err);
+      // console.error("Error during deserialization:", err);
       done(err, null);
     });
 });
@@ -142,10 +142,10 @@ passport.deserializeUser((obj, done) => {
 app.use("/", Router);
 app.use((req, res, next) => {
   console.log(
-    "SESSION\n",
-    req.session,
-    "Authenticated\n",
-    req.isAuthenticated(),
+    // "SESSION\n",
+    // req.session,
+    // "Authenticated\n",
+    // req.isAuthenticated(),
     "SESSION TOKEN\n",
     req.session.token
   );

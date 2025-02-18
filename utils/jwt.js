@@ -34,19 +34,23 @@ function verifyToken(req, res, next) {
               return next();
             }
             res.locals.message = "Unauthorized Access";
+            console.log("Error culprit");
             return res.status(401).redirect("/error");
           } else {
             res.locals.message = "User not found";
+            console.log("Error culprit");
             return res.status(401).redirect("/error");
           }
         });
       } else {
         res.locals.message = "Cannot verify API token";
+        console.log("Error culprit");
         return res.status(401).redirect("/error/");
       }
     });
   } else {
     res.locals.message = "Provide Token";
+    console.log("Error culprit");
     return res.status(401).redirect("/error");
   }
 }
@@ -59,24 +63,28 @@ function userVerifyJwt(req, res, next) {
       if (payload) {
         userModels.Account.findById(payload.data).then((user) => {
           if (user) {
-            if (user.role === "admin") {
+            if (user.role === "user") {
               console.log("sync");
               return next();
             }
             res.locals.message = "Unauthorized Access";
+            console.log("Error culprit");
             return res.status(401).redirect("/error");
           } else {
             res.locals.message = "User not found";
+            console.log("Error culprit");
             return res.status(401).redirect("/error");
           }
         });
       } else {
         res.locals.message = "Cannot verify API token";
+        console.log("Error culprit");
         return res.status(401).redirect("/error/");
       }
     });
   } else {
     res.locals.message = "Provide Token";
+    console.log("Error culprit");
     return res.status(401).redirect("/error");
   }
 }
