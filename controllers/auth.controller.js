@@ -63,48 +63,58 @@ function userLogin(req, res, next) {
       // Successfully authenticated and session created
       res.locals.currentUser = req.user;
       req.session.token = jwt.generateToken(req.user);
-      if (req.user.role === "admin") {
-        res.status(200).redirect("/admin/dashboard");
+      userModels.Account.findOneAndUpdate(
+        { email: req.user.email },
+        { verified: true }
+      ).then((user) => {
+        console.log("USER: ", user);
+        if (req.user.role === "admin") {
+          res.status(200).redirect("/admin/dashboard");
+          return next();
+        }
+        res.status(200).redirect("/user/dashboard");
         return next();
-      }
-      res.status(200).redirect("/user/dashboard");
-      return next();
+      });
     });
   })(req, res, next);
 }
 
 function googleLogin(req, res, next) {
   console.log("Before passport");
-  passport.authenticate("google", { scope: ["profile", "email"] }, function (err, user) {
-    console.log("USER:GAUTH: ",user);
-    if (err) {
-      return res.status(500).json({
-        status: "fail",
-        message: "Google authentication failed",
-        error: err,
-      });
-    }
-    if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User not found",
-      });
-    }
-    req.login(user, function (err) {
+  passport.authenticate(
+    "google",
+    { scope: ["profile", "email"] },
+    function (err, user) {
+      console.log("USER:GAUTH: ", user);
       if (err) {
         return res.status(500).json({
           status: "fail",
-          message: "Failed to create session",
+          message: "Google authentication failed",
           error: err,
         });
       }
-      // Successfully authenticated and session created
-      res.locals.currentUser = req.user;
-      req.session.token = jwt.generateToken(req.user);
-      res.status(200).redirect("/user/dashboard");
-      return next();
-    });
-  })(req, res, next);
+      if (!user) {
+        return res.status(404).json({
+          status: "fail",
+          message: "User not found",
+        });
+      }
+      req.login(user, function (err) {
+        if (err) {
+          return res.status(500).json({
+            status: "fail",
+            message: "Failed to create session",
+            error: err,
+          });
+        }
+        // Successfully authenticated and session created
+        res.locals.currentUser = req.user;
+        req.session.token = jwt.generateToken(req.user);
+        res.status(200).redirect("/user/dashboard");
+        return next();
+      });
+    }
+  )(req, res, next);
 }
 
 /******************************************************************
@@ -141,33 +151,33 @@ async function forgetPassword(req, res, next) {
     const expiration = Date.now() + 3600000; // 1 hour validity
     console.log("TOKEN: ", token, "EXPIRATION: ", expiration, "USER", user);
     // Save token & expiration in the DB without modifying schema
-    var updateduser = await userModels.Account.findOneAndUpdate(
+    var updateduser = await userModels.User.findOneAndUpdate(
       { email: email },
       { $set: { resetPasswordToken: token, resetPasswordExpires: expiration } },
       { new: true }
     );
 
-    userModels.Account.findOneAndUpdate(
-      { email: email },
-      {
-        $set: { resetPasswordToken: token, resetPasswordExpires: expiration },
-      },
-      { new: true }
-    )
-      .then((updatedUser) => {
-        console.log("UPDATED USER THEN:", updatedUser);
-        return updatedUser;
-      })
-      .catch((err) => {
-        console.log("ERROR:", err);
-        res.locals.error = err;
-        return res.status(500).redirect("/forgotpassword");
-      });
+    // userModels.Account.findOneAndUpdate(
+    //   { email: email },
+    //   {
+    //     $set: { resetPasswordToken: token, resetPasswordExpires: expiration },
+    //   },
+    //   { new: true }
+    // )
+    //   .then((updatedUser) => {
+    //     console.log("UPDATED USER THEN:", updatedUser);
+    //     return updatedUser;
+    //   })
+    //   .catch((err) => {
+    //     console.log("ERROR:", err);
+    //     res.locals.error = err;
+    //     return res.status(500).redirect("/forgotpassword");
+    //   });
     console.log("UPDATED USER", updateduser);
     // Token valid for 1 hour
 
     // Send reset email
-    const resetUrl = `http://localhost:4000/resetpassword/${token}`;
+    const resetUrl = `http://localhost:4000/auth/resetpassword/${token}`;
     const accessToken = await oAuth2Client.getAccessToken();
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -188,7 +198,7 @@ async function forgetPassword(req, res, next) {
     };
     transporter.sendMail(mailOptions, (err, info) => {
       if (err) {
-        res.locals.error = err;
+        res.locals.message = err;
         return res.status(500).redirect("/error");
       }
       res.locals.success = "success";
@@ -208,11 +218,14 @@ async function getResetPassword(req, res) {
   });
 
   if (!user) {
+    console.log("Invalid or expired token");
+    res.locals.message = "Invalid or expired token";
     return res.status(400).redirect("/error/");
   }
   res.render("resetpassword", {
     title: "Reset Password",
     token: req.params.token,
+    userId: user.resetPasswordToken,
   });
 }
 
@@ -224,27 +237,28 @@ async function resetPassword(req, res, next) {
     });
 
     if (!user) {
-      return res.status(400).redirect("*");
+      return res.status(400).redirect("/error/");
     }
 
-    // Set new password using passport-local-mongoose method
-    user.setPassword(req.body.password, async (err) => {
-      if (err) {
-        return res.status(500).json({ message: "Error resetting password" });
-      }
+    // Use `await` to properly hash and set the password
+    await user.setPassword(req.body.password);
 
-      await userModels.Account.updateOne(
-        { email: user.email },
-        { $unset: { resetPasswordToken: "", resetPasswordExpires: "" } } // Removes these fields
-      );
+    // Save the updated user to the database
+    await user.save();
 
-      res.status(200).redirect("/login");
-    });
+    // Remove the reset token and expiration from the database
+    await userModels.Account.updateOne(
+      { email: user.email },
+      { $unset: { resetPasswordToken: "", resetPasswordExpires: "" } }
+    );
+
+    return res.status(200).redirect("/login");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error resetting password:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 }
+
 
 module.exports = {
   createUser,
