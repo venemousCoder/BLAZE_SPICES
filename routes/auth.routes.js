@@ -35,7 +35,7 @@ router.get("/google/login", authControllers.googleLogin);
 
 router.get("/forgotpassword", authControllers.getforgetPassword);
 
-router.post("/forgotpassword", authControllers.forgetPassword);
+router.post("/forgotpassword", authControllers.forgetPassword, authControllers.getforgetPassword);
 
 router.get("/resetpassword/:token", authControllers.getResetPassword);
 router.post("/resetpassword/:token", authControllers.resetPassword);

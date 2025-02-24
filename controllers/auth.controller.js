@@ -72,7 +72,7 @@ function userLogin(req, res, next) {
           res.status(200).redirect("/admin/dashboard");
           return next();
         }
-        res.status(200).redirect("/user/dashboard");
+        res.status(200).redirect("/user/feeds");
         return next();
       });
     });
@@ -108,10 +108,10 @@ function googleLogin(req, res, next) {
           });
         }
         // Successfully authenticated and session created
-        res.locals.currentUser = req.user;
+        // res.locals.currentUser = req.user;
         req.session.token = jwt.generateToken(req.user);
-        res.status(200).redirect("/user/dashboard");
-        return next();
+        return res.status(200).redirect("/user/dashboard");
+        // return next();
       });
     }
   )(req, res, next);
@@ -123,95 +123,82 @@ function googleLogin(req, res, next) {
  *
  ******************************************************************/
 function getforgetPassword(req, res) {
+  // console.log("IN GETFP",res.locals.message)
   return res.render("forgetpassword", {
     title: "Forget Password",
-    // message: "Welcome to the Home Page",
+    message: res.locals.message,
   });
 }
 
 async function forgetPassword(req, res, next) {
-  const oAuth2Client = new google.auth.OAuth2(
-    process.env.GMAIL_CLIENT_ID,
-    process.env.GMAIL_CLIENT_SECRET,
-    process.env.GMAIL_REDIRECT_URI
-  );
-  oAuth2Client.setCredentials({
-    refresh_token: process.env.GMAIL_REFRESH_TOKEN,
-  });
+  // const oAuth2Client = new google.auth.OAuth2(
+  //   process.env.GMAIL_CLIENT_ID,
+  //   process.env.GMAIL_CLIENT_SECRET,
+  //   process.env.GMAIL_REDIRECT_URI
+  // );
+  // oAuth2Client.setCredentials({
+  //   refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+  // });
   const email = req.body.email;
-  try {
-    const user = await userModels.Account.findOne({ email: email });
-    if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User not found",
-      });
-    }
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiration = Date.now() + 3600000; // 1 hour validity
-    console.log("TOKEN: ", token, "EXPIRATION: ", expiration, "USER", user);
-    // Save token & expiration in the DB without modifying schema
-    var updateduser = await userModels.User.findOneAndUpdate(
-      { email: email },
-      { $set: { resetPasswordToken: token, resetPasswordExpires: expiration } },
-      { new: true }
-    );
+  // try {
+  //   const user = await userModels.Account.findOne({ email: email });
+  //   if (!user) {
+  //     return res.status(404).json({
+  //       status: "fail",
+  //       message: "User not found",
+  //     });
+  //   }
+  //   const token = crypto.randomBytes(32).toString("hex");
+  //   const expiration = Date.now() + 3600000; // 1 hour validity
+  //   console.log("TOKEN: ", token, "EXPIRATION: ", expiration, "USER", user);
+  //   // Save token & expiration in the DB without modifying schema
+  //   var updateduser = await userModels.User.findOneAndUpdate(
+  //     { email: email },
+  //     { $set: { resetPasswordToken: token, resetPasswordExpires: expiration } },
+  //     { new: true }
+  //   );
 
-    // userModels.Account.findOneAndUpdate(
-    //   { email: email },
-    //   {
-    //     $set: { resetPasswordToken: token, resetPasswordExpires: expiration },
-    //   },
-    //   { new: true }
-    // )
-    //   .then((updatedUser) => {
-    //     console.log("UPDATED USER THEN:", updatedUser);
-    //     return updatedUser;
-    //   })
-    //   .catch((err) => {
-    //     console.log("ERROR:", err);
-    //     res.locals.error = err;
-    //     return res.status(500).redirect("/forgotpassword");
-    //   });
-    console.log("UPDATED USER", updateduser);
-    // Token valid for 1 hour
+  //   console.log("UPDATED USER", updateduser);
+  //   // Token valid for 1 hour
 
-    // Send reset email
-    const resetUrl = `http://localhost:4000/auth/resetpassword/${token}`;
-    const accessToken = await oAuth2Client.getAccessToken();
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user: process.env.EMAIL,
-        clientId: process.env.GMAIL_CLIENT_ID,
-        clientSecret: process.env.GMAIL_CLIENT_SECRET,
-        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-        accessToken: accessToken.token,
-      },
-    });
-    const mailOptions = {
-      from: process.env.EMAIL,
-      to: email,
-      subject: "Password Reset",
-      text: `Click on the link to reset your password: ${resetUrl}`,
-    };
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        res.locals.message = err;
-        return res.status(500).redirect("/error");
-      }
-      res.locals.success = "success";
-      return res.status(200).redirect(`/auth/resetpassword`);
-    });
-  } catch (err) {
-    console.error(err);
-    res.locals.error = err;
-    return res.status(500).redirect("/error");
-  }
+  //   // Send reset email
+  //   const resetUrl = `http://localhost:4000/auth/resetpassword/${token}`;
+  //   const accessToken = await oAuth2Client.getAccessToken();
+  //   const transporter = nodemailer.createTransport({
+  //     service: "gmail",
+  //     auth: {
+  //       type: "OAuth2",
+  //       user: process.env.EMAIL,
+  //       clientId: process.env.GMAIL_CLIENT_ID,
+  //       clientSecret: process.env.GMAIL_CLIENT_SECRET,
+  //       refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+  //       accessToken: accessToken.token,
+  //     },
+  //   });
+  //   const mailOptions = {
+  //     from: process.env.EMAIL,
+  //     to: email,
+  //     subject: "Password Reset",
+  //     text: `Click on the link to reset your password: ${resetUrl}`,
+  //   };
+  //   transporter.sendMail(mailOptions, (err, info) => {
+  //     if (err) {
+  //       res.locals.message = err;
+  //       return res.status(500).redirect("/error");
+  //     }
+  res.locals.message = `Reset password link sent to email: ${email}`;
+  // console.log(res.locals.message);
+  return next();
+  // return res.status(200).redirect(`/auth/forgotpassword`);
+  //   });
+  // } catch (err) {
+  //   console.error(err);
+  //   res.locals.error = err;
+  //   return res.status(500).redirect("/error");
+  // }
 }
 
-async function getResetPassword(req, res) {
+async function getResetPassword(req, res, next) {
   const user = await userModels.Account.findOne({
     resetPasswordToken: req.params.token,
     resetPasswordExpires: { $gt: Date.now() }, // Check if token is still valid
@@ -221,6 +208,7 @@ async function getResetPassword(req, res) {
     console.log("Invalid or expired token");
     res.locals.message = "Invalid or expired token";
     return res.status(400).redirect("/error/");
+    // return next(res.locals.message)
   }
   res.render("resetpassword", {
     title: "Reset Password",
@@ -258,7 +246,6 @@ async function resetPassword(req, res, next) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
-
 
 module.exports = {
   createUser,

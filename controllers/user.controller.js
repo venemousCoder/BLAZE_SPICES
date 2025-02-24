@@ -1,7 +1,8 @@
 // Description: This file contains the user controller.
 // It exports a function that renders the home view.
-const mongoose = require("mongoose");
 const userModels = require("../models/user");
+const recipe = require("../models/recipe");
+
 
 function getDahsboard(req, res, next) {
   if (req.user.role === "admin") {
@@ -55,6 +56,8 @@ function updateUserProfile(req, res, next) {
           updatedUser
             .save()
             .then(() => {
+              req.user = updatedUser
+              req.session.save()
               res.status(200).json({
                 status: "success",
                 message: "Profile updated successfully",
@@ -87,6 +90,7 @@ function updateUserProfile(req, res, next) {
       });
     });
 }
+
 function logout(req, res, next) {
   console.log("LOGOUT");
   req.logout((error, user) => {
@@ -100,4 +104,19 @@ function logout(req, res, next) {
   });
 }
 
-module.exports = { getDahsboard, deleteUser, updateUserProfile, logout };
+function getFeeds (req, res, next){
+  recipe.find().then((recipes) => {
+    if (!recipes) {
+      return res.status(404).redirect('/error');
+      // return res.render("feeds", { recipes: recipes, user: req.user });
+    }
+    return res.render("feeds", { recipes: recipes, user: req.user });
+  });
+  //
+  //
+  //
+  //
+  return res.render("feeds", {user: req.user});
+}
+
+module.exports = { getDahsboard, getFeeds,deleteUser, updateUserProfile, logout };

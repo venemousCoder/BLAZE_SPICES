@@ -24,3 +24,28 @@ const recipeSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
+
+const Recipe = mongoose.model("Recipe", recipeSchema);
+module.exports = Recipe;
+// Compare this snippet from models/user.js:
+// const mongoose = require("mongoose");
+// const passportLocalMongoose = require("passport-local-mongoose");
+//
+// const userSchema = mongoose.Schema(
+//   {
+//     username: {
+//       type: String,
+//       required: true,
+//     },
+//     email: {
+//       type: String,
+//       required: true,
+//     },
+//     role: {
+//       type: String,
+//       default: "user",
+//     },
+//   },
+//   { timestamps: true }
+// );
+//

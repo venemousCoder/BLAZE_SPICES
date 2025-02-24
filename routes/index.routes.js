@@ -9,6 +9,6 @@ router.use("/", homeRouter);
 router.use("/admin", adminRouter);
 router.use("/auth", authRouter)
 router.use("/user", userRouter);
-router.use("/error", errorRouter);
+router.use("*", errorRouter);
 
 module.exports = router;
