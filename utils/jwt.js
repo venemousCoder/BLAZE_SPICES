@@ -12,7 +12,7 @@ function generateToken(payload) {
         data: payload._id,
       },
       secretKey,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
     return signedToken;
   }

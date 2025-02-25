@@ -8,6 +8,22 @@ const recipeSchema = mongoose.Schema(
       required: true,
     },
     likes: { type: Number },
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    ingredients: {
+      type: [String],
+      required: true,
+    },
+    steps: {
+      type: [String],
+      required: true,
+    },
     comments: [
       {
         user: {
