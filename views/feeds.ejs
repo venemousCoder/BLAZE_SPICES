@@ -78,5 +78,116 @@
         Profile
       </a>
     </nav>
+    <nav class="bottom-nav">
+      <!-- ...existing navigation items... -->
+      <button class="create-recipe-btn">
+        <img src="/icons/add.svg" alt="Add Recipe" />
+        Create Recipe
+      </button>
+    </nav>
+    
+    <!-- Add the modal markup before closing body tag -->
+    <div class="recipe-modal" id="recipeModal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Create New Recipe</h2>
+        <form id="recipeForm" action="/user/recipes" method="POST">
+          <div class="form-group">
+            <label for="title">Recipe Title</label>
+            <input type="text" id="title" name="title" required>
+          </div>
+    
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" required></textarea>
+          </div>
+    
+          <div class="form-group">
+            <label for="ingredients">Ingredients</label>
+            <div class="list-input">
+              <input type="text" id="ingredientInput">
+              <button type="button" class="add-btn" onclick="addIngredient()">Add</button>
+            </div>
+            <ul id="ingredientsList" class="items-list"></ul>
+            <input type="hidden" name="ingredients" id="ingredientsHidden">
+          </div>
+    
+          <div class="form-group">
+            <label for="steps">Cooking Steps</label>
+            <div class="list-input">
+              <input type="text" id="stepInput">
+              <button type="button" class="add-btn" onclick="addStep()">Add</button>
+            </div>
+            <ol id="stepsList" class="items-list"></ol>
+            <input type="hidden" name="steps" id="stepsHidden">
+          </div>
+    
+          <button type="submit" class="submit-btn">Create Recipe</button>
+        </form>
+      </div>
+    </div>
+    
+    <script>
+      // Modal functionality
+      const modal = document.getElementById('recipeModal');
+      const createBtn = document.querySelector('.create-recipe-btn');
+      const closeBtn = document.querySelector('.close');
+    
+      createBtn.onclick = () => modal.style.display = "block";
+      closeBtn.onclick = () => modal.style.display = "none";
+      window.onclick = (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      }
+    
+      // Ingredients list functionality
+      let ingredients = [];
+      function addIngredient() {
+        const input = document.getElementById('ingredientInput');
+        if (input.value.trim()) {
+          ingredients.push(input.value.trim());
+          updateIngredientsList();
+          input.value = '';
+        }
+      }
+    
+      function updateIngredientsList() {
+        const list = document.getElementById('ingredientsList');
+        const hidden = document.getElementById('ingredientsHidden');
+        list.innerHTML = ingredients.map((item, index) => `
+          <li>${item} <button type="button" onclick="removeIngredient(${index})">×</button></li>
+        `).join('');
+        hidden.value = JSON.stringify(ingredients);
+      }
+    
+      function removeIngredient(index) {
+        ingredients.splice(index, 1);
+        updateIngredientsList();
+      }
+    
+      // Steps list functionality
+      let steps = [];
+      function addStep() {
+        const input = document.getElementById('stepInput');
+        if (input.value.trim()) {
+          steps.push(input.value.trim());
+          updateStepsList();
+          input.value = '';
+        }
+      }
+    
+      function updateStepsList() {
+        const list = document.getElementById('stepsList');
+        const hidden = document.getElementById('stepsHidden');
+        list.innerHTML = steps.map((item, index) => `
+          <li>${item} <button type="button" onclick="removeStep(${index})">×</button></li>
+        `).join('');
+        hidden.value = JSON.stringify(steps);
+      }
+    
+      function removeStep(index) {
+        steps.splice(index, 1);
+        updateStepsList();
+      }
+    </script>
   </body>
 </html>
