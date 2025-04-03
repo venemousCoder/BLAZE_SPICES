@@ -73,7 +73,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
-    margin-top: 10px;
+    margin-top: 20px;
   }
   
   .recipe-card {
@@ -114,7 +114,7 @@ body {
   
   /* Bottom Navigation */
   .bottom-nav {
-    position: fixed;
+    position: sticky;
     bottom: 0;
     left: 0;
     width: 100%;
@@ -161,6 +161,7 @@ body {
 
 /* Modal Styles */
 .recipe-modal {
+  overflow-y: scroll;
   display: none;
   position: fixed;
   z-index: 1000;
@@ -173,7 +174,7 @@ body {
 
 .modal-content {
   background-color: #fff;
-  margin: 15% auto;
+  margin: 10% auto;
   padding: 20px;
   border-radius: 10px;
   width: 90%;

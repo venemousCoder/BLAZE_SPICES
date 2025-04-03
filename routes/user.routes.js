@@ -17,4 +17,6 @@ router.get("/deactivate", usercontrollers.deleteUser);
 
 router.put("/updateacc", usercontrollers.updateUserProfile);
 
+router.post("/recipes", usercontrollers.createRecipe)
+
 module.exports = router;

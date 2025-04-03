@@ -104,15 +104,16 @@ function logout(req, res, next) {
 }
 
 function getFeeds(req, res, next) {
-  recipe.find().then((recipes) => {
+  recipe.find().populate("owner").then((recipes) => {
     if (!recipes) {
       return res.status(404).redirect("/error");
       // return res.render("feeds", { recipes: recipes, user: req.user });
     }
-    return res.render("feeds", { recipes: recipes, user: req.user });
+    console.log("RECIPES: ", recipes)
+    return res.render("feeds", { recipe: recipes, user: req.user });
   });
   //
-  return res.render("feeds", { user: req.user });
+  // return res.render("feeds", { user: req.user });
 }
 
 function getRecipe(req, res, next) {
@@ -140,14 +141,15 @@ function createRecipe(req, res, next) {
     owner: req.user._id,
     title: req.body.title,
     description: req.body.description,
-    ingredients: req.body.ingredients,
+    ingredients: req.body.ingredients.replace("[","").replace("]","").split(","),
     steps: req.body.steps,
   }
+  console.log(req.body.image, req.body.steps)
   recipe.create(newRecipe).then((recipe) => {
     if (!recipe) {
       return res.status(500).redirect("/error");
     }
-    return res.status(201).redirect("/feeds");
+    return res.status(201).redirect("/user/feeds");
   });
 }
 

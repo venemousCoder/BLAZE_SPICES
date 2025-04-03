@@ -31,8 +31,8 @@
         <div class="user-scroll">
           <%# users.forEach(user => { %>
             <div class="user-avatar">
-              <img src="<%#= user.profilePic %>" alt="<%#= user.name %>'s profile" />
-              <p><%#= user.name %></p>
+              <img src="<%#= user.profilePic %>" alt="<%= user.username %>'s profile" />
+              <p><%= user.username %></p>
             </div>
           <%# }) %>
         </div>
@@ -41,15 +41,15 @@
       <section class="popular-recipes">
         <h2>Popular Recipes</h2>
         <div class="recipe-grid">
-          <%# recipes.forEach(recipe => { %>
+          <% recipe.forEach(recipe => { %>
             <div class="recipe-card">
-              <img src="<%#= recipe.image %>" alt="Image of <%#= recipe.title %>" class="recipe-img" />
+              <img src="<%#= recipe.image %>" alt="Image of <%= recipe.title %>" class="recipe-img" />
               <!-- <span class="cook-time"><%#= recipe.time %> min</span> -->
-              <h3><%#= recipe.title %></h3>
-              <p>By <%#= recipe.author %></p>
+              <h3><%= recipe.title %></h3>
+              <p>By <%= recipe.owner.username %></p>
               <div class="recipe-actions">
                 <button aria-label="Like recipe">
-                  <img src="/icons/like.svg" alt="Like icon" />
+                  <img src="../public/assets/heart.svg" alt="Like icon" />
                 </button>
                 <button aria-label="Comment on recipe">
                   <img src="/icons/comment.svg" alt="Comment icon" />
@@ -59,7 +59,7 @@
                 </button>
               </div>
             </div>
-          <%# }) %>
+          <% }) %>
         </div>
       </section>
     </main>
@@ -81,7 +81,7 @@
     <nav class="bottom-nav">
       <!-- ...existing navigation items... -->
       <button class="create-recipe-btn">
-        <img src="/icons/add.svg" alt="Add Recipe" />
+        <img src="../public/assets/testAddRecipe.svg" alt="Add Recipe" />
         Create Recipe
       </button>
     </nav>
@@ -121,7 +121,15 @@
             <ol id="stepsList" class="items-list"></ol>
             <input type="hidden" name="steps" id="stepsHidden">
           </div>
-    
+          <!-- <div class="form-group">
+            <label for="image">Image</label>
+            <div class="list-input">
+              <input type="file" name="image" id="stepInput">
+              <button type="button" class="add-btn" onclick="addStep()">Add</button>
+            </div>
+            <ol id="stepsList" class="items-list"></ol>
+            <input type="hidden" name="steps" id="stepsHidden">
+          </div> -->
           <button type="submit" class="submit-btn">Create Recipe</button>
         </form>
       </div>
