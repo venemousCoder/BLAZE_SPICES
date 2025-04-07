@@ -141,16 +141,22 @@ function createRecipe(req, res, next) {
     owner: req.user._id,
     title: req.body.title,
     description: req.body.description,
-    ingredients: req.body.ingredients.replace("[","").replace("]","").split(","),
+    ingredients: req.body.ingredients.replace("[", "").replace("]", "").split(","),
     steps: req.body.steps,
-  }
-  console.log(req.body.image, req.body.steps)
-  recipe.create(newRecipe).then((recipe) => {
-    if (!recipe) {
+    image: req.file ? `/uploads/recipes/${req.file.filename}` : null, // Save the image path
+  };
+
+  recipe.create(newRecipe)
+    .then((recipe) => {
+      if (!recipe) {
+        return res.status(500).redirect("/error");
+      }
+      return res.status(201).redirect("/user/feeds");
+    })
+    .catch((err) => {
+      console.error("Error creating recipe:", err);
       return res.status(500).redirect("/error");
-    }
-    return res.status(201).redirect("/user/feeds");
-  });
+    });
 }
 
 module.exports = {

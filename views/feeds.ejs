@@ -49,13 +49,13 @@
               <p>By <%= recipe.owner.username %></p>
               <div class="recipe-actions">
                 <button aria-label="Like recipe">
-                  <img src="../public/assets/heart.svg" alt="Like icon" />
+                  <img src="../public/assets/heartlike.png" alt="Like icon" />
                 </button>
                 <button aria-label="Comment on recipe">
-                  <img src="../public/assets/drawing-1.svg" alt="Comment icon" />
+                  <img src="../public/assets/drawing-1.png" alt="Comment icon" />
                 </button>
                 <button aria-label="Share recipe">
-                  <img src="/icons/share.svg" alt="Share icon" />
+                  <img src="../public/assets/share.png" alt="Share icon" />
                 </button>
               </div>
             </div>
@@ -96,7 +96,27 @@
             <label for="title">Recipe Title</label>
             <input type="text" id="title" name="title" required>
           </div>
-    
+          <form id="recipeForm" action="/user/recipes" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="recipeImage">Recipe Image</label>
+              <div class="image-upload-container">
+                <div class="image-preview" id="imagePreview">
+                  <img src="../public/assets/place-holder.png" alt="" id="preview">
+                  <div class="upload-text">Click or drag to upload</div>
+                </div>
+                <input type="file" 
+                       id="recipeImage" 
+                       name="recipeImage" 
+                       accept="image/*"
+                       class="image-input"
+                       required>
+              </div>
+            </div>
+            <!-- ...existing form fields... -->
+          </form>
+          
+          <!-- Add this to your existing script section -->
+          
           <div class="form-group">
             <label for="description">Description</label>
             <textarea id="description" name="description" required></textarea>
@@ -121,22 +141,79 @@
             <ol id="stepsList" class="items-list"></ol>
             <input type="hidden" name="steps" id="stepsHidden">
           </div>
-          <!-- <div class="form-group">
-            <label for="image">Image</label>
-            <div class="list-input">
-              <input type="file" name="image" id="stepInput">
-              <button type="button" class="add-btn" onclick="addStep()">Add</button>
-            </div>
-            <ol id="stepsList" class="items-list"></ol>
-            <input type="hidden" name="steps" id="stepsHidden">
-          </div> -->
+         
           <button type="submit" class="submit-btn">Create Recipe</button>
         </form>
       </div>
     </div>
     
     <script>
-      // Modal functionality
+          // ...existing script code...
+          
+          // Image preview functionality
+          const imageInput = document.getElementById('recipeImage');
+          const imagePreview = document.getElementById('preview');
+          const uploadText = document.querySelector('.upload-text');
+          
+          imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.opacity = '1';
+                uploadText.style.display = 'none';
+              }
+              reader.readAsDataURL(file);
+            }
+          });
+          
+          // Drag and drop functionality
+          const dropZone = document.querySelector('.image-upload-container');
+          
+          ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+          });
+          
+          function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          
+          ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+          });
+          
+          ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+          });
+          
+          function highlight(e) {
+            dropZone.classList.add('highlight');
+          }
+          
+          function unhighlight(e) {
+            dropZone.classList.remove('highlight');
+          }
+          
+          dropZone.addEventListener('drop', handleDrop, false);
+          
+          function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            imageInput.files = dt.files;
+            
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.opacity = '1';
+                uploadText.style.display = 'none';
+              }
+              reader.readAsDataURL(file);
+            }
+          }
+           // Modal functionality
       const modal = document.getElementById('recipeModal');
       const createBtn = document.querySelector('.create-recipe-btn');
       const closeBtn = document.querySelector('.close');

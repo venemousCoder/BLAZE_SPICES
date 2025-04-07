@@ -24,6 +24,7 @@ const recipeSchema = mongoose.Schema(
       type: [String],
       required: true,
     },
+    image: { type: String }, // Add this field to store the image path
     comments: [
       {
         user: {
