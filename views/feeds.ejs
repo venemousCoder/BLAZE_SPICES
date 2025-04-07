@@ -5,21 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Blaze Recipes - Feeds</title>
     <link rel="stylesheet" href="../public/css/feeds.css" />
-    <link rel="stylesheet" href="../public/css/home.css">
+    <link rel="stylesheet" href="../public/css/home.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="shortcut icon" href="../public/assets/favicon/favicon.ico" type="image/x-icon" />
+    <link
+      rel="shortcut icon"
+      href="../public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
   </head>
   <body>
     <%- include('./partials/header.ejs') %>
-    
+
     <main class="feeds-page">
       <section class="search-section">
         <h1>See What Others Are Making</h1>
         <div class="search-bar">
-          <input type="text" placeholder="Search for a recipe" aria-label="Search for a recipe" />
+          <input
+            type="text"
+            placeholder="Search for a recipe"
+            aria-label="Search for a recipe"
+          />
           <button class="filter-btn" aria-label="Filter options">
             <img src="/icons/filter.svg" alt="Filter icon" />
           </button>
@@ -30,10 +38,13 @@
         <h2>Top Contributors</h2>
         <div class="user-scroll">
           <%# users.forEach(user => { %>
-            <div class="user-avatar">
-              <img src="<%#= user.profilePic %>" alt="<%= user.username %>'s profile" />
-              <p><%= user.username %></p>
-            </div>
+          <div class="user-avatar">
+            <img
+              src="<%#= user.profilePic %>"
+              alt="<%= user.username %>'s profile"
+            />
+            <p><%= user.username %></p>
+          </div>
           <%# }) %>
         </div>
       </section>
@@ -42,28 +53,32 @@
         <h2>Popular Recipes</h2>
         <div class="recipe-grid">
           <% recipe.forEach(recipe => { %>
-            <div class="recipe-card">
-              <img src="<%#= recipe.image %>" alt="Image of <%= recipe.title %>" class="recipe-img" />
-              <!-- <span class="cook-time"><%#= recipe.time %> min</span> -->
-              <h3><%= recipe.title %></h3>
-              <p>By <%= recipe.owner.username %></p>
-              <div class="recipe-actions">
-                <button aria-label="Like recipe">
-                  <img src="../public/assets/heartlike.png" alt="Like icon" />
-                </button>
-                <button aria-label="Comment on recipe">
-                  <img src="../public/assets/drawing-1.png" alt="Comment icon" />
-                </button>
-                <button aria-label="Share recipe">
-                  <img src="../public/assets/share.png" alt="Share icon" />
-                </button>
-              </div>
+          <div class="recipe-card">
+            <img
+              src="<%#= recipe.image %>"
+              alt="Image of <%= recipe.title %>"
+              class="recipe-img"
+            />
+            <!-- <span class="cook-time"><%#= recipe.time %> min</span> -->
+            <h3><%= recipe.title %></h3>
+            <p>By <%= recipe.owner.username %></p>
+            <div class="recipe-actions">
+              <button aria-label="Like recipe">
+                <img src="../public/assets/heartlike.png" alt="Like icon" />
+              </button>
+              <button aria-label="Comment on recipe">
+                <img src="../public/assets/drawing-1.png" alt="Comment icon" />
+              </button>
+              <button aria-label="Share recipe">
+                <img src="../public/assets/share.png" alt="Share icon" />
+              </button>
             </div>
+          </div>
           <% }) %>
         </div>
       </section>
     </main>
-    
+
     <nav class="bottom-nav">
       <a href="/recipes" class="active">
         <img src="/icons/recipes.svg" alt="Recipes icon" />
@@ -85,190 +100,211 @@
         Create Recipe
       </button>
     </nav>
-    
+
     <!-- Add the modal markup before closing body tag -->
     <div class="recipe-modal" id="recipeModal">
       <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Create New Recipe</h2>
-        <form id="recipeForm" action="/user/recipes" method="POST">
+        <form
+          id="recipeForm"
+          action="/user/recipes"
+          method="POST"
+          enctype="multipart/form-data"
+        >
           <div class="form-group">
             <label for="title">Recipe Title</label>
-            <input type="text" id="title" name="title" required>
+            <input type="text" id="title" name="title" required />
           </div>
-          <form id="recipeForm" action="/user/recipes" method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-              <label for="recipeImage">Recipe Image</label>
-              <div class="image-upload-container">
-                <div class="image-preview" id="imagePreview">
-                  <img src="../public/assets/place-holder.png" alt="" id="preview">
-                  <div class="upload-text">Click or drag to upload</div>
-                </div>
-                <input type="file" 
-                       id="recipeImage" 
-                       name="recipeImage" 
-                       accept="image/*"
-                       class="image-input"
-                       required>
+          <div class="form-group">
+            <label for="recipeImage">Recipe Image</label>
+            <div class="image-upload-container">
+              <div class="image-preview" id="imagePreview">
+                <img
+                  src="../public/assets/place-holder.png"
+                  alt=""
+                  id="preview"
+                />
+                <div class="upload-text">Click or drag to upload</div>
               </div>
+              <input
+                type="file"
+                id="recipeImage"
+                name="recipeImage"
+                accept="image/*"
+                class="image-input"
+                required
+              />
             </div>
-            <!-- ...existing form fields... -->
-          </form>
-          
+          </div>
+          <!-- ...existing form fields... -->
+
           <!-- Add this to your existing script section -->
-          
+
           <div class="form-group">
             <label for="description">Description</label>
             <textarea id="description" name="description" required></textarea>
           </div>
-    
+
           <div class="form-group">
             <label for="ingredients">Ingredients</label>
             <div class="list-input">
-              <input type="text" id="ingredientInput">
-              <button type="button" class="add-btn" onclick="addIngredient()">Add</button>
+              <input type="text" id="ingredientInput" />
+              <button type="button" class="add-btn" onclick="addIngredient()">
+                Add
+              </button>
             </div>
             <ul id="ingredientsList" class="items-list"></ul>
-            <input type="hidden" name="ingredients" id="ingredientsHidden">
+            <input type="hidden" name="ingredients" id="ingredientsHidden" />
           </div>
-    
+
           <div class="form-group">
             <label for="steps">Cooking Steps</label>
             <div class="list-input">
-              <input type="text" id="stepInput">
-              <button type="button" class="add-btn" onclick="addStep()">Add</button>
+              <input type="text" id="stepInput" />
+              <button type="button" class="add-btn" onclick="addStep()">
+                Add
+              </button>
             </div>
             <ol id="stepsList" class="items-list"></ol>
-            <input type="hidden" name="steps" id="stepsHidden">
+            <input type="hidden" name="steps" id="stepsHidden" />
           </div>
-         
+
           <button type="submit" class="submit-btn">Create Recipe</button>
         </form>
       </div>
     </div>
-    
+
     <script>
-          // ...existing script code...
-          
-          // Image preview functionality
-          const imageInput = document.getElementById('recipeImage');
-          const imagePreview = document.getElementById('preview');
-          const uploadText = document.querySelector('.upload-text');
-          
-          imageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = function(e) {
-                imagePreview.src = e.target.result;
-                imagePreview.style.opacity = '1';
-                uploadText.style.display = 'none';
-              }
-              reader.readAsDataURL(file);
-            }
-          });
-          
-          // Drag and drop functionality
-          const dropZone = document.querySelector('.image-upload-container');
-          
-          ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-          });
-          
-          function preventDefaults (e) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-          
-          ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, highlight, false);
-          });
-          
-          ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, unhighlight, false);
-          });
-          
-          function highlight(e) {
-            dropZone.classList.add('highlight');
-          }
-          
-          function unhighlight(e) {
-            dropZone.classList.remove('highlight');
-          }
-          
-          dropZone.addEventListener('drop', handleDrop, false);
-          
-          function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const file = dt.files[0];
-            imageInput.files = dt.files;
-            
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = function(e) {
-                imagePreview.src = e.target.result;
-                imagePreview.style.opacity = '1';
-                uploadText.style.display = 'none';
-              }
-              reader.readAsDataURL(file);
-            }
-          }
-           // Modal functionality
-      const modal = document.getElementById('recipeModal');
-      const createBtn = document.querySelector('.create-recipe-btn');
-      const closeBtn = document.querySelector('.close');
-    
-      createBtn.onclick = () => modal.style.display = "block";
-      closeBtn.onclick = () => modal.style.display = "none";
+      // ...existing script code...
+
+      // Image preview functionality
+      const imageInput = document.getElementById("recipeImage");
+      const imagePreview = document.getElementById("preview");
+      const uploadText = document.querySelector(".upload-text");
+
+      imageInput.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.opacity = "1";
+            uploadText.style.display = "none";
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Drag and drop functionality
+      const dropZone = document.querySelector(".image-upload-container");
+
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
+
+      function highlight(e) {
+        dropZone.classList.add("highlight");
+      }
+
+      function unhighlight(e) {
+        dropZone.classList.remove("highlight");
+      }
+
+      dropZone.addEventListener("drop", handleDrop, false);
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        imageInput.files = dt.files;
+
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.opacity = "1";
+            uploadText.style.display = "none";
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+      // Modal functionality
+      const modal = document.getElementById("recipeModal");
+      const createBtn = document.querySelector(".create-recipe-btn");
+      const closeBtn = document.querySelector(".close");
+
+      createBtn.onclick = () => (modal.style.display = "block");
+      closeBtn.onclick = () => (modal.style.display = "none");
       window.onclick = (e) => {
         if (e.target === modal) modal.style.display = "none";
-      }
-    
+      };
+
       // Ingredients list functionality
       let ingredients = [];
       function addIngredient() {
-        const input = document.getElementById('ingredientInput');
+        const input = document.getElementById("ingredientInput");
         if (input.value.trim()) {
           ingredients.push(input.value.trim());
           updateIngredientsList();
-          input.value = '';
+          input.value = "";
         }
       }
-    
+
       function updateIngredientsList() {
-        const list = document.getElementById('ingredientsList');
-        const hidden = document.getElementById('ingredientsHidden');
-        list.innerHTML = ingredients.map((item, index) => `
+        const list = document.getElementById("ingredientsList");
+        const hidden = document.getElementById("ingredientsHidden");
+        list.innerHTML = ingredients
+          .map(
+            (item, index) => `
           <li>${item} <button type="button" onclick="removeIngredient(${index})">×</button></li>
-        `).join('');
+        `
+          )
+          .join("");
         hidden.value = JSON.stringify(ingredients);
       }
-    
+
       function removeIngredient(index) {
         ingredients.splice(index, 1);
         updateIngredientsList();
       }
-    
+
       // Steps list functionality
       let steps = [];
       function addStep() {
-        const input = document.getElementById('stepInput');
+        const input = document.getElementById("stepInput");
         if (input.value.trim()) {
           steps.push(input.value.trim());
           updateStepsList();
-          input.value = '';
+          input.value = "";
         }
       }
-    
+
       function updateStepsList() {
-        const list = document.getElementById('stepsList');
-        const hidden = document.getElementById('stepsHidden');
-        list.innerHTML = steps.map((item, index) => `
+        const list = document.getElementById("stepsList");
+        const hidden = document.getElementById("stepsHidden");
+        list.innerHTML = steps
+          .map(
+            (item, index) => `
           <li>${item} <button type="button" onclick="removeStep(${index})">×</button></li>
-        `).join('');
+        `
+          )
+          .join("");
         hidden.value = JSON.stringify(steps);
       }
-    
+
       function removeStep(index) {
         steps.splice(index, 1);
         updateStepsList();

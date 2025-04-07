@@ -2,15 +2,16 @@ const router = require("express").Router();
 const homecontrollers = require("../controllers/home.controller");
 const usercontrollers = require("../controllers/user.controller");
 const jwtauth = require("../utils/jwt");
-const multer = require('multer');
+const multer = require("multer");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, '../public/uploads/recipes')
-    console.log("hello multer")
+    cb(null, "/public/uploads/recipes");
+    console.log("hello multer");
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname)
-  }
+    cb(null, Date.now() + "-" + file.originalname);
+    console.log("hello multer2");
+  },
 });
 const upload = multer({ storage: storage });
 
@@ -29,6 +30,10 @@ router.get("/deactivate", usercontrollers.deleteUser);
 
 router.put("/updateacc", usercontrollers.updateUserProfile);
 
-router.post("/recipes", upload.single('recipeImage'),usercontrollers.createRecipe)
+router.post(
+  "/recipes",
+  upload.single("recipeImage"),
+  usercontrollers.createRecipe
+);
 
 module.exports = router;
