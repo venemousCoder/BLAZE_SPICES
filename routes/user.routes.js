@@ -5,7 +5,8 @@ const jwtauth = require("../utils/jwt");
 const multer = require('multer');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/recipes')
+    cb(null, '../public/uploads/recipes')
+    console.log("hello multer")
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname)
