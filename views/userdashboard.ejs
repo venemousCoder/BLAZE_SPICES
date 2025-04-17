@@ -1,16 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../public/css/home.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="../public/assets/favicon/favicon.ico" type="image/x-icon">
-    <title>User Dashboard</title>
-</head>
-    <body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Dashboard - Blaze Recipes</title>
+    <link rel="stylesheet" href="../public/css/home.css" />
+    <link rel="stylesheet" href="../public/css/dashboard.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="shortcut icon"
+      href="../public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
     <%- include('./partials/header.ejs') %>
-    <h1>User <%= user.username %></h1>
-    <h2>Role <%= user.role %></h2>
-</body>
+
+    <main class="dashboard-container">
+      <section class="user-profile">
+        <div class="profile-header">
+          <div class="profile-image">
+            <img
+              src="<%= user.profileImage || '../public/assets/default-profile.svg' %>"
+              alt="Profile picture of <%= user.username %>"
+            />
+            <button class="edit-profile-btn" aria-label="Edit profile picture">
+              <img src="../public/assets/edit.svg" alt="Edit icon" />
+            </button>
+          </div>
+          <div class="profile-info">
+            <h1><%= user.username %></h1>
+            <p class="user-tag"><%= user.tag || 'Kitchen Helper' %></p>
+            <p class="user-role"><%= user.role %></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-stats">
+        <div class="stat-card">
+          <h3>My Recipes</h3>
+          <p class="stat-number"><%=user.posts?.length || 0 %></p>
+        </div>
+        <div class="stat-card">
+          <h3>Liked Recipes</h3>
+          <p class="stat-number"><%=user.likedRecipes?.length || 0 %></p>
+        </div>
+        <div class="stat-card">
+          <h3>Following</h3>
+          <p class="stat-number"><%=user.following?.length || 0 %></p>
+        </div>
+      </section>
+
+      <section class="user-actions">
+        <div class="action-buttons">
+          <button class="action-btn edit-profile">
+            <img src="../public/assets/settings.svg" alt="Settings icon" />
+            Edit Profile
+          </button>
+          <button class="action-btn change-password">
+            <img src="../public/assets/lock.svg" alt="Lock icon" />
+            Change Password
+          </button>
+          <button class="action-btn delete-account">
+            <img src="../public/assets/delete-icon.svg" alt="Delete icon" />
+            Delete Account
+          </button>
+        </div>
+      </section>
+
+      <section class="my-recipes">
+        <h2>My Recipes</h2>
+        <div class="recipe-grid">
+          <% if (user.posts && (user.posts.length > 0)) { %> <%
+          user.posts.forEach(post => { %>
+          <div class="recipe-card">
+            <img src="../routes<%=post.image %>" alt="<%= post.title %>" />
+            <h3><%= post.title %></h3>
+            <h3><%= "../routes"+post.image %> %></h3>
+            <div class="recipe-stats">
+              <span
+                ><img src="../public/assets/heartlike.png" alt="Likes" />
+                <%if(post.likes>0){%>
+                  <%=post.likes %></span
+                  <%} else {%> 
+                  <span><%=0 %></span>
+                    <%}%>
+                </span>
+              <span>
+                <img src="../public/assets/drawing-1.png" alt="Comments">
+                <%if(post.comments>0){%> <%=post.comments %> <%} else {%> <%=0
+                %> <%}%></span>
+            </div>
+          </div>
+          <% }) %> <% } else { %>
+          <p class="no-recipes">You haven't created any recipes yet.</p>
+          <% } %>
+        </div>
+      </section>
+    </main>
+    <%- include('./partials/footer.ejs') %>
+  </body>
 </html>

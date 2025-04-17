@@ -61,20 +61,43 @@ function userLogin(req, res, next) {
           error: err,
         });
       // Successfully authenticated and session created
-      res.locals.currentUser = req.user;
       req.session.token = jwt.generateToken(req.user);
       userModels.Account.findOneAndUpdate(
         { email: req.user.email },
         { verified: true }
-      ).then((user) => {
-        console.log("USER: ", user);
-        if (req.user.role === "admin") {
-          res.status(200).redirect("/admin/dashboard");
-          return next();
-        }
-        res.status(200).redirect("/user/feeds");
-        return next();
-      });
+      )
+        // .populate("groups.id", "-__v")
+        // .populate("posts")
+        .then((user) => {
+          req.user = user;
+          req.session.user = user; // Assign after populate completes
+          req.session.save((err) => {
+            if (err) {
+              return res.status(500).json({
+                status: "fail",
+                message: "Failed to save session",
+                error: err,
+              });
+            }
+            console.log("Session saved successfully");
+            console.log("USER: ", req.user.posts);
+            console.log("SESSION: ", req.session);
+            console.log("req.USER: ", req.session.user);
+            if (req.user.role === "admin") {
+              res.status(200).redirect("/admin/dashboard");
+              return next();
+            }
+            res.status(200).redirect("/user/dashboard");
+            return next();
+          });
+        })
+        .catch((err) => {
+          return res.status(500).json({
+            status: "fail",
+            message: "Error populating user data",
+            error: err,
+          });
+        });
     });
   })(req, res, next);
 }

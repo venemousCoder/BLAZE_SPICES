@@ -45,6 +45,12 @@ const User = Account.discriminator(
       id: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
       role: { type: String },
     },
+    posts: [
+        {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Recipe",
+      },
+    ],
     tag: {
       type: String,
       required: true,

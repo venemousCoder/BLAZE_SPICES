@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="200"
+   height="200"
+   viewBox="0 0 52.916665 52.916666"
+   version="1.1"
+   id="svg7349"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="edit.svg"
+   inkscape:export-filename="edit.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7351"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="2.0258466"
+     inkscape:cx="86.877259"
+     inkscape:cy="103.16675"
+     inkscape:window-width="1366"
+     inkscape:window-height="700"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs7346" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#1a1a1a;fill-opacity:1;stroke:#ff0606;stroke-width:0;paint-order:stroke markers fill"
+       d="M 9.1034296,45.175651 C 10.446384,44.832298 17.925346,42.977567 19.927373,42.380422 22.183456,41.707499 32.293053,29.070963 39.603764,20.686352 L 31.905418,13.199675 C 24.844059,21.104723 11.535891,32.5681 11.038021,35.055693 10.487876,37.804481 9.5547193,42.761882 9.1034296,45.175651 Z"
+       id="path7470"
+       sodipodi:nodetypes="csccsc"
+       inkscape:export-filename="edit.png"
+       inkscape:export-xdpi="7.6959567"
+       inkscape:export-ydpi="7.6959567" />
+    <rect
+       style="fill:#1a1a1a;stroke:none;stroke-width:1.19701;paint-order:stroke markers fill"
+       id="rect5985"
+       width="10.997492"
+       height="8.2954445"
+       x="31.838766"
+       y="-22.766922"
+       transform="matrix(0.72882076,0.68470453,-0.69814059,0.7159607,0,0)" />
+  </g>
+</svg>

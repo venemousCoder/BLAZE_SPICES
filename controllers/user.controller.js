@@ -7,7 +7,17 @@ function getDahsboard(req, res, next) {
   if (req.user.role === "admin") {
     return res.redirect("admin/dashboard");
   }
-  return res.render("userdashboard", { user: req.user });
+  // Always fetch fresh user with populated posts
+  userModels.User.findById(req.user._id)
+    .populate("posts")
+    .then(user => {
+      if (!user) return res.status(404).redirect("/error");
+      return res.render("userdashboard", { user });
+    })
+    .catch(err => {
+      console.error("Error fetching user for dashboard:", err);
+      return res.status(500).redirect("/error");
+    });
 }
 
 function deleteUser(req, res, next) {
@@ -104,14 +114,17 @@ function logout(req, res, next) {
 }
 
 function getFeeds(req, res, next) {
-  recipe.find().populate("owner").then((recipes) => {
-    if (!recipes) {
-      return res.status(404).redirect("/error");
-      // return res.render("feeds", { recipes: recipes, user: req.user });
-    }
-    console.log("RECIPES: ", recipes)
-    return res.render("feeds", { recipe: recipes, user: req.user });
-  });
+  recipe
+    .find()
+    .populate("owner")
+    .then((recipes) => {
+      if (!recipes) {
+        return res.status(404).redirect("/error");
+        // return res.render("feeds", { recipes: recipes, user: req.user });
+      }
+      // console.log("RECIPES: ", recipes[0]._id)
+      return res.render("feeds", { recipe: recipes, user: req.user });
+    });
   //
   // return res.render("feeds", { user: req.user });
 }
@@ -141,17 +154,32 @@ function createRecipe(req, res, next) {
     owner: req.user._id,
     title: req.body.title,
     description: req.body.description,
-    ingredients: req.body.ingredients.replace("[", "").replace("]", "").split(","),
+    ingredients: req.body.ingredients
+      .replace("[", "")
+      .replace("]", "")
+      .split(","),
     steps: req.body.steps,
     image: req.file ? `/uploads/recipes/${req.file.filename}` : null, // Save the image path
   };
 
-  recipe.create(newRecipe)
+  recipe
+    .create(newRecipe)
     .then((recipe) => {
       if (!recipe) {
         return res.status(500).redirect("/error");
       }
-      return res.status(201).redirect("/user/feeds");
+      // Add the recipe to the user's posts array
+      console.log(recipe._id);
+      userModels.User.findByIdAndUpdate(req.user._id, {
+        $addToSet: { posts: recipe._id },
+      })
+        .then(() => {
+          console.log("Recipe created successfully:", recipe);
+          return res.status(201).redirect("/user/feeds");
+        })
+        .catch((err) => {
+          console.error("Error updating user posts:", err);
+        });
     })
     .catch((err) => {
       console.error("Error creating recipe:", err);
@@ -159,7 +187,24 @@ function createRecipe(req, res, next) {
     });
 }
 
+function testUserAccountDetails(req, res, next) {
+  userModels.User.findById("67b30bac01a363247489e447")
+    .populate("posts")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      console.log("USER: ", user);
+      return res.send(user);
+    })
+    .catch((err) => {
+      console.error("Error fetching user:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
 module.exports = {
+  testUserAccountDetails,
   getDahsboard,
   getFeeds,
   deleteUser,

@@ -3,9 +3,11 @@ const homecontrollers = require("../controllers/home.controller");
 const usercontrollers = require("../controllers/user.controller");
 const jwtauth = require("../utils/jwt");
 const multer = require("multer");
+const path = require("path");
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "/public/uploads/recipes");
+    cb(null, path.join(__dirname,"/"));
     console.log("hello multer");
   },
   filename: function (req, file, cb) {
@@ -16,7 +18,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // In your route
+router.get("/tua", usercontrollers.testUserAccountDetails);
 router.use(jwtauth.userVerifyJwt);
+
 
 router.get("/logout", usercontrollers.logout);
 

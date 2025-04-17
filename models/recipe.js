@@ -7,7 +7,10 @@ const recipeSchema = mongoose.Schema(
       ref: "Account",
       required: true,
     },
-    likes: { type: Number },
+    likes: {
+      type: Number,
+      default: 0,
+     },
     title: {
       type: String,
       required: true,
