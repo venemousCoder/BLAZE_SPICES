@@ -7,12 +7,11 @@ const path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname,"/"));
-    console.log("hello multer");
+    cb(null, path.join(__dirname, "../public/uploads/recipes"));
+    console.log("Destination: ", path.join(__dirname, "../public/uploads/recipes"));
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
-    console.log("hello multer2");
   },
 });
 const upload = multer({ storage: storage });

@@ -77,17 +77,12 @@
           <% if (user.posts && (user.posts.length > 0)) { %> <%
           user.posts.forEach(post => { %>
           <div class="recipe-card">
-            <img src="../routes<%=post.image %>" alt="<%= post.title %>" />
+            <img class="recipe-main-img" src="<%=post.image %>" alt="<%= post.title %>" />
             <h3><%= post.title %></h3>
-            <h3><%= "../routes"+post.image %> %></h3>
             <div class="recipe-stats">
               <span
                 ><img src="../public/assets/heartlike.png" alt="Likes" />
-                <%if(post.likes>0){%>
                   <%=post.likes %></span
-                  <%} else {%> 
-                  <span><%=0 %></span>
-                    <%}%>
                 </span>
               <span>
                 <img src="../public/assets/drawing-1.png" alt="Comments">
