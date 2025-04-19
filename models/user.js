@@ -41,6 +41,38 @@ const Admin = Account.discriminator("Admin", {});
 const User = Account.discriminator(
   "User",
   new mongoose.Schema({
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Recipe",
+      },
+    ],
+    savedRecipes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Recipe",
+      },
+    ],
+    bio: {
+      type: String,
+      default: "I am a passionate cook",
+    },
+    profileImage: {
+      type: String,
+      default: "/uploads/profile/default-profile.png",
+    },
     groups: {
       id: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
       role: { type: String },

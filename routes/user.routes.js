@@ -4,6 +4,7 @@ const usercontrollers = require("../controllers/user.controller");
 const jwtauth = require("../utils/jwt");
 const multer = require("multer");
 const path = require("path");
+const uploadd = require("../utils/multer");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -16,7 +17,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// In your route
+
+router.post("/profile/update", uploadd.single("profileImage"), usercontrollers.editProfile);
 router.get("/tua", usercontrollers.testUserAccountDetails);
 router.use(jwtauth.userVerifyJwt);
 
@@ -38,5 +40,8 @@ router.post(
   upload.single("recipeImage"),
   usercontrollers.createRecipe
 );
+
+router.get("/myprofile", usercontrollers.getMyProfile);
+
 
 module.exports = router;

@@ -202,7 +202,84 @@ function testUserAccountDetails(req, res, next) {
       return res.status(500).redirect("/error");
     });
 }
+//**********************************************/
+//*
+//*  GET USER PROFILE
+//*
+//**********************************************/
+function getProfile(req, res, next) {
+  const userId = req.params.id;
+  userModels.User.findById(userId)
+    .populate("posts")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("profile", { user: user, currentUser: req.user });
+    })
+    .catch((err) => {
+      console.error("Error fetching user profile:", err);
+      return res.status(500).redirect("/error");
+    });
+}
 
+function getMyProfile (req, res, next){
+  const userId = req.user._id;
+  userModels.User.findById(userId)
+    .populate("posts")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("profile", { user: user, currentUser: req.user });
+    })
+    .catch((err) => {
+      console.error("Error fetching user profile:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+function editProfile(req, res, next) {
+  const userId = req.user._id;
+  const updateData = {
+    username: req.body.username,
+    email: req.body.email,
+    bio: req.body.bio,
+    tag: req.body.tag
+  };
+
+  // Add profile image to updateData if a new image was uploaded
+  if (req.file) {
+    updateData.profileImage = `/uploads/profile/${req.file.filename}`;
+  }
+
+  userModels.User.findByIdAndUpdate(userId, updateData, { 
+    new: true,
+    runValidators: true // This ensures enum validation for tag
+  })
+    .then((updatedUser) => {
+      if (!updatedUser) {
+        return res.status(404).redirect("/error");
+      }
+
+      // Update session user data
+      req.user = updatedUser;
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).redirect("/error");
+        }
+        // Redirect back to dashboard with success message
+        res.locals.message = "Profile updated successfully";
+        return res.redirect("/user/dashboard");
+      });
+    })
+    .catch((err) => {
+      console.error("Profile update error:", err);
+      res.locals.error = "Failed to update profile";
+      return res.status(500).redirect("/error");
+    });
+}
 module.exports = {
   testUserAccountDetails,
   getDahsboard,
@@ -211,6 +288,8 @@ module.exports = {
   updateUserProfile,
   logout,
   getRecipe,
-  // getProfile,
+  getProfile,
+  getMyProfile,
+  editProfile,
   createRecipe,
 };

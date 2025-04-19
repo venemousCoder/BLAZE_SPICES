@@ -147,7 +147,7 @@
 }
 
 .delete-account:hover img {
-    content: url('../assets/delete-icon-red.svg');
+    content: url('../assets/delete-hover.svg');
 }
 .action-btn:hover {
     background: rgba(0, 0, 0, 0.05);
