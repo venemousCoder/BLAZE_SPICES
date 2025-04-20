@@ -29,7 +29,7 @@
             aria-label="Search for a recipe"
           />
           <button class="filter-btn" aria-label="Filter options">
-            <img src="/icons/filter.svg" alt="Filter icon" />
+            <img src="../public/assets/filter-icon.svg" alt="Filter icon" />
           </button>
         </div>
       </section>
@@ -59,9 +59,11 @@
               alt="Image of <%= recipe.title %>"
               class="recipe-img"
             />
-            <!-- <span class="cook-time"><%#= recipe.time %> min</span> -->
+            <span class="cook-time"><%= recipe.cookingTime %> min</span>
             <h3><%= recipe.title %></h3>
-            <p>By <%= recipe.owner.username %></p>
+            <p class="recipe-author">
+              By <a href="/user/profile/<%= recipe.owner._id %>" class="author-link"><%= recipe.owner.username %></a>
+            </p>
             <div class="recipe-actions">
               <button aria-label="Like recipe">
                 <img src="../public/assets/heartlike.png" alt="Like icon" />
@@ -80,28 +82,27 @@
     </main>
 
     <nav class="bottom-nav">
-      <a href="/recipes" class="active">
-        <img src="/icons/recipes.svg" alt="Recipes icon" />
+      <a href="/user/recipes" class="active">
+        <img src="../public/assets/recipes-icon.svg" alt="Recipes icon" />
         Recipes
       </a>
-      <a href="/explore">
-        <img src="/icons/explore.svg" alt="Explore icon" />
+      <a href="/user/explore">
+        <img src="../public/assets/explore-icon.svg" alt="Explore icon" />
         Explore
       </a>
-      <a href="/profile">
-        <img src="/icons/profile.svg" alt="Profile icon" />
+      <a href="/user/dashboard">
+        <img src="../public/assets/profile-icon.svg" alt="Profile icon" />
         Profile
       </a>
     </nav>
     <nav class="bottom-nav">
-      <!-- ...existing navigation items... -->
       <button class="create-recipe-btn">
         <img src="../public/assets/testAddRecipe.svg" alt="Add Recipe" />
         Create Recipe
       </button>
     </nav>
 
-    <!-- Add the modal markup before closing body tag -->
+    <!-- ADD RECIPE MODAL -->
     <div class="recipe-modal" id="recipeModal">
       <div class="modal-content">
         <span class="close">&times;</span>
@@ -137,15 +138,41 @@
               />
             </div>
           </div>
-          <!-- ...existing form fields... -->
-
-          <!-- Add this to your existing script section -->
 
           <div class="form-group">
             <label for="description">Description</label>
             <textarea id="description" name="description" required></textarea>
           </div>
+         <!--   PREP TIME AND COOKING TIME -->
+          <div class="form-group time-inputs">
+            <div class="time-field">
+              <label for="preparationTime">Preparation Time</label>
+              <div class="time-input-wrapper">
+                <input
+                  type="number"
+                  id="preparationTime"
+                  name="preparationTime"
+                  min="1"
+                  required
+                />
+                <span class="time-unit">minutes</span>
+              </div>
+            </div>
 
+            <div class="time-field">
+              <label for="cookingTime">Cooking Time</label>
+              <div class="time-input-wrapper">
+                <input
+                  type="number"
+                  id="cookingTime"
+                  name="cookingTime"
+                  min="1"
+                  required
+                />
+                <span class="time-unit">minutes</span>
+              </div>
+            </div>
+          </div>
           <div class="form-group">
             <label for="ingredients">Ingredients</label>
             <div class="list-input">

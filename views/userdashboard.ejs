@@ -49,8 +49,8 @@
           <p class="stat-number"><%=user.likedRecipes?.length || 0 %></p>
         </div>
         <div class="stat-card">
-          <h3>Following</h3>
-          <p class="stat-number"><%=user.following?.length || 0 %></p>
+          <h3>Followers</h3>
+          <p class="stat-number"><%=user.followers?.length || 0 %></p>
         </div>
       </section>
 
@@ -60,7 +60,7 @@
             <img src="../public/assets/settings.svg" alt="Settings icon" />
             Edit Profile
             </button>
-          <button class="action-btn change-password">
+          <button class="action-btn change-password" onclick="window.location.href='/user/updatepass'">
             <img src="../public/assets/lock.svg" alt="Lock icon" />
             Change Password
           </button>
@@ -96,6 +96,99 @@
         </div>
       </section>
     </main>
+
+    <!-- delete modal -->
+
+<div id="deleteModal" class="delete-modal">
+    <div class="delete-modal-content">
+        <h2>Delete Account</h2>
+        <p class="warning-text">Please choose how you want to delete your account:</p>
+        
+        <div class="delete-options">
+            <button class="delete-option complete" onclick="handleDelete('complete')">
+                <img src="../public/assets/delete-all.svg" alt="" />
+                <h3>Complete Deletion</h3>
+                <p>Delete account and all content (recipes, comments, likes)</p>
+            </button>
+
+            <button class="delete-option preserve" onclick="handleDelete('preserve')">
+                <img src="../public/assets/delete-account.svg" alt="" />
+                <h3>Preserve Content</h3>
+                <p>Delete account but keep your recipes and comments</p>
+            </button>
+
+            <button class="delete-option deactivate" onclick="handleDelete('deactivate')">
+                <img src="../public/assets/deactivate-account.svg" alt="" />
+                <h3>Deactivate Account</h3>
+                <p>Temporarily disable your account (can be reactivated)</p>
+            </button>
+        </div>
+
+        <div class="delete-actions">
+            <button class="cancel-delete" onclick="closeDeleteModal()">Cancel</button>
+            <button id="confirmDelete" class="confirm-delete" disabled>Proceed</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const deleteModal = document.getElementById('deleteModal');
+    const confirmButton = document.getElementById('confirmDelete');
+    let selectedOption = null;
+
+    // Show modal when delete account is clicked
+    document.querySelector('.delete-account').addEventListener('click', () => {
+        deleteModal.style.display = 'flex';
+    });
+
+    function closeDeleteModal() {
+        deleteModal.style.display = 'none';
+        selectedOption = null;
+        confirmButton.disabled = true;
+        document.querySelectorAll('.delete-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+    }
+
+    function handleDelete(type) {
+        selectedOption = type;
+        confirmButton.disabled = false;
+        
+        // Update visual selection
+        document.querySelectorAll('.delete-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+
+        // Update confirm button text
+        const actionTexts = {
+            'complete': 'Delete Everything',
+            'preserve': 'Delete Account Only',
+            'deactivate': 'Deactivate Account'
+        };
+        confirmButton.textContent = actionTexts[type];
+    }
+
+    // Handle final confirmation
+    confirmButton.addEventListener('click', () => {
+        const endpoints = {
+            'complete': '/user/delete/everything',
+            'preserve': '/user/delete/account',
+            'deactivate': '/user/deactivate'
+        };
+        
+        if (selectedOption) {
+            window.location.href = endpoints[selectedOption];
+        }
+    });
+
+    // Close modal if clicked outside
+    window.onclick = (event) => {
+        if (event.target === deleteModal) {
+            closeDeleteModal();
+        }
+    }
+</script>
     <%- include('./partials/footer.ejs') %>
   </body>
 </html>

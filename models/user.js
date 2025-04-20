@@ -78,7 +78,7 @@ const User = Account.discriminator(
       role: { type: String },
     },
     posts: [
-        {
+      {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Recipe",
       },
@@ -109,5 +109,34 @@ const User = Account.discriminator(
     verificationToken: { type: String }, // Stores email verification token
   })
 );
+// FOLLOWERS
+// FOLLOWING
+
+// Add this function to update tag based on followers count
+AccountScheme.methods.updateRankBasedOnFollowers = function() {
+  const followersCount = this.followers.length;
+  
+  if (followersCount >= 1000) {
+    this.tag = "World-Class Chef";
+  } else if (followersCount >= 500) {
+    this.tag = "Chef";
+  } else if (followersCount >= 200) {
+    this.tag = "Apprentice Chef";
+  } else if (followersCount >= 100) {
+    this.tag = "Modern Cook";
+  } else if (followersCount >= 2) {
+    this.tag = "Cooking Protoge";
+  } else {
+    this.tag = "Kitchen Helper";
+  }
+};
+
+// Add pre-save middleware to automatically update rank
+AccountScheme.pre('save', function(next) {
+  if (this.isModified('followers')) {
+    this.updateRankBasedOnFollowers();
+  }
+  next();
+});
 
 module.exports = { Account, User, Admin };

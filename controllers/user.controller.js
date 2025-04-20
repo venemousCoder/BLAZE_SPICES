@@ -10,51 +10,113 @@ function getDahsboard(req, res, next) {
   // Always fetch fresh user with populated posts
   userModels.User.findById(req.user._id)
     .populate("posts")
-    .then(user => {
+    .then((user) => {
       if (!user) return res.status(404).redirect("/error");
       return res.render("userdashboard", { user });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Error fetching user for dashboard:", err);
       return res.status(500).redirect("/error");
     });
 }
 
-function deleteUser(req, res, next) {
-  const uId = req.user._id;
-  // mongoose.Types.ObjectId.createFromHexString(req.user._id);
-  userModels.User.findByIdAndDelete(uId)
-    .then((deletedAccount) => {
-      res.locals.message = `Account: "${deletedAccount.username}" deleted successfully`;
-      return res.status(200).redirect("/signup");
-      //  next();
+//**********************************************/
+//*
+//*  DELETE USER ACCOUNT (3 PARTS)
+//*
+//**********************************************/
+
+// 1. Delete everything (user, posts, comments)
+function deleteUserAndEverything(req, res, next) {
+  const userId = req.user._id;
+  userModels.User.findById(userId)
+    .then(user => {
+      if (!user) return res.status(404).redirect("/error");
+      // Delete all recipes owned by user
+      return recipe.deleteMany({ owner: userId }).then(() => user);
     })
-    .catch((err) => {
+    .then(user => {
+      // Optionally, delete comments if you have a Comment model
+      // Comment.deleteMany({ author: userId })
+      return userModels.User.findByIdAndDelete(userId);
+    })
+    .then(deletedUser => {
+      res.locals.message = `Account: "${deletedUser.username}" and all data deleted successfully`;
+      return res.status(200).redirect("/signup");
+    })
+    .catch(err => {
       return res.status(500).json({
         status: "fail",
-        message: `could not delete account`,
+        message: "Could not delete account and data",
         error: err,
       });
     });
 }
 
-function updateUserProfile(req, res, next) {
+// 2. Delete account only (posts stay intact)
+function deleteUserAccountOnly(req, res, next) {
   const userId = req.user._id;
-  const updateData = {
-    username: req.body.username,
-    email: req.body.email,
-  };
+  userModels.User.findByIdAndDelete(userId)
+    .then(deletedUser => {
+      if (!deletedUser) return res.status(404).redirect("/error");
+      res.locals.message = `Account: "${deletedUser.username}" deleted, posts remain`;
+      return res.status(200).redirect("/signup");
+    })
+    .catch(err => {
+      return res.status(500).json({
+        status: "fail",
+        message: "Could not delete account",
+        error: err,
+      });
+    });
+}
 
-  userModels.User.findByIdAndUpdate(userId, updateData, { new: true })
-    .then((updatedUser) => {
-      if (!updatedUser) {
+// 3. Deactivate account (soft delete)
+function deactivateUserAccount(req, res, next) {
+  const userId = req.user._id;
+  userModels.User.findByIdAndUpdate(
+    userId,
+    { isActive: false }, // You must have an isActive field in your User schema
+    { new: true }
+  )
+    .then(user => {
+      if (!user) return res.status(404).redirect("/error");
+      res.locals.message = `Account: "${user.username}" deactivated`;
+      return res.status(200).redirect("/login");
+    })
+    .catch(err => {
+      return res.status(500).json({
+        status: "fail",
+        message: "Could not deactivate account",
+        error: err,
+      });
+    });
+}
+
+///**********************************************/
+//*
+//*  UPDATE USER PASSWORD
+//*
+//**********************************************/
+
+function getUpdatePassword(req, res, next) {
+  return res.render("changepassword", {
+    user: req.user,});
+}
+
+function updatePassword(req, res, next) {
+  const userId = req.user._id;
+
+  userModels.User.findOne(userId)
+    .then((user) => {
+      if (!user) {
         return res.status(404).json({
           status: "fail",
           message: "User not found",
         });
       }
       if (req.body.password) {
-        updatedUser.setPassword(req.body.password, (err) => {
+        user.setPassword(req.body.password, (err) => {
           if (err) {
             return res.status(500).json({
               status: "fail",
@@ -62,41 +124,25 @@ function updateUserProfile(req, res, next) {
               error: err,
             });
           }
-          updatedUser
+          user
             .save()
-            .then(() => {
+            .then((updatedUser) => {
               req.user = updatedUser;
-              req.session.save();
-              res.status(200).json({
-                status: "success",
-                message: "Profile updated successfully",
-                user: updatedUser,
-              });
-              return next();
+              req.session.save();     
+              return res.status(200).redirect("/user/dashboard");
             })
             .catch((err) => {
-              return res.status(500).json({
-                status: "fail",
-                message: "Failed to save updated user",
-                error: err,
-              });
+              return res.status(500).redirect("/error")
             });
         });
       } else {
-        res.status(200).json({
-          status: "success",
-          message: "Profile updated successfully",
-          user: updatedUser,
-        });
+        res.status(200).redirect("/user/dashboard")
         return next();
       }
     })
     .catch((err) => {
-      return res.status(500).json({
-        status: "fail",
-        message: "Failed to update profile",
-        error: err,
-      });
+      res.locals.error = err;
+      return res.status(500).redirect("/error")
     });
 }
 
@@ -120,13 +166,10 @@ function getFeeds(req, res, next) {
     .then((recipes) => {
       if (!recipes) {
         return res.status(404).redirect("/error");
-        // return res.render("feeds", { recipes: recipes, user: req.user });
       }
       // console.log("RECIPES: ", recipes[0]._id)
       return res.render("feeds", { recipe: recipes, user: req.user });
     });
-  //
-  // return res.render("feeds", { user: req.user });
 }
 
 function getRecipe(req, res, next) {
@@ -139,15 +182,6 @@ function getRecipe(req, res, next) {
   });
 }
 
-// function getProfile(req, res, next) {
-//   // const userId = req.params.id;
-//   // userModels.User.findById(userId).then((user) => {
-//   //   if (!user) {
-//   //     return res.status(404).redirect('/error');
-//   //   }
-//   return res.render("dashboard", { user: user, currentUser: req.user });
-//   // });
-// }
 
 function createRecipe(req, res, next) {
   const newRecipe = {
@@ -160,6 +194,10 @@ function createRecipe(req, res, next) {
       .split(","),
     steps: req.body.steps,
     image: req.file ? `/uploads/recipes/${req.file.filename}` : null, // Save the image path
+    preparationTime: req.body.preparationTime,
+    cookingTime: req.body.cookingTime,
+    likes: 0,
+    comments: [],
   };
 
   recipe
@@ -218,12 +256,12 @@ function getProfile(req, res, next) {
       return res.render("profile", { user: user, currentUser: req.user });
     })
     .catch((err) => {
-      console.error("Error fetching user profile:", err);
+      console.error("Error fetching user profile: ", err);
       return res.status(500).redirect("/error");
     });
 }
 
-function getMyProfile (req, res, next){
+function getMyProfile(req, res, next) {
   const userId = req.user._id;
   userModels.User.findById(userId)
     .populate("posts")
@@ -231,7 +269,7 @@ function getMyProfile (req, res, next){
       if (!user) {
         return res.status(404).redirect("/error");
       }
-      return res.render("profile", { user: user, currentUser: req.user });
+      return res.render("myprofile", { user: user, currentUser: req.user });
     })
     .catch((err) => {
       console.error("Error fetching user profile:", err);
@@ -245,7 +283,7 @@ function editProfile(req, res, next) {
     username: req.body.username,
     email: req.body.email,
     bio: req.body.bio,
-    tag: req.body.tag
+    tag: req.body.tag,
   };
 
   // Add profile image to updateData if a new image was uploaded
@@ -253,9 +291,9 @@ function editProfile(req, res, next) {
     updateData.profileImage = `/uploads/profile/${req.file.filename}`;
   }
 
-  userModels.User.findByIdAndUpdate(userId, updateData, { 
+  userModels.User.findByIdAndUpdate(userId, updateData, {
     new: true,
-    runValidators: true // This ensures enum validation for tag
+    runValidators: true, // This ensures enum validation for tag
   })
     .then((updatedUser) => {
       if (!updatedUser) {
@@ -280,16 +318,95 @@ function editProfile(req, res, next) {
       return res.status(500).redirect("/error");
     });
 }
+
+//**********************************************/
+//*
+//*  FOLLOW USER
+//*
+//**********************************************/
+
+// Add this function to handle following a user
+function followUser(req, res, next) {
+  const userToFollowId = req.params.id;
+  const currentUserId = req.user._id;
+
+  Promise.all([
+    // Add to following
+    userModels.User.findByIdAndUpdate(
+      currentUserId,
+      { $addToSet: { following: userToFollowId } },
+      { new: true }
+    ),
+    // Add to followers and update rank
+    userModels.User.findByIdAndUpdate(
+      userToFollowId,
+      { $addToSet: { followers: currentUserId } },
+      { new: true }
+    ).then(user => {
+      user.updateRankBasedOnFollowers();
+      return user.save();
+    })
+  ])
+    .then(([currentUser, targetUser]) => {
+      if (!currentUser || !targetUser) {
+        return res.status(404).redirect("/error");
+      }
+      return res.redirect('back');
+    })
+    .catch(err => {
+      console.error("Error following user:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+// Add this function to handle unfollowing a user
+function unfollowUser(req, res, next) {
+  const userToUnfollowId = req.params.id;
+  const currentUserId = req.user._id;
+
+  Promise.all([
+    // Remove from following
+    userModels.User.findByIdAndUpdate(
+      currentUserId,
+      { $pull: { following: userToUnfollowId } },
+      { new: true }
+    ),
+    // Remove from followers
+    userModels.User.findByIdAndUpdate(
+      userToUnfollowId,
+      { $pull: { followers: currentUserId } },
+      { new: true }
+    )
+  ])
+    .then(([currentUser, targetUser]) => {
+      if (!currentUser || !targetUser) {
+        return res.status(404).redirect("/error");
+      }
+      return res.redirect('back');
+    })
+    .catch(err => {
+      console.error("Error unfollowing user:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+//**********************************************/
+//*
+
 module.exports = {
   testUserAccountDetails,
   getDahsboard,
   getFeeds,
-  deleteUser,
-  updateUserProfile,
+  deleteUserAndEverything,
+  deleteUserAccountOnly,
+  deactivateUserAccount,
+  getUpdatePassword,
+  updatePassword,
   logout,
   getRecipe,
   getProfile,
   getMyProfile,
   editProfile,
   createRecipe,
+  followUser,
+  unfollowUser,
 };

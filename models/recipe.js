@@ -23,6 +23,14 @@ const recipeSchema = mongoose.Schema(
       type: [String],
       required: true,
     },
+    preparationTime: {
+      type: String,
+      required: true,
+    },
+    cookingTime: {
+      type: String,
+      required: true,
+    },
     steps: {
       type: [String],
       required: true,

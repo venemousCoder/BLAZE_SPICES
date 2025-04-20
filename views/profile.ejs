@@ -1,11 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile - Blaze Recipes</title>
+    <title><%= user.username %>'s Profile - Blaze Recipes</title>
     <link rel="stylesheet" href="../public/css/home.css">
-    <link rel="stylesheet" href="../public/css/dashboard.css">
     <link rel="stylesheet" href="../public/css/profile.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="../public/assets/favicon/favicon.ico" type="image/x-icon">
@@ -13,92 +13,94 @@
 <body>
     <%- include('./partials/header.ejs') %>
 
-    <main class="dashboard-container">
-        <section class="profile-edit-section">
-            <h1>Edit Profile</h1>
-            
-            <form class="profile-form" action="/user/profile/update" method="POST" enctype="multipart/form-data">
-                <div class="profile-photo-section">
-                    <div class="current-photo">
-                        <img src="<%= user.profileImage || '../public/assets/default-profile.svg' %>" 
-                             alt="Current profile photo"
-                             id="profile-preview">
-                    </div>
-                    <div class="photo-upload">
-                        <label for="profile-photo" class="upload-btn">
-                            <img src="../public/assets/camera.svg" alt="Upload icon">
-                            Change Photo
-                        </label>
-                        <input type="file" 
-                               id="profile-photo" 
-                               name="profileImage" 
-                               accept="image/*"
-                               class="hidden">
-                    </div>
+    <main class="profile-container">
+        <section class="profile-header-section">
+            <div class="profile-banner"></div>
+            <div class="profile-main-info">
+                <div class="profile-image">
+                    <img src="<%= user.profileImage || '../public/assets/default-profile.png' %>" 
+                         alt="<%= user.username %>'s profile picture">
                 </div>
+                <div class="profile-details">
+                    <h1><%= user.username %></h1>
+                    <span class="user-tag"><%= user.tag %></span>
+                    <p class="user-bio"><%= user.bio || 'No bio added yet' %></p>
+                </div>
+                <div class="profile-actions">
+                    <% if (currentUser && currentUser._id.toString() !== user._id.toString()) { %>
+                        <button class="follow-btn <%= user.followers.includes(currentUser._id) ? 'following' : '' %>"
+                                onclick="toggleFollow('<%= user._id %>')">
+                            <img src="../public/assets/<%= user.followers.includes(currentUser._id) ? 'following' : 'follow' %>.svg" 
+                                 alt="">
+                            <%= user.followers.includes(currentUser._id) ? 'Following' : 'Follow' %>
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+        </section>
 
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" 
-                           id="username" 
-                           name="username" 
-                           value="<%= user.username %>"
-                           required>
-                </div>
+        <section class="profile-stats">
+            <div class="stat-card">
+                <h3>Recipes</h3>
+                <p class="stat-number"><%= user.posts?.length || 0 %></p>
+            </div>
+            <div class="stat-card">
+                <h3>Following</h3>
+                <p class="stat-number"><%= user.following?.length || 0 %></p>
+            </div>
+            <div class="stat-card">
+                <h3>Followers</h3>
+                <p class="stat-number"><%= user.followers?.length || 0 %></p>
+            </div>
+        </section>
 
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" 
-                           id="email" 
-                           name="email" 
-                           value="<%= user.email %>"
-                           required>
-                </div>
-
-                <div class="form-group">
-                    <label for="bio">Bio</label>
-                    <textarea id="bio" 
-                            name="bio" 
-                            rows="4"><%= user.bio || '' %></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="tag">Cooking Level</label>
-                    <select id="tag" name="tag" required>
-                        <option value="Kitchen Helper" <%= user.tag === 'Kitchen Helper' ? 'selected' : '' %>>Kitchen Helper</option>
-                        <option value="Cooking Protoge" <%= user.tag === 'Cooking Protoge' ? 'selected' : '' %>>Cooking Protoge</option>
-                        <option value="Modern Cook" <%= user.tag === 'Modern Cook' ? 'selected' : '' %>>Modern Cook</option>
-                        <option value="Apprentice Chef" <%= user.tag === 'Apprentice Chef' ? 'selected' : '' %>>Apprentice Chef</option>
-                        <option value="Chef" <%= user.tag === 'Chef' ? 'selected' : '' %>>Chef</option>
-                        <option value="World-Class Chef" <%= user.tag === 'World-Class Chef' ? 'selected' : '' %>>World-Class Chef</option>
-                    </select>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="save-btn">Save Changes</button>
-                    <a href="/user/dashboard" class="cancel-btn">Cancel</a>
-                </div>
-            </form>
+        <section class="user-recipes">
+            <h2><%= user.username %>'s Recipes</h2>
+            <div class="recipe-grid">
+                <% if (user.posts && user.posts.length > 0) { %>
+                    <% user.posts.forEach(recipe => { %>
+                        <div class="recipe-card">
+                            <img class="recipe-main-img" 
+                                 src="<%= recipe.image %>" 
+                                 alt="<%= recipe.title %>">
+                            <h3><%= recipe.title %></h3>
+                            <div class="recipe-stats">
+                                <span>
+                                    <img src="../public/assets/heartlike.png" alt="Likes">
+                                    <%= recipe.likes?.length || 0 %>
+                                </span>
+                                <span>
+                                    <img src="../public/assets/drawing-1.png" alt="Comments">
+                                    <%= recipe.comments?.length || 0 %>
+                                </span>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p class="no-recipes">No recipes shared yet</p>
+                <% } %>
+            </div>
         </section>
     </main>
 
     <%- include('./partials/footer.ejs') %>
 
     <script>
-        // Profile image preview
-        const profileInput = document.getElementById('profile-photo');
-        const profilePreview = document.getElementById('profile-preview');
-
-        profileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    profilePreview.src = e.target.result;
+        function toggleFollow(userId) {
+            fetch(`/user/follow/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-                reader.readAsDataURL(file);
-            }
-        });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
     </script>
 </body>
 </html>
