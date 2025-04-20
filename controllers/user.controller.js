@@ -1,14 +1,15 @@
 // Description: This file contains the user controller.
 // It exports a function that renders the home view.
-const userModels = require("../models/user");
+// const = require("../models/user");
 const recipe = require("../models/recipe");
+const { User } = require("../models/user"); // Make sure this is the discriminator!
 
 function getDahsboard(req, res, next) {
   if (req.user.role === "admin") {
     return res.redirect("admin/dashboard");
   }
   // Always fetch fresh user with populated posts
-  userModels.User.findById(req.user._id)
+  User.findById(req.user._id)
     .populate("posts")
     .then((user) => {
       if (!user) return res.status(404).redirect("/error");
@@ -29,22 +30,22 @@ function getDahsboard(req, res, next) {
 // 1. Delete everything (user, posts, comments)
 function deleteUserAndEverything(req, res, next) {
   const userId = req.user._id;
-  userModels.User.findById(userId)
-    .then(user => {
+  User.findById(userId)
+    .then((user) => {
       if (!user) return res.status(404).redirect("/error");
       // Delete all recipes owned by user
       return recipe.deleteMany({ owner: userId }).then(() => user);
     })
-    .then(user => {
+    .then((user) => {
       // Optionally, delete comments if you have a Comment model
       // Comment.deleteMany({ author: userId })
-      return userModels.User.findByIdAndDelete(userId);
+      return User.findByIdAndDelete(userId);
     })
-    .then(deletedUser => {
+    .then((deletedUser) => {
       res.locals.message = `Account: "${deletedUser.username}" and all data deleted successfully`;
       return res.status(200).redirect("/signup");
     })
-    .catch(err => {
+    .catch((err) => {
       return res.status(500).json({
         status: "fail",
         message: "Could not delete account and data",
@@ -56,13 +57,13 @@ function deleteUserAndEverything(req, res, next) {
 // 2. Delete account only (posts stay intact)
 function deleteUserAccountOnly(req, res, next) {
   const userId = req.user._id;
-  userModels.User.findByIdAndDelete(userId)
-    .then(deletedUser => {
+  User.findByIdAndDelete(userId)
+    .then((deletedUser) => {
       if (!deletedUser) return res.status(404).redirect("/error");
       res.locals.message = `Account: "${deletedUser.username}" deleted, posts remain`;
       return res.status(200).redirect("/signup");
     })
-    .catch(err => {
+    .catch((err) => {
       return res.status(500).json({
         status: "fail",
         message: "Could not delete account",
@@ -74,17 +75,17 @@ function deleteUserAccountOnly(req, res, next) {
 // 3. Deactivate account (soft delete)
 function deactivateUserAccount(req, res, next) {
   const userId = req.user._id;
-  userModels.User.findByIdAndUpdate(
+  User.findByIdAndUpdate(
     userId,
     { isActive: false }, // You must have an isActive field in your User schema
     { new: true }
   )
-    .then(user => {
+    .then((user) => {
       if (!user) return res.status(404).redirect("/error");
       res.locals.message = `Account: "${user.username}" deactivated`;
       return res.status(200).redirect("/login");
     })
-    .catch(err => {
+    .catch((err) => {
       return res.status(500).json({
         status: "fail",
         message: "Could not deactivate account",
@@ -101,13 +102,14 @@ function deactivateUserAccount(req, res, next) {
 
 function getUpdatePassword(req, res, next) {
   return res.render("changepassword", {
-    user: req.user,});
+    user: req.user,
+  });
 }
 
 function updatePassword(req, res, next) {
   const userId = req.user._id;
 
-  userModels.User.findOne(userId)
+  User.findOne(userId)
     .then((user) => {
       if (!user) {
         return res.status(404).json({
@@ -128,21 +130,21 @@ function updatePassword(req, res, next) {
             .save()
             .then((updatedUser) => {
               req.user = updatedUser;
-              req.session.save();     
+              req.session.save();
               return res.status(200).redirect("/user/dashboard");
             })
             .catch((err) => {
-              return res.status(500).redirect("/error")
+              return res.status(500).redirect("/error");
             });
         });
       } else {
-        res.status(200).redirect("/user/dashboard")
+        res.status(200).redirect("/user/dashboard");
         return next();
       }
     })
     .catch((err) => {
       res.locals.error = err;
-      return res.status(500).redirect("/error")
+      return res.status(500).redirect("/error");
     });
 }
 
@@ -182,7 +184,6 @@ function getRecipe(req, res, next) {
   });
 }
 
-
 function createRecipe(req, res, next) {
   const newRecipe = {
     owner: req.user._id,
@@ -208,7 +209,7 @@ function createRecipe(req, res, next) {
       }
       // Add the recipe to the user's posts array
       console.log(recipe._id);
-      userModels.User.findByIdAndUpdate(req.user._id, {
+      User.findByIdAndUpdate(req.user._id, {
         $addToSet: { posts: recipe._id },
       })
         .then(() => {
@@ -226,7 +227,7 @@ function createRecipe(req, res, next) {
 }
 
 function testUserAccountDetails(req, res, next) {
-  userModels.User.findById("67b30bac01a363247489e447")
+  User.findById("67b30bac01a363247489e447")
     .populate("posts")
     .then((user) => {
       if (!user) {
@@ -247,7 +248,7 @@ function testUserAccountDetails(req, res, next) {
 //**********************************************/
 function getProfile(req, res, next) {
   const userId = req.params.id;
-  userModels.User.findById(userId)
+  User.findById(userId)
     .populate("posts")
     .then((user) => {
       if (!user) {
@@ -263,7 +264,7 @@ function getProfile(req, res, next) {
 
 function getMyProfile(req, res, next) {
   const userId = req.user._id;
-  userModels.User.findById(userId)
+  User.findById(userId)
     .populate("posts")
     .then((user) => {
       if (!user) {
@@ -291,7 +292,7 @@ function editProfile(req, res, next) {
     updateData.profileImage = `/uploads/profile/${req.file.filename}`;
   }
 
-  userModels.User.findByIdAndUpdate(userId, updateData, {
+  User.findByIdAndUpdate(userId, updateData, {
     new: true,
     runValidators: true, // This ensures enum validation for tag
   })
@@ -331,33 +332,65 @@ function followUser(req, res, next) {
   const currentUserId = req.user._id;
 
   Promise.all([
-    // Add to following
-    userModels.User.findByIdAndUpdate(
+    User.findByIdAndUpdate(
       currentUserId,
       { $addToSet: { following: userToFollowId } },
       { new: true }
     ),
-    // Add to followers and update rank
-    userModels.User.findByIdAndUpdate(
+    User.findByIdAndUpdate(
       userToFollowId,
       { $addToSet: { followers: currentUserId } },
       { new: true }
-    ).then(user => {
-      user.updateRankBasedOnFollowers();
-      return user.save();
-    })
+    ),
   ])
-    .then(([currentUser, targetUser]) => {
+    .then(async ([currentUser, targetUser]) => {
       if (!currentUser || !targetUser) {
         return res.status(404).redirect("/error");
       }
-      return res.redirect('back');
+      // Fetch as Mongoose doc and update rank
+      const fullUser = await User.findById(targetUser._id);
+      if (fullUser) {
+        console.log("fullUser: ", fullUser);
+        fullUser.updateRankBasedOnFollowers();
+        await fullUser.save();
+        res.redirect(req.get("Referrer") || "/"); // Refresh the page after following
+        // return res.redirect("/user/profile/" + userToFollowId);
+      }
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Error following user:", err);
       return res.status(500).redirect("/error");
     });
 }
+
+// Promise.all([
+//   User.findByIdAndUpdate(
+//     currentUserId,
+//     { $addToSet: { following: userToFollowId } },
+//     { new: true }
+//   ),
+//   User.findByIdAndUpdate(
+//     userToFollowId,
+//     { $addToSet: { followers: currentUserId } },
+//     { new: true }
+//   ),
+// ])
+// .then(async ([currentUser, targetUser]) => {
+//   if (!currentUser || !targetUser) {
+//     return res.status(404).redirect("/error");
+//   }
+//   // Fetch as Mongoose doc and update rank
+//   const fullUser = await User.findById(targetUser._id);
+//   if (fullUser) {
+//     fullUser.updateRankBasedOnFollowers();
+//     await fullUser.save();
+//     return res.redirect("/user/profile/" + userToFollowId);
+//   }
+// })
+// .catch((err) => {
+//   console.error("Error following user:", err);
+//   return res.status(500).redirect("/error");
+// });
 
 // Add this function to handle unfollowing a user
 function unfollowUser(req, res, next) {
@@ -366,31 +399,34 @@ function unfollowUser(req, res, next) {
 
   Promise.all([
     // Remove from following
-    userModels.User.findByIdAndUpdate(
+    User.findByIdAndUpdate(
       currentUserId,
       { $pull: { following: userToUnfollowId } },
       { new: true }
     ),
     // Remove from followers
-    userModels.User.findByIdAndUpdate(
+    User.findByIdAndUpdate(
       userToUnfollowId,
       { $pull: { followers: currentUserId } },
       { new: true }
-    )
+    ),
   ])
     .then(([currentUser, targetUser]) => {
       if (!currentUser || !targetUser) {
         return res.status(404).redirect("/error");
       }
-      return res.redirect('back');
+      return res.redirect("back");
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Error unfollowing user:", err);
       return res.status(500).redirect("/error");
     });
 }
 //**********************************************/
 //*
+// function hi (req, res, next) {
+//   return res.render("hello", {bye: req.params.id})
+// }
 
 module.exports = {
   testUserAccountDetails,
@@ -409,4 +445,5 @@ module.exports = {
   createRecipe,
   followUser,
   unfollowUser,
+  // hi
 };

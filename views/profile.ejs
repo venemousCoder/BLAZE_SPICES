@@ -1,106 +1,160 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= user.username %>'s Profile - Blaze Recipes</title>
-    <link rel="stylesheet" href="../public/css/home.css">
-    <link rel="stylesheet" href="../public/css/profile.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="../public/assets/favicon/favicon.ico" type="image/x-icon">
-</head>
-<body>
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link rel="stylesheet" href="/public/css/profile.css" />
+    <link rel="stylesheet" href="/public/css/dashboard.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="shortcut icon"
+      href="/public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
     <%- include('./partials/header.ejs') %>
 
     <main class="profile-container">
-        <section class="profile-header-section">
-            <div class="profile-banner"></div>
-            <div class="profile-main-info">
-                <div class="profile-image">
-                    <img src="<%= user.profileImage || '../public/assets/default-profile.png' %>" 
-                         alt="<%= user.username %>'s profile picture">
-                </div>
-                <div class="profile-details">
-                    <h1><%= user.username %></h1>
-                    <span class="user-tag"><%= user.tag %></span>
-                    <p class="user-bio"><%= user.bio || 'No bio added yet' %></p>
-                </div>
-                <div class="profile-actions">
-                    <% if (currentUser && currentUser._id.toString() !== user._id.toString()) { %>
-                        <button class="follow-btn <%= user.followers.includes(currentUser._id) ? 'following' : '' %>"
-                                onclick="toggleFollow('<%= user._id %>')">
-                            <img src="../public/assets/<%= user.followers.includes(currentUser._id) ? 'following' : 'follow' %>.svg" 
-                                 alt="">
-                            <%= user.followers.includes(currentUser._id) ? 'Following' : 'Follow' %>
-                        </button>
-                    <% } %>
-                </div>
-            </div>
-        </section>
+      <section class="profile-header-section">
+        <div class="profile-banner"></div>
+        <div class="profile-main-info">
+          <div class="profile-image">
+            <img
+              src="<%= user.profileImage || '/public/assets/default-profile.png' %>"
+              alt="<%= user.username %>'s profile picture"
+            />
+          </div>
+          <div class="profile-details">
+            <h1><%= user.username %></h1>
+            <span class="user-tag"><%= user.tag %></span>
+            <p class="user-bio"><%= user.bio || 'No bio added yet' %></p>
+          </div>
+          <div class="profile-actions">
+            <% if (currentUser && currentUser._id.toString() !==
+            user._id.toString()) { %>
+            <button
+              class="follow-btn <%= user.followers.includes(currentUser._id) ? 'following' : '' %>"
+              onclick="toggleFollow(this, '<%= user._id %>')"
+              data-user-id="<%= user._id %>"
+            >
+              <img
+                src="/public/assets/<%= user.followers.includes(currentUser._id) ? 'following-icon' : 'follow-icon' %>.svg"
+                alt=""
+                class="follow-icon"
+              />
+              <span class="follow-text">
+                <%= user.followers.includes(currentUser._id) ? 'Following' :
+                'Follow' %>
+              </span>
+            </button>
+            <% } %>
+          </div>
+        </div>
+      </section>
 
-        <section class="profile-stats">
-            <div class="stat-card">
-                <h3>Recipes</h3>
-                <p class="stat-number"><%= user.posts?.length || 0 %></p>
-            </div>
-            <div class="stat-card">
-                <h3>Following</h3>
-                <p class="stat-number"><%= user.following?.length || 0 %></p>
-            </div>
-            <div class="stat-card">
-                <h3>Followers</h3>
-                <p class="stat-number"><%= user.followers?.length || 0 %></p>
-            </div>
-        </section>
+      <section class="profile-stats">
+        <div class="stat-card">
+          <h3>Recipes</h3>
+          <p class="stat-number"><%= user.posts?.length || 0 %></p>
+        </div>
+        <div class="stat-card">
+          <h3>Following</h3>
+          <p class="stat-number"><%= user.following?.length || 0 %></p>
+        </div>
+        <div class="stat-card">
+          <h3>Followers</h3>
+          <p class="stat-number"><%= user.followers?.length || 0 %></p>
+        </div>
+      </section>
 
-        <section class="user-recipes">
-            <h2><%= user.username %>'s Recipes</h2>
-            <div class="recipe-grid">
-                <% if (user.posts && user.posts.length > 0) { %>
-                    <% user.posts.forEach(recipe => { %>
-                        <div class="recipe-card">
-                            <img class="recipe-main-img" 
-                                 src="<%= recipe.image %>" 
-                                 alt="<%= recipe.title %>">
-                            <h3><%= recipe.title %></h3>
-                            <div class="recipe-stats">
-                                <span>
-                                    <img src="../public/assets/heartlike.png" alt="Likes">
-                                    <%= recipe.likes?.length || 0 %>
-                                </span>
-                                <span>
-                                    <img src="../public/assets/drawing-1.png" alt="Comments">
-                                    <%= recipe.comments?.length || 0 %>
-                                </span>
-                            </div>
-                        </div>
-                    <% }) %>
-                <% } else { %>
-                    <p class="no-recipes">No recipes shared yet</p>
-                <% } %>
+      <section class="user-recipes">
+        <h2><%= user.username %>'s Recipes</h2>
+        <div class="recipe-grid">
+          <% if (user.posts && user.posts.length > 0) { %> <%
+          user.posts.forEach(recipe => { %>
+          <div class="recipe-card">
+            <img
+              class="recipe-main-img"
+              src="<%= recipe.image %>"
+              alt="<%= recipe.title %>"
+            />
+            <h3><%= recipe.title %></h3>
+            <div class="recipe-stats">
+              <span>
+                <img src="/public/assets/heartlike.png" alt="Likes" />
+                <%= recipe.likes?.length || 0 %>
+              </span>
+              <span>
+                <img src="/public/assets/drawing-1.png" alt="Comments" />
+                <%= recipe.comments?.length || 0 %>
+              </span>
             </div>
-        </section>
+          </div>
+          <% }) %> <% } else { %>
+          <p class="no-recipes">No recipes shared yet</p>
+          <% } %>
+        </div>
+      </section>
     </main>
 
     <%- include('./partials/footer.ejs') %>
 
+    <!-- filepath: /home/venemouscoder/Desktop/PROJECTS/BLAZE_SPICES/views/profile.ejs -->
     <script>
-        function toggleFollow(userId) {
-            fetch(`/user/follow/${userId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
+      function toggleFollow(button, userId) {
+        // Get current state
+        const isFollowing = button.classList.contains("following");
+
+        // Update UI immediately
+        button.classList.toggle("following");
+        const iconImg = button.querySelector(".follow-icon");
+        const textSpan = button.querySelector(".follow-text");
+
+        iconImg.src = `/public/assets/${
+          !isFollowing ? "following-icon" : "follow-icon"
+        }.svg`;
+        textSpan.textContent = !isFollowing ? "Following" : "Follow";
+
+        // Update stats immediately
+        const followerCount = document.querySelector(
+          ".stat-card:last-child .stat-number"
+        );
+        const currentCount = parseInt(followerCount.textContent);
+        followerCount.textContent = isFollowing
+          ? currentCount - 1
+          : currentCount + 1;
+
+        // Make API call
+        fetch(`/user/follow/${userId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              // Revert changes if request failed
+              button.classList.toggle("following");
+              iconImg.src = `/public/assets/${
+                isFollowing ? "following-icon" : "follow-icon"
+              }.svg`;
+              textSpan.textContent = isFollowing ? "Following" : "Follow";
+              followerCount.textContent = currentCount;
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            // You might want to show an error message to the user here
+          });
+      }
     </script>
-</body>
+  </body>
 </html>

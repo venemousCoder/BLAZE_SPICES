@@ -58,5 +58,6 @@ router.get("/profile/:id", usercontrollers.getProfile);
 
 router.post('/follow/:id', usercontrollers.followUser);
 
+// router.get("/hi/:id", usercontrollers.hi)
 
 module.exports = router;
