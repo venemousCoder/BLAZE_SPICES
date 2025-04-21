@@ -74,14 +74,14 @@
                 class="like-btn"
                 aria-label="Like recipe"
                 data-recipe-id="<%= recipe._id %>"
-                data-liked="<%= recipe.likes?.includes(user._id) ? 'true' : 'false' %>"
+                data-liked="<%= recipe.likedBy?.includes(user._id) ? 'true' : 'false' %>"
               >
                 <img
-                  src="/public/assets/<%= recipe.likes?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
+                  src="/public/assets/<%= recipe.likedBy?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
                   alt="Like icon"
                   class="like-icon"
                 />
-                <span class="like-count"><%= recipe.likesCount || 0 %></span>
+                <span class="like-count"><%= recipe.likes%></span>
               </button>
               <button class="share-btn" aria-label="Share recipe">
                 <img
@@ -89,7 +89,7 @@
                   alt="Share icon"
                   class="share-icon"
                 />
-                <span><%= recipe.sharesCount || 0 %></span>
+                <span><%= recipe.sharesCount%></span>
               </button>
             </div>
           </div>
@@ -124,6 +124,7 @@
       <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Create New Recipe</h2>
+        <!-- Replace the existing form inside recipe-modal div -->
         <form
           id="recipeForm"
           action="/user/recipes"
@@ -134,12 +135,13 @@
             <label for="title">Recipe Title</label>
             <input type="text" id="title" name="title" required />
           </div>
+
           <div class="form-group">
             <label for="recipeImage">Recipe Image</label>
             <div class="image-upload-container">
               <div class="image-preview" id="imagePreview">
                 <img
-                  src="../public/assets/place-holder.png"
+                  src="/public/assets/place-holder.png"
                   alt=""
                   id="preview"
                 />
@@ -160,7 +162,64 @@
             <label for="description">Description</label>
             <textarea id="description" name="description" required></textarea>
           </div>
-          <!--   PREP TIME AND COOKING TIME -->
+
+          <div class="form-group category-cuisine">
+            <div class="select-field">
+              <label for="category">Category</label>
+              <select id="category" name="category" required>
+                <option value="">Select category</option>
+                <option value="Appetizer">Appetizer</option>
+                <option value="Main Course">Main Course</option>
+                <option value="Dessert">Dessert</option>
+                <option value="Salad">Salad</option>
+                <option value="Soup">Soup</option>
+                <option value="Beverage">Beverage</option>
+                <option value="Snack">Snack</option>
+                <option value="Side Dish">Side Dish</option>
+              </select>
+            </div>
+
+            <div class="select-field">
+              <label for="cuisine">Cuisine</label>
+              <select id="cuisine" name="cuisine" required>
+                <option value="">Select cuisine</option>
+                <option value="African">African</option>
+                <option value="Asian">Asian</option>
+                <option value="European">European</option>
+                <option value="American">American</option>
+                <option value="Middle Eastern">Middle Eastern</option>
+                <option value="Latin American">Latin American</option>
+                <option value="Caribbean">Caribbean</option>
+                <option value="Oceania">Oceania</option>
+                <option value="Fusion">Fusion</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group recipe-details">
+            <div class="detail-field">
+              <label for="difficulty">Difficulty</label>
+              <select id="difficulty" name="difficulty" required>
+                <option value="">Select difficulty</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+
+            <div class="detail-field">
+              <label for="servings">Servings</label>
+              <input
+                type="number"
+                id="servings"
+                name="servings"
+                min="1"
+                required
+              />
+            </div>
+          </div>
+
           <div class="form-group time-inputs">
             <div class="time-field">
               <label for="preparationTime">Preparation Time</label>
@@ -190,10 +249,15 @@
               </div>
             </div>
           </div>
+
           <div class="form-group">
             <label for="ingredients">Ingredients</label>
             <div class="list-input">
-              <input type="text" id="ingredientInput" />
+              <input
+                type="text"
+                id="ingredientInput"
+                placeholder="Add an ingredient"
+              />
               <button type="button" class="add-btn" onclick="addIngredient()">
                 Add
               </button>
@@ -205,7 +269,7 @@
           <div class="form-group">
             <label for="steps">Cooking Steps</label>
             <div class="list-input">
-              <input type="text" id="stepInput" />
+              <input type="text" id="stepInput" placeholder="Add a step" />
               <button type="button" class="add-btn" onclick="addStep()">
                 Add
               </button>
@@ -236,7 +300,7 @@
           countSpan.textContent = isLiked ? count - 1 : count + 1;
 
           // Send the like to the server
-          fetch(`/user/recipe/like/${this.dataset.recipeId}`, {
+          fetch(`/user/like/${this.dataset.recipeId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
           })
@@ -434,32 +498,6 @@
         steps.splice(index, 1);
         updateStepsList();
       }
-      document.querySelectorAll(".like-btn").forEach((btn) => {
-        btn.addEventListener("click", function () {
-          const countSpan = this.querySelector(".like-count");
-          let count = parseInt(countSpan.textContent, 10) || 0;
-          countSpan.textContent = count + 1; // Optimistically increment
-
-          // Optionally, add a quick animation
-          countSpan.style.fontWeight = "bold";
-          setTimeout(() => (countSpan.style.fontWeight = ""), 200);
-
-          // Send the like to the server
-          fetch(`/user/recipe/like/${this.dataset.recipeId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          })
-            .then((res) => {
-              if (!res.ok) {
-                // If server fails, revert the count
-                countSpan.textContent = count;
-              }
-            })
-            .catch(() => {
-              countSpan.textContent = count;
-            });
-        });
-      });
     </script>
   </body>
 </html>

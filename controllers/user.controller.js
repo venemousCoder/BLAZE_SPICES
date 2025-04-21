@@ -199,6 +199,11 @@ function createRecipe(req, res, next) {
     cookingTime: req.body.cookingTime,
     likes: 0,
     comments: [],
+    cuisine: req.body.cuisine,
+    category: req.body.category,
+    difficulty: req.body.difficulty,
+    servings: req.body.servings,
+    likedBy: [],
   };
 
   recipe
