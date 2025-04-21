@@ -11,6 +11,57 @@ const recipeSchema = mongoose.Schema(
       type: Number,
       default: 0,
      },
+
+     likedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Account",
+      },
+    ],
+    commentsCount: {
+      type: Number,
+      default: 0,
+    },
+    category: {
+      type: String,
+      enum: [
+        "Appetizer",
+        "Main Course",
+        "Dessert",
+        "Salad",
+        "Soup",
+        "Beverage",
+        "Snack",
+        "Side Dish",
+      ],
+      required: true,
+    },
+    cuisine: {
+      type: String,
+      enum: [
+        "African",
+        "Asian",
+        "European",
+        "American",
+        "Middle Eastern",
+        "Latin American",
+        "Caribbean",
+        "Oceania",
+        "Fusion",
+        "Other",
+      ],
+      required: true,
+    },
+    difficulty: {
+      type: String,
+      enum: ["Easy", "Medium", "Hard"],
+      required: true,
+    },
+    servings: {
+      type: Number,
+      required: true,
+    },
+
     title: {
       type: String,
       required: true,

@@ -58,6 +58,12 @@ router.get("/profile/:id", usercontrollers.getProfile);
 
 router.post('/follow/:id', usercontrollers.followUser);
 
+router.post('/unfollow/:id', usercontrollers.unfollowUser);
+
+//like and unlike
+router.post('/recipe/like/:id', usercontrollers.likeRecipe);
+// router.post('/recipe/unlike/:id', usercontrollers.unlikeRecipe);
+
 // router.get("/hi/:id", usercontrollers.hi)
 
 module.exports = router;

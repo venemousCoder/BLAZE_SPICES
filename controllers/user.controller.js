@@ -363,36 +363,17 @@ function followUser(req, res, next) {
     });
 }
 
-// Promise.all([
-//   User.findByIdAndUpdate(
-//     currentUserId,
-//     { $addToSet: { following: userToFollowId } },
-//     { new: true }
-//   ),
-//   User.findByIdAndUpdate(
-//     userToFollowId,
-//     { $addToSet: { followers: currentUserId } },
-//     { new: true }
-//   ),
-// ])
-// .then(async ([currentUser, targetUser]) => {
-//   if (!currentUser || !targetUser) {
-//     return res.status(404).redirect("/error");
-//   }
-//   // Fetch as Mongoose doc and update rank
-//   const fullUser = await User.findById(targetUser._id);
-//   if (fullUser) {
-//     fullUser.updateRankBasedOnFollowers();
-//     await fullUser.save();
-//     return res.redirect("/user/profile/" + userToFollowId);
-//   }
-// })
-// .catch((err) => {
-//   console.error("Error following user:", err);
-//   return res.status(500).redirect("/error");
-// });
+//**********************************************/
+//*
+//*  UNFOLLOW USER
+//*
+//*
+//**********************************************/
 
-// Add this function to handle unfollowing a user
+// This function is used to unfollow a user
+// It removes the user from the current user's following list
+// and removes the current user from the target user's followers list
+
 function unfollowUser(req, res, next) {
   const userToUnfollowId = req.params.id;
   const currentUserId = req.user._id;
@@ -422,6 +403,61 @@ function unfollowUser(req, res, next) {
       return res.status(500).redirect("/error");
     });
 }
+
+
+// **********************************************/
+// *
+//*  like and unlike a recipe
+// *
+// **********************************************/
+function likeRecipe(req, res, next) {
+  const recipeId = req.params.id;
+  const userId = req.user._id;
+
+  recipe
+    .findById(recipeId)
+    .then((recipe) => {
+      if (!recipe) {
+        return res.status(404).json({ 
+          status: 'error',
+          message: 'Recipe not found' 
+        });
+      }
+
+      // Check if user has already liked
+      const alreadyLiked = recipe.likedBy.includes(userId);
+
+      if (alreadyLiked) {
+        // Unlike: Remove user from likedBy and decrease likes count
+        recipe.likedBy.pull(userId);
+        recipe.likes = Math.max(0, recipe.likes - 1); // Prevent negative likes
+      } else {
+        // Like: Add user to likedBy and increase likes count
+        recipe.likedBy.push(userId);
+        recipe.likes = (recipe.likes || 0) + 1;
+      }
+
+      return recipe.save();
+    })
+    .then((updatedRecipe) => {
+      // Return JSON response for AJAX requests
+      return res.json({
+        status: 'success',
+        likes: updatedRecipe.likes,
+        liked: updatedRecipe.likedBy.includes(userId)
+      });
+    })
+    .catch((err) => {
+      console.error("Error liking/unliking recipe:", err);
+      return res.status(500).json({ 
+        status: 'error',
+        message: 'Failed to update like status'
+      });
+    });
+}
+
+
+
 //**********************************************/
 //*
 // function hi (req, res, next) {
@@ -445,5 +481,7 @@ module.exports = {
   createRecipe,
   followUser,
   unfollowUser,
+  likeRecipe,
+  // unlikeRecipe,
   // hi
 };

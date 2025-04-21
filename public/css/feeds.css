@@ -159,12 +159,28 @@ body {
   vertical-align: middle;
 }
 
-.recipe-img {
-  width: 100%;
-  height: 200px; /* Add fixed height */
-  border-radius: 10px;
-  object-fit: cover; /* Ensures image covers area without distortion */
-  display: block; /* Removes any extra space below image */
+.recipe-actions img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.recipe-actions button:hover img {
+  transform: scale(1.1);
+}
+
+.like-btn[data-liked="true"] {
+  color: var(--primary-color);
+}
+
+.like-btn[data-liked="true"] .like-count {
+  color: var(--primary-color);
+}
+
+.like-btn .like-count {
+  transition: font-weight 0.2s;
 }
 
 /* RECIPE AUTHOR */
@@ -226,18 +242,76 @@ body {
   left: 10px;
 }
 
+/* Update recipe actions styles */
 .recipe-actions {
   display: flex;
   justify-content: space-around;
-  margin-top: 10px;
+  align-items: center;
+  padding: 12px 8px;
+  margin-top: auto;
+  border-top: 1px solid #eee;
+  gap: 8px;
 }
 
 .recipe-actions button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: transparent;
   border: none;
   cursor: pointer;
+  padding: 8px;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  flex: 1;
+  justify-content: center;
 }
 
+.recipe-actions button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.recipe-actions button:active {
+  transform: translateY(0);
+}
+
+.recipe-actions img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.recipe-actions span {
+  font-size: 0.9rem;
+  color: #666;
+  min-width: 20px;
+  text-align: left;
+}
+
+/* Add focus styles for accessibility */
+.recipe-actions button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 380px) {
+  .recipe-actions {
+    padding: 8px 4px;
+    gap: 4px;
+  }
+
+  .recipe-actions img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .recipe-actions span {
+    font-size: 0.8rem;
+  }
+}
 /* Bottom Navigation */
 .bottom-nav {
   position: sticky;

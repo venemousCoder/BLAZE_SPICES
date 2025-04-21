@@ -62,17 +62,34 @@
             <span class="cook-time"><%= recipe.cookingTime %> min</span>
             <h3><%= recipe.title %></h3>
             <p class="recipe-author">
-              By <a href="/user/profile/<%= recipe.owner._id %>" class="author-link"><%= recipe.owner.username %></a>
+              By
+              <a
+                href="/user/profile/<%= recipe.owner._id %>"
+                class="author-link"
+                ><%= recipe.owner.username %></a
+              >
             </p>
             <div class="recipe-actions">
-              <button aria-label="Like recipe">
-                <img src="../public/assets/heartlike.png" alt="Like icon" />
+              <button
+                class="like-btn"
+                aria-label="Like recipe"
+                data-recipe-id="<%= recipe._id %>"
+                data-liked="<%= recipe.likes?.includes(user._id) ? 'true' : 'false' %>"
+              >
+                <img
+                  src="/public/assets/<%= recipe.likes?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
+                  alt="Like icon"
+                  class="like-icon"
+                />
+                <span class="like-count"><%= recipe.likesCount || 0 %></span>
               </button>
-              <button aria-label="Comment on recipe">
-                <img src="../public/assets/drawing-1.png" alt="Comment icon" />
-              </button>
-              <button aria-label="Share recipe">
-                <img src="../public/assets/share.png" alt="Share icon" />
+              <button class="share-btn" aria-label="Share recipe">
+                <img
+                  src="/public/assets/share-unshare.svg"
+                  alt="Share icon"
+                  class="share-icon"
+                />
+                <span><%= recipe.sharesCount || 0 %></span>
               </button>
             </div>
           </div>
@@ -143,7 +160,7 @@
             <label for="description">Description</label>
             <textarea id="description" name="description" required></textarea>
           </div>
-         <!--   PREP TIME AND COOKING TIME -->
+          <!--   PREP TIME AND COOKING TIME -->
           <div class="form-group time-inputs">
             <div class="time-field">
               <label for="preparationTime">Preparation Time</label>
@@ -203,7 +220,88 @@
     </div>
 
     <script>
-      // ...existing script code...
+      // Like button functionality
+      document.querySelectorAll(".like-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const countSpan = this.querySelector(".like-count");
+          const likeIcon = this.querySelector(".like-icon");
+          const isLiked = this.dataset.liked === "true";
+          let count = parseInt(countSpan.textContent, 10) || 0;
+
+          // Update UI immediately
+          this.dataset.liked = (!isLiked).toString();
+          likeIcon.src = `/public/assets/${
+            !isLiked ? "heartlike.svg" : "heartlike-unlike.svg"
+          }`;
+          countSpan.textContent = isLiked ? count - 1 : count + 1;
+
+          // Send the like to the server
+          fetch(`/user/recipe/like/${this.dataset.recipeId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          })
+            .then((res) => {
+              if (!res.ok) {
+                // If server fails, revert changes
+                this.dataset.liked = isLiked.toString();
+                likeIcon.src = `/public/assets/${
+                  isLiked ? "heartlike.svg" : "heartlike-unlike.svg"
+                }`;
+                countSpan.textContent = count;
+              }
+            })
+            .catch(() => {
+              // Revert changes on error
+              this.dataset.liked = isLiked.toString();
+              likeIcon.src = `/public/assets/${
+                isLiked ? "heartlike.svg" : "heartlike-unlike.svg"
+              }`;
+              countSpan.textContent = count;
+            });
+        });
+      });
+
+      // Share button functionality
+      document.querySelectorAll(".share-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const shareIcon = this.querySelector(".share-icon");
+
+          // Switch to colored icon
+          shareIcon.src = "/public/assets/share.svg";
+
+          // Copy recipe link or show share dialog
+          const recipeUrl =
+            window.location.origin +
+            "/recipe/" +
+            this.closest(".recipe-card").dataset.recipeId;
+
+          if (navigator.share) {
+            navigator
+              .share({
+                title: "Check out this recipe!",
+                url: recipeUrl,
+              })
+              .then(() => {
+                // Switch back to original icon after 2 seconds
+                setTimeout(() => {
+                  shareIcon.src = "/public/assets/share-unshare.svg";
+                }, 2000);
+              })
+              .catch(console.error);
+          } else {
+            // Fallback: Copy to clipboard
+            navigator.clipboard.writeText(recipeUrl).then(() => {
+              // Show feedback (you might want to add a toast notification here)
+              alert("Recipe link copied to clipboard!");
+
+              // Switch back to original icon after 2 seconds
+              setTimeout(() => {
+                shareIcon.src = "/public/assets/share-unshare.svg";
+              }, 2000);
+            });
+          }
+        });
+      });
 
       // Image preview functionality
       const imageInput = document.getElementById("recipeImage");
@@ -336,6 +434,32 @@
         steps.splice(index, 1);
         updateStepsList();
       }
+      document.querySelectorAll(".like-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const countSpan = this.querySelector(".like-count");
+          let count = parseInt(countSpan.textContent, 10) || 0;
+          countSpan.textContent = count + 1; // Optimistically increment
+
+          // Optionally, add a quick animation
+          countSpan.style.fontWeight = "bold";
+          setTimeout(() => (countSpan.style.fontWeight = ""), 200);
+
+          // Send the like to the server
+          fetch(`/user/recipe/like/${this.dataset.recipeId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          })
+            .then((res) => {
+              if (!res.ok) {
+                // If server fails, revert the count
+                countSpan.textContent = count;
+              }
+            })
+            .catch(() => {
+              countSpan.textContent = count;
+            });
+        });
+      });
     </script>
   </body>
 </html>

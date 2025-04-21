@@ -42,6 +42,8 @@
               class="follow-btn <%= user.followers.includes(currentUser._id) ? 'following' : '' %>"
               onclick="toggleFollow(this, '<%= user._id %>')"
               data-user-id="<%= user._id %>"
+              onmouseenter="showUnfollow(this)"
+              onmouseleave="hideUnfollow(this)"
             >
               <img
                 src="/public/assets/<%= user.followers.includes(currentUser._id) ? 'following-icon' : 'follow-icon' %>.svg"
@@ -105,56 +107,74 @@
 
     <%- include('./partials/footer.ejs') %>
 
+    
     <!-- filepath: /home/venemouscoder/Desktop/PROJECTS/BLAZE_SPICES/views/profile.ejs -->
-    <script>
-      function toggleFollow(button, userId) {
-        // Get current state
-        const isFollowing = button.classList.contains("following");
+<script>
+    function showUnfollow(button) {
+        if (button.classList.contains('following')) {
+            button.querySelector('.follow-text').textContent = 'Unfollow';
+            button.querySelector('.follow-icon').src = '/public/assets/unfollow-icon.svg';
+        }
+    }
 
+    function hideUnfollow(button) {
+        if (button.classList.contains('following')) {
+            button.querySelector('.follow-text').textContent = 'Following';
+            button.querySelector('.follow-icon').src = '/public/assets/following-icon.svg';
+        }
+    }
+
+    function toggleFollow(button, userId) {
+        const isFollowing = button.classList.contains('following');
+        const endpoint = `/user/${isFollowing ? 'unfollow' : 'follow'}/${userId}`;
+        
         // Update UI immediately
-        button.classList.toggle("following");
-        const iconImg = button.querySelector(".follow-icon");
-        const textSpan = button.querySelector(".follow-text");
+        button.classList.toggle('following');
+        const iconImg = button.querySelector('.follow-icon');
+        const textSpan = button.querySelector('.follow-text');
 
-        iconImg.src = `/public/assets/${
-          !isFollowing ? "following-icon" : "follow-icon"
-        }.svg`;
-        textSpan.textContent = !isFollowing ? "Following" : "Follow";
+        // Update button appearance
+        if (!isFollowing) {
+            iconImg.src = '/public/assets/following-icon.svg';
+            textSpan.textContent = 'Following';
+        } else {
+            iconImg.src = '/public/assets/follow-icon.svg';
+            textSpan.textContent = 'Follow';
+        }
 
-        // Update stats immediately
-        const followerCount = document.querySelector(
-          ".stat-card:last-child .stat-number"
-        );
+        // Update follower count
+        const followerCount = document.querySelector('.stat-card:last-child .stat-number');
         const currentCount = parseInt(followerCount.textContent);
-        followerCount.textContent = isFollowing
-          ? currentCount - 1
-          : currentCount + 1;
+        followerCount.textContent = isFollowing ? currentCount - 1 : currentCount + 1;
 
         // Make API call
-        fetch(`/user/follow/${userId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
-          .then((response) => {
+        .then(response => {
             if (!response.ok) {
-              // Revert changes if request failed
-              button.classList.toggle("following");
-              iconImg.src = `/public/assets/${
-                isFollowing ? "following-icon" : "follow-icon"
-              }.svg`;
-              textSpan.textContent = isFollowing ? "Following" : "Follow";
-              followerCount.textContent = currentCount;
-              throw new Error("Network response was not ok");
+                // Revert changes if request failed
+                button.classList.toggle('following');
+                iconImg.src = `/public/assets/${isFollowing ? 'following-icon' : 'follow-icon'}.svg`;
+                textSpan.textContent = isFollowing ? 'Following' : 'Follow';
+                followerCount.textContent = currentCount;
+                throw new Error('Network response was not ok');
             }
             return response.json();
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            // You might want to show an error message to the user here
-          });
-      }
-    </script>
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Show error message to user
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'error-toast';
+            errorMessage.textContent = 'Failed to update follow status';
+            document.body.appendChild(errorMessage);
+            setTimeout(() => errorMessage.remove(), 3000);
+        });
+    }
+</script>
   </body>
 </html>
