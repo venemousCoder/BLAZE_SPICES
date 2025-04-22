@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= recipe.title %> - Comments | Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link rel="stylesheet" href="/public/css/comments.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <%- include('./partials/header.ejs') %>
+
+    <main class="comments-page">
+      <section class="recipe-detail">
+        <div class="recipe-header">
+          <button
+            onclick="window.history.back()"
+            class="back-btn"
+            aria-label="Go back"
+          >
+            <img src="/public/assets/arrow-left.svg" alt="" />
+          </button>
+          <h1>Recipe Comments</h1>
+        </div>
+
+        <div class="recipe-card">
+          <img
+            src="<%= recipe.image %>"
+            alt="<%= recipe.title %>"
+            class="recipe-image"
+          />
+          <div class="recipe-info">
+            <h2><%= recipe.title %></h2>
+            <p class="recipe-author">
+              By
+              <a
+                href="/user/profile/<%= recipe.owner._id %>"
+                class="author-link"
+              >
+                <%= recipe.owner.username %>
+              </a>
+            </p>
+            <p class="recipe-stats">
+              <button
+                class="like-btn stat-btn"
+                aria-label="Like recipe"
+                data-recipe-id="<%= recipe._id %>"
+                data-liked="<%= recipe.likedBy?.includes(user._id) ? 'true' : 'false' %>"
+              >
+                <img
+                  src="/public/assets/<%= recipe.likedBy?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
+                  alt="Like icon"
+                  class="like-icon"
+                />
+                <span class="like-count"><%= recipe.likes %></span>
+              </button>
+              <span class="comment-stat">
+                <img src="/public/assets/comment-icon.svg" alt="Comments" />
+                <%= recipe.comments.length %>
+              </span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="comments-section">
+        <form
+          class="comment-form"
+          action="/user/recipe/<%= recipe._id %>/comments"
+          method="POST"
+        >
+          <div class="form-group">
+            <textarea
+              name="comment"
+              placeholder="Add a comment..."
+              required
+              aria-label="Add your comment"
+            ></textarea>
+            <button type="submit">Comment</button>
+          </div>
+        </form>
+
+        <div class="comments-list">
+          <% recipe.comments.forEach(comment => { %>
+          <div class="comment-card" id="comment-<%= comment._id %>">
+            <div class="comment-header">
+              <img
+                src="<%= comment.user.profileImage || '/public/assets/default-profile.png' %>"
+                alt="<%= comment.user.username %>'s profile picture"
+                class="comment-user-avatar"
+              />
+              <div class="comment-user-info">
+                <a
+                  href="/user/profile/<%= comment.user._id %>"
+                  class="comment-username"
+                >
+                  <%= comment.user.username %>
+                </a>
+                <span class="comment-time">
+                  <%= new Date(comment.createdAt).toLocaleDateString() %>
+                </span>
+              </div>
+              <% if (user && comment.user._id.toString() === user.id.toString())
+              { %>
+              <div class="comment-actions">
+                <button class="edit-comment-btn" aria-label="Edit comment" onclick="showEditComment('<%= comment._id %>', '<%- comment.content.replace(/'/g, "'").replace(/"/g, '&quot;') %>')">
+                <i class="fas fa-edit">Edit</i>
+                <form
+                  action="/user/recipe/<%= recipe._id %>/comments/<%= comment._id %>/delete"
+                  method="POST"
+                  style="display: inline"
+                >
+                  <button
+                    type="submit"
+                    class="delete-comment-btn"
+                    aria-label="Delete comment"
+                    onclick="return confirm('Delete this comment?')"
+                  >
+                    <i class="fas fa-trash">Delete</i>
+                  </button>
+                </form>
+              </div>
+              <% } %>
+            </div>
+            <p class="comment-content" id="comment-content-<%= comment._id %>">
+              <%= comment.content %>
+            </p>
+            <!-- Edit form (hidden by default) -->
+            <form
+              class="edit-comment-form"
+              id="edit-form-<%= comment._id %>"
+              action="/user/recipe/<%= recipe._id %>/comments/<%= comment._id %>/edit"
+              method="POST"
+              style="display: none"
+            >
+              <textarea name="comment" required>
+<%= comment.content %></textarea
+              >
+              <button type="submit">Save</button>
+              <button
+                type="button"
+                onclick="hideEditComment('<%= comment._id %>')"
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+  </body>
+  <script src="/public/js/like.js"></script>
+  <script>
+    function showEditComment(commentId, content) {
+        console.log("working")
+      document.getElementById("comment-content-" + commentId).style.display =
+        "none";
+      document.getElementById("edit-form-" + commentId).style.display = "block";
+      document.querySelector("#edit-form-" + commentId + " textarea").focus();
+    }
+    function hideEditComment(commentId) {
+      document.getElementById("edit-form-" + commentId).style.display = "none";
+      document.getElementById("comment-content-" + commentId).style.display =
+        "block";
+    }
+  </script>
+</html>

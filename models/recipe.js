@@ -1,3 +1,4 @@
+const { content } = require("googleapis/build/src/apis/content");
 const mongoose = require("mongoose");
 
 const recipeSchema = mongoose.Schema(
@@ -94,9 +95,17 @@ const recipeSchema = mongoose.Schema(
           ref: "Account",
           required: true,
         },
-        text: {
+        content: {
           type: String,
           required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+        updatedAt: {
+          type: Date,
+          default: Date.now,
         },
       },
     ],

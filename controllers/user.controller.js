@@ -409,7 +409,6 @@ function unfollowUser(req, res, next) {
     });
 }
 
-
 // **********************************************/
 // *
 //*  like and unlike a recipe
@@ -423,9 +422,9 @@ function likeRecipe(req, res, next) {
     .findById(recipeId)
     .then((recipe) => {
       if (!recipe) {
-        return res.status(404).json({ 
-          status: 'error',
-          message: 'Recipe not found' 
+        return res.status(404).json({
+          status: "error",
+          message: "Recipe not found",
         });
       }
 
@@ -447,21 +446,116 @@ function likeRecipe(req, res, next) {
     .then((updatedRecipe) => {
       // Return JSON response for AJAX requests
       return res.json({
-        status: 'success',
+        status: "success",
         likes: updatedRecipe.likes,
-        liked: updatedRecipe.likedBy.includes(userId)
+        liked: updatedRecipe.likedBy.includes(userId),
       });
     })
     .catch((err) => {
       console.error("Error liking/unliking recipe:", err);
-      return res.status(500).json({ 
-        status: 'error',
-        message: 'Failed to update like status'
+      return res.status(500).json({
+        status: "error",
+        message: "Failed to update like status",
       });
     });
 }
 
+// **********************************************/
+// *
+//*   COMMENTS
+// *
+// **********************************************/
+// This function is used to get comments for a specific recipe
 
+function getComments(req, res, next) {
+  const recipeId = req.params.id;
+  recipe
+    .findById(recipeId)
+    .populate("comments")
+    .populate("comments.user") // Populate the user field in comments
+    .populate("owner")
+    .then((recipe) => {
+      if (!recipe) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("comments", { recipe: recipe, user: req.user });
+    })
+    .catch((err) => {
+      console.error("Error fetching comments:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+function createComment(req, res, next) {
+  const recipeId = req.params.id;
+  const userId = req.user._id;
+  const commentText = req.body.comment; // Matches the textarea name="comment"
+
+  const newComment = {
+    content: commentText, // Changed from 'text' to 'content' to match your template
+    user: userId,
+    createdAt: new Date(),
+  };
+
+  recipe
+    .findByIdAndUpdate(
+      recipeId,
+      { $push: { comments: newComment } }, // Changed from comment to comments, using $push instead of $addToSet
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
+    .then((updatedRecipe) => {
+      if (!updatedRecipe) {
+        return res.status(404).redirect("/error");
+      }
+      // Redirect back to the comments page
+      return res.redirect(`/user/recipe/${recipeId}/comments`);
+    })
+    .catch((err) => {
+      console.error("Error adding comment:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+function updateComment(req, res, next) {
+  const recipeId = req.params.id;
+  const commentId = req.params.commentId; // Assuming you have a way to get the comment ID
+  const updatedText = req.body.comment; // Assuming you have a way to get the updated text
+
+  recipe
+    .findOneAndUpdate(
+      { _id: recipeId, "comments._id": commentId },
+      { $set: { "comments.$.content": updatedText } }, // Assuming 'content' is the field name in your comment schema
+      { new: true }
+    )
+    .then((updatedRecipe) => {
+      if (!updatedRecipe) {
+        return res.status(404).redirect("/error");
+      }
+      return res.redirect(`/user/recipe/${recipeId}/comments`);
+    })
+    .catch((err) => {
+      console.error("Error updating comment:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+function deleteComment(req, res, next) {
+  const recipeId = req.params.id;
+  const commentId = req.params.commentId;
+  recipe.findByIdAndUpdate(
+    recipeId,
+    { $pull: { comments: { _id: commentId, user: req.user._id } } },
+    { new: true }
+  )
+    .then(() => res.redirect(`/user/recipe/${recipeId}/comments`))
+    .catch(err => {
+      console.error("Error deleting comment:", err);
+      res.status(500).redirect("/error");
+    });
+}
 
 //**********************************************/
 //*
@@ -487,6 +581,8 @@ module.exports = {
   followUser,
   unfollowUser,
   likeRecipe,
-  // unlikeRecipe,
-  // hi
+  getComments,
+  createComment,
+  updateComment,
+  deleteComment,
 };

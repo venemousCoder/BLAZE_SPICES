@@ -71,27 +71,41 @@
             </p>
             <div class="recipe-actions">
               <button
-                class="like-btn"
-                aria-label="Like recipe"
-                data-recipe-id="<%= recipe._id %>"
-                data-liked="<%= recipe.likedBy?.includes(user._id) ? 'true' : 'false' %>"
+                  class="like-btn"
+                  aria-label="Like recipe"
+                  data-recipe-id="<%= recipe._id %>"
+                  data-liked="<%= recipe.likedBy?.includes(user._id) ? 'true' : 'false' %>"
               >
-                <img
-                  src="/public/assets/<%= recipe.likedBy?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
-                  alt="Like icon"
-                  class="like-icon"
-                />
-                <span class="like-count"><%= recipe.likes%></span>
+                  <img
+                      src="/public/assets/<%= recipe.likedBy?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
+                      alt="Like icon"
+                      class="like-icon"
+                  />
+                  <span class="like-count"><%= recipe.likes%></span>
               </button>
+              
+              <button 
+                  class="comment-btn"
+                  aria-label="Comment on recipe"
+                  onclick="window.location.href='/user/recipe/<%= recipe._id %>/comments'"
+              >
+                  <img
+                      src="/public/assets/comment-icon.svg"
+                      alt="Comment icon"
+                      class="comment-icon"
+                  />
+                  <span class="comment-count"><%= recipe.comments?.length || 0 %></span>
+              </button>
+          
               <button class="share-btn" aria-label="Share recipe">
-                <img
-                  src="/public/assets/share-unshare.svg"
-                  alt="Share icon"
-                  class="share-icon"
-                />
-                <span><%= recipe.sharesCount%></span>
+                  <img
+                      src="/public/assets/share-unshare.svg"
+                      alt="Share icon"
+                      class="share-icon"
+                  />
+                  <span><%= recipe.sharesCount%></span>
               </button>
-            </div>
+          </div>
           </div>
           <% }) %>
         </div>

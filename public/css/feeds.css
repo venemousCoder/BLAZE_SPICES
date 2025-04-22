@@ -185,12 +185,52 @@ body {
 }
 
 /* Update recipe actions container */
-.recipe-actions {
+.recipe-actions .comment-btn {
   display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  margin-top: auto; /* Push to bottom */
-  border-top: 1px solid #eee; /* Optional divider */
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.recipe-actions .comment-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.recipe-actions .comment-btn:active {
+  transform: translateY(0);
+}
+
+.recipe-actions .comment-btn img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.recipe-actions .comment-count {
+  font-size: 0.9rem;
+  color: #666;
+  min-width: 20px;
+  text-align: left;
+}
+
+/* Responsive adjustments */
+@media (max-width: 380px) {
+  .recipe-actions .comment-btn img {
+      width: 20px;
+      height: 20px;
+  }
+  
+  .recipe-actions .comment-count {
+      font-size: 0.8rem;
+  }
 }
 
 .recipe-actions button {

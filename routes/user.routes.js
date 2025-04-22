@@ -62,7 +62,14 @@ router.post('/unfollow/:id', usercontrollers.unfollowUser);
 
 //like and unlike
 router.post('/like/:id', usercontrollers.likeRecipe);
-// router.post('/recipe/unlike/:id', usercontrollers.unlikeRecipe);
+
+router.get('/recipe/:id/comments', usercontrollers.getComments);
+
+router.post('/recipe/:id/comments', usercontrollers.createComment);
+
+router.post('/recipe/:id/comments/:commentId/edit', usercontrollers.updateComment);
+
+router.post('/recipe/:id/comments/:commentId/delete', usercontrollers.deleteComment);
 
 // router.get("/hi/:id", usercontrollers.hi)
 
