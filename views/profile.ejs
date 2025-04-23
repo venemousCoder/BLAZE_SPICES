@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/public/css/home.css" />
     <link rel="stylesheet" href="/public/css/profile.css" />
     <link rel="stylesheet" href="/public/css/dashboard.css" />
+    <link rel="stylesheet" href="/public/css/sidebar.css">
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
       rel="stylesheet"
@@ -18,8 +19,8 @@
     />
   </head>
   <body>
-    <%- include('./partials/header.ejs') %>
-
+    <%# include('./partials/header.ejs') %>
+    <%- include('./partials/sidebar.ejs') %>
     <main class="profile-container">
       <section class="profile-header-section">
         <div class="profile-banner"></div>
@@ -176,5 +177,22 @@
         });
     }
 </script>
+    <script>
+        // Profile image preview
+        const profileInput = document.getElementById('profile-photo');
+        const profilePreview = document.getElementById('profile-preview');
+
+        profileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    profilePreview.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+    <script src="/public/js/sidebar.js"></script>
   </body>
 </html>

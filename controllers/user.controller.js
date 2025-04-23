@@ -13,7 +13,7 @@ function getDahsboard(req, res, next) {
     .populate("posts")
     .then((user) => {
       if (!user) return res.status(404).redirect("/error");
-      return res.render("userdashboard", { user });
+      return res.render("userdashboard", { user, currentPage: "dashboard" });
     })
     .catch((err) => {
       console.error("Error fetching user for dashboard:", err);
@@ -170,7 +170,7 @@ function getFeeds(req, res, next) {
         return res.status(404).redirect("/error");
       }
       // console.log("RECIPES: ", recipes[0]._id)
-      return res.render("feeds", { recipe: recipes, user: req.user });
+      return res.render("feeds", { recipe: recipes, user: req.user, currentPage: "feeds" });
     });
 }
 
@@ -259,7 +259,7 @@ function getProfile(req, res, next) {
       if (!user) {
         return res.status(404).redirect("/error");
       }
-      return res.render("profile", { user: user, currentUser: req.user });
+      return res.render("profile", { user: user, currentUser: req.user, currentPage: "profile" });
     })
     .catch((err) => {
       console.error("Error fetching user profile: ", err);
@@ -275,7 +275,7 @@ function getMyProfile(req, res, next) {
       if (!user) {
         return res.status(404).redirect("/error");
       }
-      return res.render("myprofile", { user: user, currentUser: req.user });
+      return res.render("myprofile", { user: user, currentUser: req.user, currentPage: "myprofile" });
     })
     .catch((err) => {
       console.error("Error fetching user profile:", err);

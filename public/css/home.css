@@ -6,6 +6,22 @@
   --accent-color: #ffd699;
 }
 
+/* Add to home.css or where your header styles are */
+header {
+  margin-left: 280px;
+  width: calc(100% - 280px);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+@media (max-width: 1024px) {
+  header {
+      margin-left: 0;
+      width: 100%;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;

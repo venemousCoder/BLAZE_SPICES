@@ -6,6 +6,7 @@
     <title>User Dashboard - Blaze Recipes</title>
     <link rel="stylesheet" href="../public/css/home.css" />
     <link rel="stylesheet" href="../public/css/dashboard.css" />
+    <link rel="stylesheet" href="../public/css/sidebar.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
       rel="stylesheet"
@@ -17,8 +18,8 @@
     />
   </head>
   <body>
-    <%- include('./partials/header.ejs') %>
-
+    <%# include('./partials/header.ejs') %>
+    <%- include('./partials/sidebar.ejs') %>
     <main class="dashboard-container">
       <section class="user-profile">
         <div class="profile-header">
@@ -189,6 +190,7 @@
         }
     }
 </script>
+    <script src="../public/js/sidebar.js"></script>
     <%- include('./partials/footer.ejs') %>
   </body>
 </html>

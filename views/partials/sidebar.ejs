@@ -1,0 +1,76 @@
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img src="/public/assets/cover-removebg-preview.png" alt="Blaze Recipes Logo" class="logo">
+        <button class="close-sidebar" id="closeSidebar" aria-label="Close sidebar">
+            <img src="/public/assets/close.svg" alt="">
+        </button>
+    </div>
+
+    <div class="user-profile">
+        <img src="<%= user.profileImage || '/public/assets/default-profile.png' %>" 
+             alt="<%= user.username %>'s profile picture" 
+             class="profile-pic">
+        <div class="user-info">
+            <h3><%= user.username %></h3>
+            <span class="user-tag"><%= user.tag %></span>
+        </div>
+    </div>
+
+    <ul class="nav-links">
+        <li>
+            <a href="/user/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">
+                <img src="/public/assets/profile-icon.svg" alt="">
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="/user/feeds" class="<%= currentPage === 'feeds' ? 'active' : '' %>">
+                <img src="/public/assets/feed-icon.svg" alt="">
+                Feeds
+            </a>
+        </li>
+        <li>
+            <a href="/user/recipes" class="<%= currentPage === 'recipes' ? 'active' : '' %>">
+                <img src="/public/assets/recipes-icon.svg" alt="">
+                My Recipes
+            </a>
+        </li>
+        <li>
+            <a href="/user/explore" class="<%= currentPage === 'explore' ? 'active' : '' %>">
+                <img src="/public/assets/explore-icon.svg" alt="">
+                Explore
+            </a>
+        </li>
+        <li>
+            <a href="/user/saved" class="<%= currentPage === 'saved' ? 'active' : '' %>">
+                <img src="/public/assets/saved-icon.svg" alt="">
+                Saved Recipes
+            </a>
+        </li>
+        <!-- Add this after the Feeds link -->
+<li>
+    <a href="/user/notifications" class="<%= currentPage === 'notifications' ? 'active' : '' %>">
+        <img src="/public/assets/notification-icon.svg" alt="">
+        Notifications
+        <% if (user.unreadNotifications && user.unreadNotifications > 0) { %>
+            <span class="notification-badge"><%= user.unreadNotifications %></span>
+        <% } %>
+    </a>
+</li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <a href="/user/myprofile" class="settings-link">
+            <img src="/public/assets/settings-icon.svg" alt="">
+            Settings
+        </a>
+        <form action="/auth/logout" method="POST" class="logout-form">
+            <button type="submit" class="logout-btn">
+                <img src="/public/assets/logout-icon.svg" alt="">
+                Logout
+            </button>
+        </form>
+    </div>
+</nav>
+

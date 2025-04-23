@@ -1,7 +1,17 @@
+/* Add at the top of dashboard.css */
 .dashboard-container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+    margin-left: 280px;
+    padding: 20px;
+    min-height: 100vh;
+    width: calc(100% - 280px);
+}
+
+/* Responsive adjustment */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        margin-left: 0;
+        width: 100%;
+    }
 }
 
 .user-profile {

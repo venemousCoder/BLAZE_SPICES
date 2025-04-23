@@ -6,12 +6,7 @@
 
 function getHome(req, res) {
   if (req.isAuthenticated()) {
-    console.log("true");
-    return res.render("home", {
-      title: "Home Page",
-      message: res.locals.message,
-      user: req.user,
-    });
+    return res.redirect("/user/feeds");
   }
   return res.render("home", {
     title: "Home Page",

@@ -6,8 +6,20 @@ body {
   color: #333;
 }
 
+/* Add at the top of feeds.css */
 .feeds-page {
+  margin-left: 280px; /* Same as sidebar width */
   padding: 20px;
+  min-height: 100vh;
+  width: calc(100% - 280px);
+}
+
+/* Responsive adjustment */
+@media (max-width: 1024px) {
+  .feeds-page {
+      margin-left: 0;
+      width: 100%;
+  }
 }
 
 /* Search Section */
