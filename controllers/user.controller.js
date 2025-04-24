@@ -170,26 +170,43 @@ function getFeeds(req, res, next) {
     .find()
     .populate("owner")
     .then((recipes) => {
-      User.aggregate([
-        { $addFields: { followerCount: { $size: "$followers" } } },
-        { $match: { followerCount: { $gte: 4 } } },
-      ])
-        .then((topUser) => {
-          if (!recipes) {
-            return res.status(404).redirect("/error");
-          }
-          console.log("RECIPES: ", topUser);
-          return res.render("feeds", {
-            recipe: recipes,
-            user: req.user,
-            topUser,
-            currentPage: "feeds",
-          });
+      User.findById(req.user._id)
+        .populate("posts")
+        .populate("posts.comments.user")
+        .then((user) => {
+          if (!user) return res.status(404).redirect("/error");
+          // Fetch users with more than 10 followers, sorted by follower count descending
+          User.aggregate([
+            { $addFields: { followerCount: { $size: "$followers" } } },
+            { $match: { followerCount: { $gte: 10 } } },
+            { $sort: { followerCount: -1 } },
+            { $limit: 10 },
+          ])
+            .then((topUsers) => {
+              if (!recipes) {
+                return res.status(404).redirect("/error");
+              }
+              console.log("RECIPES: ", topUsers);
+              return res.render("feeds", {
+                recipe: recipes,
+                user: req.user,
+                topUsers,
+                currentPage: "feeds",
+              });
+            })
+            .catch((err) => {
+              console.error("Error fetching top users:", err);
+              return res.status(500).redirect("/error");
+            });
         })
         .catch((err) => {
-          console.error("Error getting top users", err);
+          console.error("Error fetching user for dashboard:", err);
           return res.status(500).redirect("/error");
         });
+    })
+    .catch((err) => {
+      console.error("Error getting top users", err);
+      return res.status(500).redirect("/error");
     });
 }
 
@@ -199,7 +216,11 @@ function getRecipe(req, res, next) {
     if (!recipe) {
       return res.status(404).redirect("/error");
     }
-    return res.render("recipe", { recipe: recipe, user: req.user });
+    return res.render("recipe", {
+      recipe: recipe,
+      user: req.user,
+      currentPage: "recipe",
+    });
   });
 }
 
@@ -242,10 +263,10 @@ function createRecipe(req, res, next) {
             read: false,
             from: user.id,
             message: `made a new recipe 🥣`,
-            type: 'recipe',
+            type: "recipe",
             reference: recipe._id, // ID of the new recipe
-            createdAt: new Date()
-        };
+            createdAt: new Date(),
+          };
           User.updateMany(
             { following: user.id },
             { notifications: notification },
@@ -399,16 +420,17 @@ function followUser(req, res, next) {
         return res.status(404).redirect("/error");
       }
       // Optionally update rank or other logic here
-      targetUser.updateRankBasedOnFollowers()
+      targetUser.updateRankBasedOnFollowers();
+      await targetUser.save();
       // Create notification for the user being followed
       const notification = {
         read: false,
         from: currentUserId,
         message: `followed you 👥`,
-        type: 'follow',
+        type: "follow",
         reference: currentUserId, // ID of the user who followed
-        createdAt: new Date()
-    };
+        createdAt: new Date(),
+      };
 
       await User.findByIdAndUpdate(
         userToFollowId,

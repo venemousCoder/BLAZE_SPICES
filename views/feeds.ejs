@@ -38,38 +38,37 @@
       <section class="user-list">
         <h2>Top Contributors</h2>
         <div class="user-scroll">
-          <%# users.forEach(user => { %>
+          <%#topUsers %>
+          <% topUsers.forEach(user => { %>
           <div class="user-avatar">
             <img
-              src="<%= topUser.profileImage %>"
-              alt="<%= topUser.username %>'s profile"
+              src="<%= user.profileImage %>"
+              alt="<%= user.username %>'s profile"
             />
-            <p><%= topUser.username %></p>
+            <p><a class="author-link" href="/user/profile/<%=user._id%>"><%= user.username %></a></p>
           </div>
-          <%# }) %>
+          <% }) %>
         </div>
       </section>
 
       <section class="popular-recipes">
         <h2>Popular Recipes</h2>
-        <div class="recipe-grid">
-          <% recipe.forEach(recipe => { %>
+        <% recipe.forEach(recipe => { %>
           <div class="recipe-card">
-            <img
-              src="<%= recipe.image %>"
-              alt="Image of <%= recipe.title %>"
-              class="recipe-img"
-            />
-            <span class="cook-time"><%= recipe.cookingTime %> min</span>
-            <h3><%= recipe.title %></h3>
-            <p class="recipe-author">
-              By
-              <a
-                href="/user/profile/<%= recipe.owner._id %>"
-                class="author-link"
-                ><%= recipe.owner.username %></a
-              >
-            </p>
+            <a href="/user/recipe/<%= recipe._id %>" class="recipe-card-link">
+              <img
+                src="<%= recipe.image %>"
+                alt="Image of <%= recipe.title %>"
+                class="recipe-img"
+              />
+              <span class="cook-time"><%= recipe.cookingTime %> min</span>
+              <h3><%= recipe.title %></h3>
+              <p class="recipe-author">
+                By <span class="author-name">
+                  <a href="/user/profile/<%= recipe.owner._id %>" class="author-link"><%= recipe.owner.username %>
+                  </a></span>
+              </p>
+            </a>
             <div class="recipe-actions">
               <button
                 class="like-btn"

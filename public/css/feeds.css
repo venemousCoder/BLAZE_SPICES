@@ -148,6 +148,55 @@ body {
   display: block;
 }
 
+/* Add these styles for the clickable card */
+.recipe-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  flex: 1;
+  padding: 10px 10px 0;
+}
+
+.recipe-card-link:focus {
+  outline: none;
+}
+
+.recipe-card-link:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
+/* Update existing recipe-card styles */
+.recipe-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recipe-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Update author name style */
+.author-name {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* Ensure actions stay at bottom */
+.recipe-actions {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid #eee;
+}
+
 @media (min-width: 768px) {
   .recipe-grid {
       grid-template-columns: repeat(2, 1fr);  /* 2 columns for tablets */
@@ -338,13 +387,13 @@ select:focus {
 .author-link {
   color: var(--primary-color);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 900;
   transition: color 0.2s ease;
 }
 
 .author-link:hover {
   color: var(--secondary-color);
-  text-decoration: underline;
+  /* text-decoration: underline; */
 }
 
 .author-link:focus {
