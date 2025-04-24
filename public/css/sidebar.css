@@ -106,7 +106,8 @@ body {
   position: relative;
 }
 
-notification-badge {
+/* Fix the class name from notification-badge to .notification-badge */
+.notification-badge {
   position: absolute;
   right: 12px;
   top: 50%;
@@ -121,15 +122,27 @@ notification-badge {
   align-items: center;
   justify-content: center;
   padding: 0 6px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 77, 77, 0.2);
+}
+
+/* Update active state for notification badge */
+.nav-links a:hover .notification-badge {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 3px 6px rgba(255, 77, 77, 0.3);
 }
 
 .nav-links a.active .notification-badge {
   background: white;
   color: var(--primary-color);
 }
+/* Add hover effect */
+.notification-badge {
+  transition: transform 0.2s ease;
+}
 
-.nav-links a:hover {
-  background: #f5f5f5;
+.nav-links a:hover .notification-badge {
+  transform: translateY(-50%) scale(1.1);
 }
 
 .nav-links a.active {

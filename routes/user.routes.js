@@ -71,6 +71,8 @@ router.post('/recipe/:id/comments/:commentId/edit', usercontrollers.updateCommen
 
 router.post('/recipe/:id/comments/:commentId/delete', usercontrollers.deleteComment);
 
-// router.get("/hi/:id", usercontrollers.hi)
+router.get("/notifications", usercontrollers.getNotifications)
+
+router.post("/notifications/mark-all-read", usercontrollers.markAllAsRead)
 
 module.exports = router;

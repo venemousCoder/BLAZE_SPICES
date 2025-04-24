@@ -95,6 +95,35 @@ const userSchema = new mongoose.Schema({
     ],
     default: "Kitchen Helper",
   },
+  notifications: [
+    {
+      read: {
+        type: Boolean,
+        require: true,
+        default: false,
+      },
+      from: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      message: {
+        type: String,
+        required: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+      type: {
+        type: String,
+        required: true,
+      },
+      reference: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
+  ],
   resetPasswordToken: {
     type: String,
     unique: true,
@@ -112,9 +141,9 @@ const userSchema = new mongoose.Schema({
 // FOLLOWING
 
 // Add this function to update tag based on followers count
-userSchema.methods.updateRankBasedOnFollowers = function() {
+userSchema.methods.updateRankBasedOnFollowers = function () {
   const followersCount = this.followers.length;
-  
+
   if (followersCount >= 1000) {
     this.tag = "World-Class Chef";
   } else if (followersCount >= 500) {
@@ -123,7 +152,7 @@ userSchema.methods.updateRankBasedOnFollowers = function() {
     this.tag = "Apprentice Chef";
   } else if (followersCount >= 100) {
     this.tag = "Modern Cook";
-  } else if (followersCount >= 6) {
+  } else if (followersCount >= 2) {
     this.tag = "Cooking Protoge";
   } else {
     this.tag = "Kitchen Helper";
@@ -131,13 +160,12 @@ userSchema.methods.updateRankBasedOnFollowers = function() {
 };
 
 // Add pre-save middleware to automatically update rank
-userSchema.pre('save', function(next) {
-  if (this.isModified('followers')) {
+userSchema.pre("save", function (next) {
+  if (this.isModified("followers")) {
     this.updateRankBasedOnFollowers();
   }
   next();
 });
-const User = Account.discriminator(
-  "User",userSchema);
+const User = Account.discriminator("User", userSchema);
 
 module.exports = { Account, User, Admin };

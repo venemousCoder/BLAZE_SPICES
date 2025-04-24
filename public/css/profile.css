@@ -1,8 +1,20 @@
 .profile-container {
+  margin-left: 280px; /* Same as sidebar width */
+  padding: 20px;
+  min-height: 100vh;
+  width: calc(100% - 280px);
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
 }
+
+/* Add responsive adjustments */
+@media (max-width: 1024px) {
+  .profile-container {
+      margin-left: 0;
+      width: 100%;
+      padding: 16px;
+  }
+}
+
 
 .profile-header-section {
   background: white;

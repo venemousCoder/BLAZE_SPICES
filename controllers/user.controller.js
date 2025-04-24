@@ -11,9 +11,13 @@ function getDahsboard(req, res, next) {
   // Always fetch fresh user with populated posts
   User.findById(req.user._id)
     .populate("posts")
+    .populate("posts.comments.user")
     .then((user) => {
       if (!user) return res.status(404).redirect("/error");
-      return res.render("userdashboard", { user, currentPage: "dashboard" });
+      return res.render("userdashboard", {
+        user,
+        currentPage: "dashboard",
+      });
     })
     .catch((err) => {
       console.error("Error fetching user for dashboard:", err);
@@ -166,11 +170,26 @@ function getFeeds(req, res, next) {
     .find()
     .populate("owner")
     .then((recipes) => {
-      if (!recipes) {
-        return res.status(404).redirect("/error");
-      }
-      // console.log("RECIPES: ", recipes[0]._id)
-      return res.render("feeds", { recipe: recipes, user: req.user, currentPage: "feeds" });
+      User.aggregate([
+        { $addFields: { followerCount: { $size: "$followers" } } },
+        { $match: { followerCount: { $gte: 4 } } },
+      ])
+        .then((topUser) => {
+          if (!recipes) {
+            return res.status(404).redirect("/error");
+          }
+          console.log("RECIPES: ", topUser);
+          return res.render("feeds", {
+            recipe: recipes,
+            user: req.user,
+            topUser,
+            currentPage: "feeds",
+          });
+        })
+        .catch((err) => {
+          console.error("Error getting top users", err);
+          return res.status(500).redirect("/error");
+        });
     });
 }
 
@@ -217,9 +236,28 @@ function createRecipe(req, res, next) {
       User.findByIdAndUpdate(req.user._id, {
         $addToSet: { posts: recipe._id },
       })
-        .then(() => {
-          console.log("Recipe created successfully:", recipe);
-          return res.status(201).redirect("/user/feeds");
+        .then((user) => {
+          //notify followers
+          const notification = {
+            read: false,
+            from: user.id,
+            message: `made a new recipe 🥣`,
+            type: 'recipe',
+            reference: recipe._id, // ID of the new recipe
+            createdAt: new Date()
+        };
+          User.updateMany(
+            { following: user.id },
+            { notifications: notification },
+            { new: true }
+          )
+            .then(() => {
+              console.log("Recipe created successfully:", recipe);
+              return res.status(201).redirect("/user/feeds");
+            })
+            .catch((err) => {
+              console.error("Error updating user posts:", err);
+            });
         })
         .catch((err) => {
           console.error("Error updating user posts:", err);
@@ -259,7 +297,11 @@ function getProfile(req, res, next) {
       if (!user) {
         return res.status(404).redirect("/error");
       }
-      return res.render("profile", { user: user, currentUser: req.user, currentPage: "profile" });
+      return res.render("profile", {
+        User: user,
+        user: req.user,
+        currentPage: "profile",
+      });
     })
     .catch((err) => {
       console.error("Error fetching user profile: ", err);
@@ -275,7 +317,11 @@ function getMyProfile(req, res, next) {
       if (!user) {
         return res.status(404).redirect("/error");
       }
-      return res.render("myprofile", { user: user, currentUser: req.user, currentPage: "myprofile" });
+      return res.render("myprofile", {
+        user: user,
+        currentUser: req.user,
+        currentPage: "myprofile",
+      });
     })
     .catch((err) => {
       console.error("Error fetching user profile:", err);
@@ -352,15 +398,25 @@ function followUser(req, res, next) {
       if (!currentUser || !targetUser) {
         return res.status(404).redirect("/error");
       }
-      // Fetch as Mongoose doc and update rank
-      const fullUser = await User.findById(targetUser._id);
-      if (fullUser) {
-        console.log("fullUser: ", fullUser);
-        fullUser.updateRankBasedOnFollowers();
-        await fullUser.save();
-        res.redirect(req.get("Referrer") || "/"); // Refresh the page after following
-        // return res.redirect("/user/profile/" + userToFollowId);
-      }
+      // Optionally update rank or other logic here
+      targetUser.updateRankBasedOnFollowers()
+      // Create notification for the user being followed
+      const notification = {
+        read: false,
+        from: currentUserId,
+        message: `followed you 👥`,
+        type: 'follow',
+        reference: currentUserId, // ID of the user who followed
+        createdAt: new Date()
+    };
+
+      await User.findByIdAndUpdate(
+        userToFollowId,
+        { $push: { notifications: notification } },
+        { new: true }
+      );
+
+      return res.redirect(req.get("Referrer") || "/");
     })
     .catch((err) => {
       console.error("Error following user:", err);
@@ -401,7 +457,7 @@ function unfollowUser(req, res, next) {
       if (!currentUser || !targetUser) {
         return res.status(404).redirect("/error");
       }
-      return res.redirect("back");
+      return res.location(req.get("Referrer") || "/");
     })
     .catch((err) => {
       console.error("Error unfollowing user:", err);
@@ -478,6 +534,7 @@ function getComments(req, res, next) {
       if (!recipe) {
         return res.status(404).redirect("/error");
       }
+      console.log(recipe);
       return res.render("comments", { recipe: recipe, user: req.user });
     })
     .catch((err) => {
@@ -545,15 +602,53 @@ function updateComment(req, res, next) {
 function deleteComment(req, res, next) {
   const recipeId = req.params.id;
   const commentId = req.params.commentId;
-  recipe.findByIdAndUpdate(
-    recipeId,
-    { $pull: { comments: { _id: commentId, user: req.user._id } } },
-    { new: true }
-  )
+  recipe
+    .findByIdAndUpdate(
+      recipeId,
+      { $pull: { comments: { _id: commentId, user: req.user._id } } },
+      { new: true }
+    )
     .then(() => res.redirect(`/user/recipe/${recipeId}/comments`))
-    .catch(err => {
+    .catch((err) => {
       console.error("Error deleting comment:", err);
       res.status(500).redirect("/error");
+    });
+}
+
+//**********************************************/
+//*
+//*  NOTIFICATIONS
+//*
+//**********************************************/
+
+function getNotifications(req, res, next) {
+  User.findById(req.user._id)
+    .populate("notifications.from")
+    .then((user) => {
+      return res.render("notifications", {
+        user,
+        notifications: user.notifications,
+        currentPage: "notifications",
+      });
+    })
+    .catch((err) => {
+      console.error("Error deleting comment:", err);
+      res.status(500).redirect("/error");
+    });
+}
+
+function markAllAsRead(req, res, next) {
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { "notifications.$[].read": true } },
+    { new: true }
+  )
+    .then(() => {
+      return res.redirect("/user/notifications");
+    })
+    .catch((err) => {
+      console.error("Error marking notifications as read:", err);
+      return res.status(500).redirect("/error");
     });
 }
 
@@ -574,10 +669,10 @@ module.exports = {
   updatePassword,
   logout,
   getRecipe,
+  createRecipe,
   getProfile,
   getMyProfile,
   editProfile,
-  createRecipe,
   followUser,
   unfollowUser,
   likeRecipe,
@@ -585,4 +680,6 @@ module.exports = {
   createComment,
   updateComment,
   deleteComment,
+  getNotifications,
+  markAllAsRead,
 };

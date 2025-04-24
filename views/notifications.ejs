@@ -1,0 +1,140 @@
+ejs
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifications | Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link rel="stylesheet" href="/public/css/sidebar.css" />
+    <link rel="stylesheet" href="/public/css/notifications.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <%- include('./partials/sidebar.ejs') %>
+
+    <main class="notifications-page">
+      <div class="notifications-header">
+        <h1>Notifications</h1>
+        <% if (notifications.length > 0) { %>
+        <button class="mark-all-read" onclick="markAllAsRead()">
+          Mark all as read
+        </button>
+        <% } %>
+      </div>
+
+      <div class="notifications-list">
+        <% if (notifications.length > 0) { %> <%
+        notifications.forEach(notification => { %>
+        <div
+          class="notification-card <%= !notification.read ? 'unread' : '' %>"
+          data-id="<%= notification._id %>"
+        >
+          <a
+            href="<%= notification.type === 'follow' ? 
+                           `/user/profile/${notification.reference}` : 
+                           `/user/recipe/${notification.reference}` %>"
+            class="notification-link"
+          >
+            <div class="notification-avatar">
+              <img
+                src="<%= notification.from.profileImage || '/public/assets/default-profile.png' %>"
+                alt="<%= notification.from.username %>'s profile picture"
+              />
+            </div>
+            <div class="notification-content">
+              <p>
+                <strong><%= notification.from.username %></strong>
+                <%= notification.message %>
+              </p>
+              <span class="notification-time">
+                <%= new Date(notification.createdAt).toLocaleDateString('en-US',
+                { month: 'short', day: 'numeric', hour: '2-digit', minute:
+                '2-digit' }) %>
+              </span>
+            </div>
+            <% if (!notification.read) { %>
+            <div class="unread-indicator"></div>
+            <% } %>
+          </a>
+        </div>
+        <% }) %> <% } else { %>
+        <div class="empty-notifications">
+          <img
+            src="/public/assets/notification-empty.svg"
+            alt=""
+            class="empty-icon"
+          />
+          <h2>No notifications yet</h2>
+          <p>When you get notifications, they'll show up here</p>
+        </div>
+        <% } %>
+      </div>
+    </main>
+
+    <script>
+      function markAllAsRead() {
+        fetch("/user/notifications/mark-all-read", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              document
+                .querySelectorAll(".notification-card.unread")
+                .forEach((card) => {
+                  card.classList.remove("unread");
+                  card.querySelector(".unread-indicator")?.remove();
+                });
+            }
+          })
+          .catch(console.error);
+      }
+
+      // Mark individual notification as read when clicked
+      // Update the click handler in notifications.ejs
+      document.querySelectorAll(".notification-card").forEach((card) => {
+        const link = card.querySelector(".notification-link");
+
+        card.addEventListener("click", function (e) {
+          // Don't interfere with natural link clicking
+          if (e.target.closest(".notification-link")) {
+            if (this.classList.contains("unread")) {
+              markAsRead(this.dataset.id);
+            }
+            return; // Let the link handle navigation
+          }
+
+          // Mark as read without navigation if clicked outside link
+          if (this.classList.contains("unread")) {
+            markAsRead(this.dataset.id);
+          }
+        });
+      });
+
+      function markAsRead(notificationId) {
+        fetch(`/user/notifications/${notificationId}/read`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              const card = document.querySelector(
+                `[data-id="${notificationId}"]`
+              );
+              card.classList.remove("unread");
+              card.querySelector(".unread-indicator")?.remove();
+            }
+          })
+          .catch(console.error);
+      }
+    </script>
+  </body>
+</html>

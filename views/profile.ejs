@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= user.username %>'s Profile - Blaze Recipes</title>
+    <title><%= User.username %>'s Profile - Blaze Recipes</title>
     <link rel="stylesheet" href="/public/css/home.css" />
     <link rel="stylesheet" href="/public/css/profile.css" />
     <link rel="stylesheet" href="/public/css/dashboard.css" />
@@ -27,32 +27,32 @@
         <div class="profile-main-info">
           <div class="profile-image">
             <img
-              src="<%= user.profileImage || '/public/assets/default-profile.png' %>"
-              alt="<%= user.username %>'s profile picture"
+              src="<%= User.profileImage || '/public/assets/default-profile.png' %>"
+              alt="<%= User.username %>'s profile picture"
             />
           </div>
           <div class="profile-details">
-            <h1><%= user.username %></h1>
-            <span class="user-tag"><%= user.tag %></span>
-            <p class="user-bio"><%= user.bio || 'No bio added yet' %></p>
+            <h1><%= User.username %></h1>
+            <span class="user-tag"><%= User.tag %></span>
+            <p class="user-bio"><%= User.bio || 'No bio added yet' %></p>
           </div>
           <div class="profile-actions">
-            <% if (currentUser && currentUser._id.toString() !==
-            user._id.toString()) { %>
+            <% if (user && user._id.toString() !==
+            User._id.toString()) { %>
             <button
-              class="follow-btn <%= user.followers.includes(currentUser._id) ? 'following' : '' %>"
-              onclick="toggleFollow(this, '<%= user._id %>')"
-              data-user-id="<%= user._id %>"
+              class="follow-btn <%= User.followers.includes(user._id) ? 'following' : '' %>"
+              onclick="toggleFollow(this, '<%= User._id %>')"
+              data-user-id="<%= User._id %>"
               onmouseenter="showUnfollow(this)"
               onmouseleave="hideUnfollow(this)"
             >
               <img
-                src="/public/assets/<%= user.followers.includes(currentUser._id) ? 'following-icon' : 'follow-icon' %>.svg"
+                src="/public/assets/<%= User.followers.includes(user._id) ? 'following-icon' : 'follow-icon' %>.svg"
                 alt=""
                 class="follow-icon"
               />
               <span class="follow-text">
-                <%= user.followers.includes(currentUser._id) ? 'Following' :
+                <%= User.followers.includes(user._id) ? 'Following' :
                 'Follow' %>
               </span>
             </button>
@@ -64,23 +64,23 @@
       <section class="profile-stats">
         <div class="stat-card">
           <h3>Recipes</h3>
-          <p class="stat-number"><%= user.posts?.length || 0 %></p>
+          <p class="stat-number"><%= User.posts?.length || 0 %></p>
         </div>
         <div class="stat-card">
           <h3>Following</h3>
-          <p class="stat-number"><%= user.following?.length || 0 %></p>
+          <p class="stat-number"><%= User.following?.length || 0 %></p>
         </div>
         <div class="stat-card">
           <h3>Followers</h3>
-          <p class="stat-number"><%= user.followers?.length || 0 %></p>
+          <p class="stat-number"><%= User.followers?.length || 0 %></p>
         </div>
       </section>
 
       <section class="user-recipes">
-        <h2><%= user.username %>'s Recipes</h2>
+        <h2><%= User.username %>'s Recipes</h2>
         <div class="recipe-grid">
-          <% if (user.posts && user.posts.length > 0) { %> <%
-          user.posts.forEach(recipe => { %>
+          <% if (User.posts && User.posts.length > 0) { %> <%
+          User.posts.forEach(recipe => { %>
           <div class="recipe-card">
             <img
               class="recipe-main-img"
