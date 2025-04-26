@@ -32,7 +32,7 @@ router.get("/logout", usercontrollers.logout);
 
 router.get("/feeds", usercontrollers.getFeeds);
 
-// router.get("/profile", usercontrollers.getProfile);
+router.get("/hi", usercontrollers.hi);
 
 router.get("/dashboard", usercontrollers.getDahsboard);
 
@@ -60,6 +60,10 @@ router.post('/follow/:id', usercontrollers.followUser);
 
 router.post('/unfollow/:id', usercontrollers.unfollowUser);
 
+router.get('/followers', usercontrollers.getFollowers);
+
+router.get('/following', usercontrollers.getFollowing);
+
 //like and unlike
 router.post('/like/:id', usercontrollers.likeRecipe);
 
@@ -74,6 +78,8 @@ router.post('/recipe/:id/comments/:commentId/edit', usercontrollers.updateCommen
 router.post('/recipe/:id/comments/:commentId/delete', usercontrollers.deleteComment);
 
 router.get("/notifications", usercontrollers.getNotifications)
+
+router.post("/notifications/:id/read", usercontrollers.markAsRead)
 
 router.post("/notifications/mark-all-read", usercontrollers.markAllAsRead)
 

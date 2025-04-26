@@ -61,7 +61,18 @@
                 alt="Image of <%= recipe.title %>"
                 class="recipe-img"
               />
-              <span class="cook-time"><%= recipe.cookingTime %> min</span>
+              <%
+                const totalMins = Number(recipe.cookingTime) + Number(recipe.preparationTime);
+                let timeDisplay;
+                if (totalMins > 60) {
+                  const hours = Math.floor(totalMins / 60);
+                  const mins = totalMins % 60;
+                  timeDisplay = mins > 0 ? `${hours} hr ${mins} min` : `${hours} hr`;
+                } else {
+                  timeDisplay = `${totalMins} min`;
+                }
+              %>
+              <span class="cook-time"><%= timeDisplay %></span>
               <h3><%= recipe.title %></h3>
               <p class="recipe-author">
                 By <span class="author-name">

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Following | Blaze Recipes</title>
+    <link rel="stylesheet" href="../public/css/home.css">
+    <link rel="stylesheet" href="../public/css/sidebar.css">
+    <link rel="stylesheet" href="../public/css/following.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <%- include('./partials/sidebar.ejs') %>
+    
+    <main class="following-page">
+        <div class="following-header">
+            <h1>Following</h1>
+            <p class="following-count"><%= following.length %> Following</p>
+        </div>
+
+        <div class="following-grid">
+            <% if (following.length > 0) { %>
+                <% following.forEach(followed => { %>
+                    <div class="following-card">
+                        <img 
+                            src="<%= followed.profileImage || '../public/assets/default-profile.svg' %>" 
+                            alt="<%= followed.username %>'s profile picture"
+                            class="following-avatar"
+                        >
+                        <div class="following-info">
+                            <a href="/user/profile/<%= followed._id %>" class="following-name">
+                                <%= followed.username %>
+                            </a>
+                            <span class="following-tag"><%= followed.tag || 'Kitchen Helper' %></span>
+                        </div>
+                        <button 
+                            class="follow-btn following"
+                            data-user-id="<%= followed._id %>"
+                            onclick="toggleFollow(this)"
+                            aria-label="Unfollow <%= followed.username %>"
+                        >
+                            Following
+                        </button>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="no-following">
+                    <img src="../public/assets/no-following.svg" alt="" class="empty-icon">
+                    <h2>Not following anyone yet</h2>
+                    <p>Discover chefs and follow them to see their recipes in your feed!</p>
+                </div>
+            <% } %>
+        </div>
+    </main>
+
+    <script>
+        function toggleFollow(button) {
+            const userId = button.dataset.userId;
+            const isFollowing = button.classList.contains('following');
+            const endpoint = '/user/unfollow/';
+
+            fetch(endpoint + userId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the card with a fade-out animation
+                    const card = button.closest('.following-card');
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        card.remove();
+                        updateFollowingCount();
+                    }, 200);
+                }
+            })
+            .catch(console.error);
+        }
+
+        function updateFollowingCount() {
+            const count = document.querySelectorAll('.following-card').length;
+            const countElement = document.querySelector('.following-count');
+            countElement.textContent = `${count} Following`;
+
+            // Show empty state if no more following
+            if (count === 0) {
+                const grid = document.querySelector('.following-grid');
+                grid.innerHTML = `
+                    <div class="no-following">
+                        <img src="../public/assets/no-following.svg" alt="" class="empty-icon">
+                        <h2>Not following anyone yet</h2>
+                        <p>Discover chefs and follow them to see their recipes in your feed!</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

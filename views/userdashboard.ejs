@@ -42,18 +42,22 @@
 
       <section class="dashboard-stats">
         <div class="stat-card">
-          <h3>My Recipes</h3>
-          <p class="stat-number"><%=user.posts?.length || 0 %></p>
+            <h3>My Recipes</h3>
+            <p class="stat-number"><%=user.posts?.length || 0 %></p>
         </div>
         <div class="stat-card">
-          <h3>Liked Recipes</h3>
-          <p class="stat-number"><%=user.likedRecipes?.length || 0 %></p>
+            <h3>Liked Recipes</h3>
+            <p class="stat-number"><%=user.likedRecipes?.length || 0 %></p>
         </div>
-        <div class="stat-card">
-          <h3>Followers</h3>
-          <p class="stat-number"><%=user.followers?.length || 0 %></p>
-        </div>
-      </section>
+        <a href="/user/followers" class="stat-card clickable">
+            <h3>Followers</h3>
+            <p class="stat-number"><%=user.followers?.length || 0 %></p>
+        </a>
+        <a href="/user/following" class="stat-card clickable">
+            <h3>Following</h3>
+            <p class="stat-number"><%=user.following?.length || 0 %></p>
+        </a>
+    </section>
 
       <section class="user-actions">
         <div class="action-buttons">

@@ -143,19 +143,19 @@ passport.deserializeUser((obj, done) => {
 });
 
 app.use("/", Router);
-app.use((req, res, next) => {
-  console.log(
-    // "SESSION\n",
-    // req.session,
-    // "Authenticated\n",
-    // req.isAuthenticated(),
-    // "SESSION TOKEN\n",
-    // req.session.token,
-    "LOCALS: ",
-    res.locals.message
-  );
-  return next();
-});
+// app.use((req, res, next) => {
+//   console.log(
+//     // "SESSION\n",
+//     // req.session,
+//     // "Authenticated\n",
+//     // req.isAuthenticated(),
+//     // "SESSION TOKEN\n",
+//     // req.session.token,
+//     // "LOCALS: ",
+//     // req.url
+//   );
+//   return next();
+// });
 app.listen(PORT, () => {
   console.log("Conneted to server at port " + PORT);
 });

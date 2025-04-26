@@ -1,0 +1,154 @@
+.followers-page {
+    margin-left: 280px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-left: 280px;
+}
+
+.followers-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.followers-header h1 {
+    font-size: 2rem;
+    margin: 0;
+    color: var(--text-color);
+}
+
+.followers-count {
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.followers-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.follower-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.follower-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.follower-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.follower-info {
+    flex: 1;
+}
+
+.follower-name {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.follower-name:hover {
+    color: var(--primary-color);
+}
+
+.follower-tag {
+    font-size: 0.9rem;
+    color: #666;
+    background: #f5f5f5;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.follow-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--primary-color);
+    color: white;
+}
+
+.follow-btn.following {
+    background: #f5f5f5;
+    color: var(--text-color);
+}
+
+.follow-btn:hover {
+    transform: scale(1.05);
+}
+
+.no-followers {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: #666;
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Accessibility */
+.follow-btn:focus-visible,
+.follower-name:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .followers-page {
+        margin-left: 0;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .followers-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .follower-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .follower-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .follower-info {
+        margin: 0.5rem 0;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .follower-card,
+    .follow-btn {
+        transition: none;
+    }
+}
