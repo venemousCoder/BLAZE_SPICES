@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/public/css/home.css" />
     <link rel="stylesheet" href="/public/css/profile.css" />
     <link rel="stylesheet" href="/public/css/dashboard.css" />
-    <link rel="stylesheet" href="/public/css/sidebar.css">
+    <link rel="stylesheet" href="/public/css/sidebar.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
       rel="stylesheet"
@@ -19,8 +19,8 @@
     />
   </head>
   <body>
-    <%# include('./partials/header.ejs') %>
-    <%- include('./partials/sidebar.ejs') %>
+    <%# include('./partials/header.ejs') %> <%-
+    include('./partials/sidebar.ejs') %>
     <main class="profile-container">
       <section class="profile-header-section">
         <div class="profile-banner"></div>
@@ -37,8 +37,7 @@
             <p class="user-bio"><%= User.bio || 'No bio added yet' %></p>
           </div>
           <div class="profile-actions">
-            <% if (user && user._id.toString() !==
-            User._id.toString()) { %>
+            <% if (user && user._id.toString() !== User._id.toString()) { %>
             <button
               class="follow-btn <%= User.followers.includes(user._id) ? 'following' : '' %>"
               onclick="toggleFollow(this, '<%= User._id %>')"
@@ -52,8 +51,8 @@
                 class="follow-icon"
               />
               <span class="follow-text">
-                <%= User.followers.includes(user._id) ? 'Following' :
-                'Follow' %>
+                <%= User.followers.includes(user._id) ? 'Following' : 'Follow'
+                %>
               </span>
             </button>
             <% } %>
@@ -67,132 +66,228 @@
           <p class="stat-number"><%= User.posts?.length || 0 %></p>
         </div>
         <div class="stat-card">
-          <h3>Following</h3>
-          <p class="stat-number"><%= User.following?.length || 0 %></p>
+          <a href="/user/following/<%= User._id %>" class="stat-card-link">
+            <h3>Following</h3>
+            <p class="stat-number"><%= User.following?.length || 0 %></p>
+          </a>
         </div>
         <div class="stat-card">
-          <h3>Followers</h3>
-          <p class="stat-number"><%= User.followers?.length || 0 %></p>
+          <a href="/user/followers/<%= User._id %>" class="stat-card-link">
+            <h3>Followers</h3>
+            <p class="stat-number"><%= User.followers?.length || 0 %></p>
+          </a>
         </div>
       </section>
 
       <section class="user-recipes">
         <h2><%= User.username %>'s Recipes</h2>
         <div class="recipe-grid">
-          <% if (User.posts && User.posts.length > 0) { %> <%
-          User.posts.forEach(recipe => { %>
-          <div class="recipe-card">
-            <img
-              class="recipe-main-img"
-              src="<%= recipe.image %>"
-              alt="<%= recipe.title %>"
-            />
-            <h3><%= recipe.title %></h3>
-            <div class="recipe-stats">
-              <span>
-                <img src="/public/assets/heartlike.png" alt="Likes" />
-                <%= recipe.likes?.length || 0 %>
-              </span>
-              <span>
-                <img src="/public/assets/drawing-1.png" alt="Comments" />
-                <%= recipe.comments?.length || 0 %>
-              </span>
-            </div>
-          </div>
-          <% }) %> <% } else { %>
-          <p class="no-recipes">No recipes shared yet</p>
-          <% } %>
+            <% if (User.posts && User.posts.length > 0) { %>
+                <% User.posts.forEach(recipe => { %>
+                    <div class="recipe-card">
+                        <a href="/user/recipe/<%= recipe._id %>" class="recipe-card-link">
+                            <img
+                                src="<%= recipe.image %>"
+                                alt="<%= recipe.title %>"
+                                class="recipe-img"
+                            />
+                            <%
+                                const totalMins = Number(recipe.cookingTime) + Number(recipe.preparationTime);
+                                let timeDisplay;
+                                if (totalMins > 60) {
+                                    const hours = Math.floor(totalMins / 60);
+                                    const mins = totalMins % 60;
+                                    timeDisplay = mins > 0 ? `${hours} hr ${mins} min` : `${hours} hr`;
+                                } else {
+                                    timeDisplay = `${totalMins} min`;
+                                }
+                            %>
+                            <span class="cook-time"><%= timeDisplay %></span>
+                            <h3><%= recipe.title %></h3>
+                            <p class="recipe-author">
+                                By <span class="author-name"><%= recipe.owner.username %></span>
+                            </p>
+                        </a>
+                        <div class="recipe-actions">
+                            <button
+                                class="like-btn stat-btn"
+                                aria-label="Like recipe"
+                                data-recipe-id="<%= recipe._id %>"
+                                data-liked="<%= recipe.likedBy?.includes(user._id) ? 'true' : 'false' %>"
+                            >
+                                <img
+                                    src="/public/assets/<%= recipe.likedBy?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
+                                    alt="Like icon"
+                                    class="like-icon"
+                                />
+                                <span class="like-count"><%= recipe.likes %></span>
+                            </button>
+    
+                            <a
+                                href="/user/recipe/<%= recipe._id %>/comments"
+                                class="comment-btn stat-btn"
+                                aria-label="View comments"
+                            >
+                                <img src="/public/assets/comment-icon.svg" alt="Comment icon" />
+                                <span class="comment-count"><%= recipe.comments?.length || 0 %></span>
+                            </a>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p class="no-recipes">No recipes shared yet</p>
+            <% } %>
         </div>
-      </section>
+    </section>
     </main>
 
     <%- include('./partials/footer.ejs') %>
-
-    
-    <!-- filepath: /home/venemouscoder/Desktop/PROJECTS/BLAZE_SPICES/views/profile.ejs -->
-<script>
-    function showUnfollow(button) {
-        if (button.classList.contains('following')) {
-            button.querySelector('.follow-text').textContent = 'Unfollow';
-            button.querySelector('.follow-icon').src = '/public/assets/unfollow-icon.svg';
+    <script>
+      function showUnfollow(button) {
+        if (button.classList.contains("following")) {
+          button.querySelector(".follow-text").textContent = "Unfollow";
+          button.querySelector(".follow-icon").src =
+            "/public/assets/unfollow-icon.svg";
         }
-    }
+      }
 
-    function hideUnfollow(button) {
-        if (button.classList.contains('following')) {
-            button.querySelector('.follow-text').textContent = 'Following';
-            button.querySelector('.follow-icon').src = '/public/assets/following-icon.svg';
+      function hideUnfollow(button) {
+        if (button.classList.contains("following")) {
+          button.querySelector(".follow-text").textContent = "Following";
+          button.querySelector(".follow-icon").src =
+            "/public/assets/following-icon.svg";
         }
-    }
+      }
 
-    function toggleFollow(button, userId) {
-        const isFollowing = button.classList.contains('following');
-        const endpoint = `/user/${isFollowing ? 'unfollow' : 'follow'}/${userId}`;
-        
+      function toggleFollow(button, userId) {
+        const isFollowing = button.classList.contains("following");
+        const endpoint = `/user/${
+          isFollowing ? "unfollow" : "follow"
+        }/${userId}`;
+
         // Update UI immediately
-        button.classList.toggle('following');
-        const iconImg = button.querySelector('.follow-icon');
-        const textSpan = button.querySelector('.follow-text');
+        button.classList.toggle("following");
+        const iconImg = button.querySelector(".follow-icon");
+        const textSpan = button.querySelector(".follow-text");
 
         // Update button appearance
         if (!isFollowing) {
-            iconImg.src = '/public/assets/following-icon.svg';
-            textSpan.textContent = 'Following';
+          iconImg.src = "/public/assets/following-icon.svg";
+          textSpan.textContent = "Following";
         } else {
-            iconImg.src = '/public/assets/follow-icon.svg';
-            textSpan.textContent = 'Follow';
+          iconImg.src = "/public/assets/follow-icon.svg";
+          textSpan.textContent = "Follow";
         }
 
         // Update follower count
-        const followerCount = document.querySelector('.stat-card:last-child .stat-number');
+        const followerCount = document.querySelector(
+          ".stat-card:last-child .stat-number"
+        );
         const currentCount = parseInt(followerCount.textContent);
-        followerCount.textContent = isFollowing ? currentCount - 1 : currentCount + 1;
+        followerCount.textContent = isFollowing
+          ? currentCount - 1
+          : currentCount + 1;
 
         // Make API call
         fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
         })
-        .then(response => {
+          .then((response) => {
             if (!response.ok) {
-                // Revert changes if request failed
-                button.classList.toggle('following');
-                iconImg.src = `/public/assets/${isFollowing ? 'following-icon' : 'follow-icon'}.svg`;
-                textSpan.textContent = isFollowing ? 'Following' : 'Follow';
-                followerCount.textContent = currentCount;
-                throw new Error('Network response was not ok');
+              // Revert changes if request failed
+              button.classList.toggle("following");
+              iconImg.src = `/public/assets/${
+                isFollowing ? "following-icon" : "follow-icon"
+              }.svg`;
+              textSpan.textContent = isFollowing ? "Following" : "Follow";
+              followerCount.textContent = currentCount;
+              throw new Error("Network response was not ok");
             }
             return response.json();
-        })
-        .catch(error => {
-            console.error('Error:', error);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
             // Show error message to user
-            const errorMessage = document.createElement('div');
-            errorMessage.className = 'error-toast';
-            errorMessage.textContent = 'Failed to update follow status';
+            const errorMessage = document.createElement("div");
+            errorMessage.className = "error-toast";
+            errorMessage.textContent = "Failed to update follow status";
             document.body.appendChild(errorMessage);
             setTimeout(() => errorMessage.remove(), 3000);
-        });
-    }
-</script>
-    <script>
-        // Profile image preview
-        const profileInput = document.getElementById('profile-photo');
-        const profilePreview = document.getElementById('profile-preview');
+          });
+      }
+      // Profile image preview
+      const profileInput = document.getElementById("profile-photo");
+      const profilePreview = document.getElementById("profile-preview");
 
-        profileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    profilePreview.src = event.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
+      profileInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            profilePreview.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      // Replace the existing like button script with this
+      document.querySelectorAll(".like-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const recipeId = this.dataset.recipeId;
+          const likeIcon = this.querySelector(".like-icon");
+          const likeCount = this.querySelector(".like-count");
+          const isLiked = this.dataset.liked === "true";
+          let count = parseInt(likeCount.textContent);
+
+          // Update UI immediately
+          this.dataset.liked = (!isLiked).toString();
+          likeIcon.src = `/public/assets/${
+            !isLiked ? "heartlike.svg" : "heartlike-unlike.svg"
+          }`;
+          likeCount.textContent = isLiked ? count - 1 : count + 1;
+
+          if (!isLiked) {
+            likeIcon.parentElement.classList.add("liked");
+            setTimeout(
+              () => likeIcon.parentElement.classList.remove("liked"),
+              300
+            );
+          }
+
+          // Send request to server
+          fetch(`/user/recipe/like/${recipeId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((res) => {
+              if (!res.ok) {
+                // Revert changes if request failed
+                this.dataset.liked = isLiked.toString();
+                likeIcon.src = `/public/assets/${
+                  isLiked ? "heartlike.svg" : "heartlike-unlike.svg"
+                }`;
+                likeCount.textContent = count;
+                throw new Error("Network response was not ok");
+              }
+              return res.json();
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              // Show error message to user
+              const errorMessage = document.createElement("div");
+              errorMessage.className = "error-toast";
+              errorMessage.textContent = "Failed to update like status";
+              document.body.appendChild(errorMessage);
+              setTimeout(() => errorMessage.remove(), 3000);
+            });
         });
+      });
     </script>
     <script src="/public/js/sidebar.js"></script>
+    <script src="/public/js/like.js"></script>
   </body>
 </html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liked Recipes - Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/home.css">
+    <link rel="stylesheet" href="/public/css/sidebar.css">
+    <link rel="stylesheet" href="/public/css/likedrecipes.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <%- include('./partials/sidebar.ejs') %>
+    
+    <main class="liked-recipes-page">
+        <div class="liked-recipes-header">
+            <h1>Liked Recipes</h1>
+            <p class="recipes-count"><%= likedRecipes.length %> <%= likedRecipes.length === 1 ? 'Recipe' : 'Recipes' %></p>
+        </div>
+
+        <div class="recipe-grid">
+            <% if (likedRecipes.length > 0) { %>
+                <% likedRecipes.forEach(recipe => { %>
+                    <div class="recipe-card">
+                        <a href="/user/recipe/<%= recipe._id %>" class="recipe-card-link">
+                            <img 
+                                src="<%= recipe.image %>" 
+                                alt="<%= recipe.title %>" 
+                                class="recipe-img"
+                            />
+                            <span class="cook-time">
+                                <%= Number(recipe.cookingTime) + Number(recipe.preparationTime) %> min
+                            </span>
+                            <h3><%= recipe.title %></h3>
+                            <p class="recipe-author">
+                                By <span class="author-name"><%= recipe.owner.username %></span>
+                            </p>
+                        </a>
+                        <div class="recipe-actions">
+                            <button 
+                                class="like-btn stat-btn"
+                                aria-label="Unlike recipe"
+                                data-recipe-id="<%= recipe._id %>"
+                                data-liked="true"
+                            >
+                                <img 
+                                    src="/public/assets/heartlike.svg"
+                                    alt="Like icon"
+                                    class="like-icon"
+                                />
+                                <span class="like-count"><%= recipe.likes %></span>
+                            </button>
+                            <a 
+                                href="/user/recipe/<%= recipe._id %>/comments"
+                                class="comment-btn stat-btn"
+                                aria-label="View comments"
+                            >
+                                <img src="/public/assets/comment-icon.svg" alt="Comment icon" />
+                                <span class="comment-count"><%= recipe.comments?.length || 0 %></span>
+                            </a>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="no-recipes">
+                    <img src="/public/assets/heart-empty.svg" alt="" class="empty-icon">
+                    <h2>No liked recipes yet</h2>
+                    <p>Start exploring and liking recipes to see them here!</p>
+                </div>
+            <% } %>
+        </div>
+    </main>
+
+    <script src="/public/js/sidebar.js"></script>
+</body>
+</html>

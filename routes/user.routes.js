@@ -64,10 +64,20 @@ router.get('/followers', usercontrollers.getFollowers);
 
 router.get('/following', usercontrollers.getFollowing);
 
+router.get('/followers/:id', usercontrollers.getUserFollowers);
+
+router.get('/following/:id', usercontrollers.getUserFollowing);
+
 //like and unlike
 router.post('/like/:id', usercontrollers.likeRecipe);
 
-router.get('/recipe/:id', usercontrollers.getRecipe)
+router.get('/recipes', usercontrollers.getRecipes)
+
+router.get('/recipe/:id', usercontrollers.getRecipeById);
+
+router.get('/liked-recipes', usercontrollers.getLikedRecipes);
+
+router.get('/newrecipe', usercontrollers.getNewRecipePage)
 
 router.get('/recipe/:id/comments', usercontrollers.getComments);
 

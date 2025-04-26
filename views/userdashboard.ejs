@@ -40,15 +40,15 @@
         </div>
       </section>
 
-      <section class="dashboard-stats">
+      <div class="dashboard-stats">
         <div class="stat-card">
             <h3>My Recipes</h3>
             <p class="stat-number"><%=user.posts?.length || 0 %></p>
         </div>
-        <div class="stat-card">
+        <a href="/user/liked-recipes" class="stat-card clickable">
             <h3>Liked Recipes</h3>
-            <p class="stat-number"><%=user.likedRecipes?.length || 0 %></p>
-        </div>
+            <p class="stat-number"><%=user.likes?.length || 0 %></p>
+        </a>
         <a href="/user/followers" class="stat-card clickable">
             <h3>Followers</h3>
             <p class="stat-number"><%=user.followers?.length || 0 %></p>
@@ -57,7 +57,7 @@
             <h3>Following</h3>
             <p class="stat-number"><%=user.following?.length || 0 %></p>
         </a>
-    </section>
+    </div>
 
       <section class="user-actions">
         <div class="action-buttons">
@@ -79,27 +79,63 @@
       <section class="my-recipes">
         <h2>My Recipes</h2>
         <div class="recipe-grid">
-          <% if (user.posts && (user.posts.length > 0)) { %> <%
-          user.posts.forEach(post => { %>
-          <div class="recipe-card">
-            <img class="recipe-main-img" src="<%=post.image %>" alt="<%= post.title %>" />
-            <h3><%= post.title %></h3>
-            <div class="recipe-stats">
-              <span
-                ><img src="../public/assets/heartlike.png" alt="Likes" />
-                  <%=post.likes %></span
-                </span>
-              <span>
-                <img src="../public/assets/drawing-1.png" alt="Comments">
-                <%if(post.comments.length>0){%> <%=post.comments.length %> <%} else {%> <%=0
-                %> <%}%></span>
-            </div>
-          </div>
-          <% }) %> <% } else { %>
-          <p class="no-recipes">You haven't created any recipes yet.</p>
-          <% } %>
+            <% if (user.posts && (user.posts.length > 0)) { %>
+                <% user.posts.forEach(recipe => { %>
+                    <div class="recipe-card">
+                        <a href="/user/recipe/<%= recipe._id %>" class="recipe-card-link">
+                            <img 
+                                src="<%= recipe.image %>" 
+                                alt="<%= recipe.title %>" 
+                                class="recipe-img"
+                            />
+                            <%
+                                const totalMins = Number(recipe.cookingTime) + Number(recipe.preparationTime);
+                                let timeDisplay;
+                                if (totalMins > 60) {
+                                    const hours = Math.floor(totalMins / 60);
+                                    const mins = totalMins % 60;
+                                    timeDisplay = mins > 0 ? `${hours} hr ${mins} min` : `${hours} hr`;
+                                } else {
+                                    timeDisplay = `${totalMins} min`;
+                                }
+                            %>
+                            <span class="cook-time"><%= timeDisplay %></span>
+                            <h3><%= recipe.title %></h3>
+                            <p class="recipe-author">
+                                By <span class="author-name"><%= recipe.owner.username %></span>
+                            </p>
+                        </a>
+                        <div class="recipe-actions">
+                            <button 
+                                class="like-btn stat-btn"
+                                aria-label="Like recipe"
+                                data-recipe-id="<%= recipe._id %>"
+                                data-liked="<%= recipe.likedBy?.includes(user._id) ? 'true' : 'false' %>"
+                            >
+                                <img 
+                                    src="/public/assets/<%= recipe.likedBy?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
+                                    alt="Like icon"
+                                    class="like-icon"
+                                />
+                                <span class="like-count"><%= recipe.likes %></span>
+                            </button>
+    
+                            <a 
+                                href="/user/recipe/<%= recipe._id %>/comments"
+                                class="comment-btn stat-btn"
+                                aria-label="View comments"
+                            >
+                                <img src="/public/assets/comment-icon.svg" alt="Comment icon" />
+                                <span class="comment-count"><%= recipe.comments?.length || 0 %></span>
+                            </a>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p class="no-recipes">You haven't created any recipes yet.</p>
+            <% } %>
         </div>
-      </section>
+    </section>
     </main>
 
     <!-- delete modal -->

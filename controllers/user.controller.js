@@ -210,7 +210,33 @@ function getFeeds(req, res, next) {
     });
 }
 
-function getRecipe(req, res, next) {
+function getRecipes(req, res, next) {
+  User.findById(req.user._id)
+    .populate({
+      path: "posts",
+      populate: {
+        path: "owner",
+        select: "username profileImage",
+      },
+    })
+    .then((user) => {
+      console.log("USERFROMGETRECIPES: ", user.posts);
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("myrecipes", {
+        user: req.user,
+        recipes: user.posts,
+        currentPage: "recipes",
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching recipes:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+function getRecipeById(req, res, next) {
   const recipeId = req.params.id;
   recipe
     .findById(recipeId)
@@ -227,16 +253,24 @@ function getRecipe(req, res, next) {
     });
 }
 
+function getNewRecipePage(req, res, next) {
+  return res.render("newrecipe", {
+    user: req.user,
+    currentPage: "newrecipe",
+  });
+}
+
 function createRecipe(req, res, next) {
   const newRecipe = {
     owner: req.user._id,
     title: req.body.title,
     description: req.body.description,
-    ingredients: req.body.ingredients
-      .replace("[", "")
-      .replace("]", "")
-      .split(","),
-    steps: req.body.steps.replace("[", "").replace("]", "").split(","),
+    ingredients: req.body.ingredients,
+      // .replace("[", "")
+      // .replace("]", "")
+      // .split(","),
+    steps: req.body.steps,
+    // .replace("[", "").replace("]", "").split(","),
     image: req.file ? `/uploads/recipes/${req.file.filename}` : null, // Save the image path
     preparationTime: req.body.preparationTime,
     cookingTime: req.body.cookingTime,
@@ -492,42 +526,83 @@ function unfollowUser(req, res, next) {
 
 function getFollowers(req, res, next) {
   User.findById(req.user._id)
-      .populate('followers')
-      .then(user => {
-          if (!user) {
-              return res.status(404).redirect('/error');
-          }
-          return res.render('followers', {
-              user: req.user,
-              followers: user.followers,
-              currentPage: 'followers'
-          });
-      })
-      .catch(err => {
-          console.error('Error fetching followers:', err);
-          return res.status(500).redirect('/error');
+    .populate("followers")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("followers", {
+        user: req.user,
+        followers: user.followers,
+        currentPage: "followers",
       });
+    })
+    .catch((err) => {
+      console.error("Error fetching followers:", err);
+      return res.status(500).redirect("/error");
+    });
 }
 
 function getFollowing(req, res, next) {
   User.findById(req.user._id)
-      .populate('following')
-      .then(user => {
-          if (!user) {
-              return res.status(404).redirect('/error');
-          }
-          return res.render('following', {
-              user: req.user,
-              following: user.following,
-              currentPage: 'following'
-          });
-      })
-      .catch(err => {
-          console.error('Error fetching following:', err);
-          return res.status(500).redirect('/error');
+    .populate("following")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("following", {
+        user: req.user,
+        following: user.following,
+        currentPage: "following",
       });
+    })
+    .catch((err) => {
+      console.error("Error fetching following:", err);
+      return res.status(500).redirect("/error");
+    });
 }
 
+function getUserFollowers(req, res, next) {
+  const userId = req.params.id;
+  User.findById(userId)
+    .populate("followers")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("followers", {
+        user: req.user,
+        profileUser: user,
+        followers: user.followers,
+        currentPage: "followers",
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching followers:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+function getUserFollowing(req, res, next) {
+  const userId = req.params.id;
+  User.findById(userId)
+    .populate("following")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("following", {
+        user: req.user,
+        profileUser: user,
+        following: user.following,
+        currentPage: "following",
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching following:", err);
+      return res.status(500).redirect("/error");
+    });
+}
 // **********************************************/
 // *
 //*  like and unlike a recipe
@@ -554,6 +629,13 @@ function likeRecipe(req, res, next) {
         // Unlike: Remove user from likedBy and decrease likes count
         recipe.likedBy.pull(userId);
         recipe.likes = Math.max(0, recipe.likes - 1); // Prevent negative likes
+
+        // Remove recipe from user's likes array
+        await User.findByIdAndUpdate(
+          userId,
+          { $pull: { likes: recipeId } },
+          { new: true }
+        );
       } else if (String(userId) !== String(recipe.owner._id)) {
         // Like: Add user to likedBy and increase likes count
         const notification = {
@@ -571,19 +653,25 @@ function likeRecipe(req, res, next) {
           { new: true }
         );
 
+        // Add recipe to user's likes array
+        await User.findByIdAndUpdate(
+          userId,
+          { $addToSet: { likes: recipeId } },
+          { new: true }
+        );
+
         recipe.likedBy.push(userId);
         recipe.likes = (recipe.likes || 0) + 1;
-        // return res.redirect(req.get("Referrer") || "/");
       }
       return recipe.save();
     })
     .then((updatedRecipe) => {
       // Return JSON response for AJAX requests
-      return {
+      return res.json({
         status: "success",
         likes: updatedRecipe.likes,
         liked: updatedRecipe.likedBy.includes(userId),
-      };
+      });
     })
     .catch((err) => {
       console.error("Error liking/unliking recipe:", err);
@@ -591,6 +679,31 @@ function likeRecipe(req, res, next) {
         status: "error",
         message: "Failed to update like status",
       });
+    });
+}
+
+function getLikedRecipes(req, res, next) {
+  User.findById(req.user._id)
+    .populate({
+      path: "likes",
+      populate: {
+        path: "owner",
+        select: "username profileImage",
+      },
+    })
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      return res.render("likedrecipes", {
+        user: user,
+        likedRecipes: user.likes,
+        currentPage: "liked-recipes",
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching liked recipes:", err);
+      return res.status(500).redirect("/error");
     });
 }
 
@@ -769,7 +882,9 @@ module.exports = {
   getUpdatePassword,
   updatePassword,
   logout,
-  getRecipe,
+  getRecipeById,
+  getRecipes,
+  getNewRecipePage,
   createRecipe,
   getProfile,
   getMyProfile,
@@ -778,7 +893,10 @@ module.exports = {
   unfollowUser,
   getFollowers,
   getFollowing,
+  getUserFollowers,
+  getUserFollowing,
   likeRecipe,
+  getLikedRecipes,
   getComments,
   createComment,
   updateComment,

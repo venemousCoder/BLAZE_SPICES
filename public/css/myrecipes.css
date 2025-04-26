@@ -1,0 +1,243 @@
+.myrecipes-page {
+    margin-left: 280px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-left: 280px;
+}
+
+.myrecipes-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.myrecipes-header h1 {
+    font-size: 2rem;
+    margin: 0;
+    color: var(--text-color);
+}
+
+.recipes-count {
+    color: #666;
+    margin: 0;
+}
+
+.create-recipe-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 8px 16px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-recipe-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.create-recipe-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.recipe-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.recipe-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recipe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.recipe-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    flex: 1;
+    padding: 10px 10px 0;
+    position: relative;
+}
+
+.recipe-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.cook-time {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+}
+
+.recipe-card h3 {
+    font-size: 1.2rem;
+    margin: 10px 0;
+    color: var(--text-color);
+}
+
+.recipe-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 10px;
+}
+
+.recipe-date {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.recipe-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-top: 1px solid #eee;
+}
+
+.recipe-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.stat-btn img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+}
+
+.recipe-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-btn,
+.delete-btn {
+    padding: 8px;
+    border: none;
+    background: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.edit-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.delete-btn:hover {
+    background: #ffebeb;
+}
+
+.edit-btn img,
+.delete-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.no-recipes {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: #666;
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Accessibility */
+.create-recipe-btn:focus-visible,
+.recipe-card-link:focus-visible,
+.edit-btn:focus-visible,
+.delete-btn:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .myrecipes-page {
+        margin-left: 0;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .myrecipes-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .recipe-img {
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .myrecipes-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .create-recipe-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .recipe-card,
+    .create-recipe-btn,
+    .edit-btn,
+    .delete-btn {
+        transition: none;
+    }
+}

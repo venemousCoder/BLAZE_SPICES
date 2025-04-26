@@ -1,81 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Followers | Blaze Recipes</title>
-    <link rel="stylesheet" href="../public/css/home.css">
-    <link rel="stylesheet" href="../public/css/sidebar.css">
-    <link rel="stylesheet" href="../public/css/followers.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-</head>
-<body>
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link rel="stylesheet" href="/public/css/sidebar.css" />
+    <link rel="stylesheet" href="/public/css/followers.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <%- include('./partials/sidebar.ejs') %>
-    
-    <main class="followers-page">
-        <div class="followers-header">
-            <h1>Followers</h1>
-            <p class="followers-count"><%= followers.length %> <%= followers.length === 1 ? 'Follower' : 'Followers' %></p>
-        </div>
 
-        <div class="followers-grid">
-            <% if (followers.length > 0) { %>
-                <% followers.forEach(follower => { %>
-                    <div class="follower-card">
-                        <img 
-                            src="<%= follower.profileImage || '../public/assets/default-profile.svg' %>" 
-                            alt="<%= follower.username %>'s profile picture"
-                            class="follower-avatar"
-                        >
-                        <div class="follower-info">
-                            <a href="/user/profile/<%= follower._id %>" class="follower-name">
-                                <%= follower.username %>
-                            </a>
-                            <span class="follower-tag"><%= follower.tag || 'Kitchen Helper' %></span>
-                        </div>
-                        <button 
-                            class="follow-btn <%= user.following.includes(follower._id) ? 'following' : '' %>"
-                            data-user-id="<%= follower._id %>"
-                            onclick="toggleFollow(this)"
-                            aria-label="<%= user.following.includes(follower._id) ? 'Unfollow' : 'Follow' %> <%= follower.username %>"
-                        >
-                            <%= user.following.includes(follower._id) ? 'Following' : 'Follow' %>
-                        </button>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <div class="no-followers">
-                    <img src="../public/assets/no-followers.svg" alt="" class="empty-icon">
-                    <h2>No followers yet</h2>
-                    <p>Share your recipes and interact with others to gain followers!</p>
-                </div>
+    <main class="followers-page">
+      <div class="followers-header">
+        <h1>Followers</h1>
+        <p class="followers-count">
+          <%= followers.length %> <%= followers.length === 1 ? 'Follower' :
+          'Followers' %>
+        </p>
+      </div>
+
+      <div class="followers-grid">
+        <% if (followers.length > 0) { %> <% followers.forEach(follower => { %>
+        <div class="follower-card">
+          <img
+            src="<%= follower.profileImage || '../public/assets/default-profile.svg' %>"
+            alt="<%= follower.username %>'s profile picture"
+            class="follower-avatar"
+          />
+          <div class="follower-info">
+            <a href="/user/profile/<%= follower._id %>" class="follower-name">
+              <%= follower.username %>
+            </a>
+            <span class="follower-tag"
+              ><%= follower.tag || 'Kitchen Helper' %></span
+            >
+          </div>
+          <% if (String(user._id) !== String(follower._id)) { %>
+            <button 
+                class="follow-btn <%= user.following.includes(follower._id) ? 'following' : '' %>"
+                data-user-id="<%= follower._id %>"
+                onclick="toggleFollow(this)"
+                aria-label="<%= user.following.includes(follower._id) ? 'Unfollow' : 'Follow' %> <%= follower.username %>"
+            >
+                <%= user.following.includes(follower._id) ? 'Following' : 'Follow' %>
+            </button>
             <% } %>
         </div>
+        <% }) %> <% } else { %>
+        <div class="no-followers">
+          <img
+            src="../public/assets/no-followers.svg"
+            alt=""
+            class="empty-icon"
+          />
+          <h2>No followers yet</h2>
+          <p>Share your recipes and interact with others to gain followers!</p>
+        </div>
+        <% } %>
+      </div>
     </main>
 
     <script>
-        function toggleFollow(button) {
-            const userId = button.dataset.userId;
-            const isFollowing = button.classList.contains('following');
-            const endpoint = isFollowing ? '/user/unfollow/' : '/user/follow/';
+      function toggleFollow(button) {
+        const userId = button.dataset.userId;
+        const isFollowing = button.classList.contains("following");
+        const endpoint = isFollowing ? "/user/unfollow/" : "/user/follow/";
 
-            fetch(endpoint + userId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    button.classList.toggle('following');
-                    button.textContent = isFollowing ? 'Follow' : 'Following';
-                    button.setAttribute('aria-label', 
-                        `${isFollowing ? 'Follow' : 'Unfollow'} ${button.closest('.follower-card').querySelector('.follower-name').textContent}`
-                    );
-                }
-            })
-            .catch(console.error);
-        }
+        fetch(endpoint + userId, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              button.classList.toggle("following");
+              button.textContent = isFollowing ? "Follow" : "Following";
+              button.setAttribute(
+                "aria-label",
+                `${isFollowing ? "Follow" : "Unfollow"} ${
+                  button
+                    .closest(".follower-card")
+                    .querySelector(".follower-name").textContent
+                }`
+              );
+            }
+          })
+          .catch(console.error);
+      }
     </script>
-</body>
+  </body>
 </html>
