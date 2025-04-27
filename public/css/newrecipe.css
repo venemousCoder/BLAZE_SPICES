@@ -170,6 +170,51 @@ textarea {
     object-fit: contain;
 }
 
+.media-upload-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.media-type-selector {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.media-type-btn {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    flex: 1;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.media-type-btn.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.media-upload {
+    position: relative;
+    display: none;
+}
+
+.media-upload.active {
+    display: block;
+}
+
+.video-preview {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
 .form-actions {
     margin-top: 2rem;
     display: flex;

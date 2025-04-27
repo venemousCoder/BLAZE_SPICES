@@ -107,7 +107,10 @@
               <% if (user && comment.user._id.toString() === user.id.toString())
               { %>
               <div class="comment-actions">
-                <button class="edit-comment-btn" aria-label="Edit comment" onclick="showEditComment('<%= comment._id %>', '<%- comment.content.replace(/'/g, "'").replace(/"/g, '&quot;') %>')">
+                <button class="edit-comment-btn" aria-label="Edit comment"
+                onclick="showEditComment('<%= comment._id %>', '<%-
+                comment.content.replace(/'/g, "'").replace(/"/g, '&quot;')
+                %>')">
                 <i class="fas fa-edit">Edit</i>
                 <form
                   action="/user/recipe/<%= recipe._id %>/comments/<%= comment._id %>/delete"
@@ -157,7 +160,6 @@
   <script src="/public/js/like.js"></script>
   <script>
     function showEditComment(commentId, content) {
-        console.log("working")
       document.getElementById("comment-content-" + commentId).style.display =
         "none";
       document.getElementById("edit-form-" + commentId).style.display = "block";

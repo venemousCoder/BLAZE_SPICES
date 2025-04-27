@@ -189,20 +189,53 @@
           </div>
 
           <!-- Image Upload -->
-          <div class="form-section">
-            <h2>Recipe Image</h2>
-            <div class="image-upload">
+          <!-- Replace the Image Upload section with this -->
+          <div class="form-section media-upload-section">
+            <h2>Recipe Media</h2>
+            <div class="media-type-selector">
+              <button
+                type="button"
+                class="media-type-btn active"
+                data-type="image"
+              >
+                Image
+              </button>
+              <button type="button" class="media-type-btn" data-type="video">
+                Video
+              </button>
+            </div>
+
+            <div class="media-upload active" id="imageUpload">
               <input
                 type="file"
-                id="image"
+                id="recipeImage"
                 name="recipeImage"
                 accept="image/*"
-                required
+                class="media-input"
               />
               <div class="image-preview" id="imagePreview">
                 <img src="/public/assets/upload-image.svg" alt="Upload image" />
                 <p>Click or drag image here</p>
               </div>
+            </div>
+
+            <div class="media-upload" id="videoUpload">
+              <input
+                type="file"
+                id="recipeVideo"
+                name="recipeVideo"
+                accept="video/*"
+                class="media-input"
+              />
+              <div class="image-preview" id="videoPreview">
+                <img src="/public/assets/upload-video.svg" alt="Upload video" />
+                <p>Click or drag video here (Max 100MB)</p>
+              </div>
+              <video
+                controls
+                class="video-preview"
+                style="display: none"
+              ></video>
             </div>
           </div>
         </div>
@@ -221,6 +254,58 @@
     </main>
 
     <script>
+      // Add this to your existing script section
+      const mediaTypeBtns = document.querySelectorAll(".media-type-btn");
+      const imageUpload = document.getElementById("imageUpload");
+      const videoUpload = document.getElementById("videoUpload");
+      const recipeImage = document.getElementById("recipeImage");
+      const recipeVideo = document.getElementById("recipeVideo");
+      const videoPreview = document.querySelector(".video-preview");
+
+      mediaTypeBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          // Update button states
+          mediaTypeBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          // Show/hide upload sections
+          if (btn.dataset.type === "image") {
+            imageUpload.classList.add("active");
+            videoUpload.classList.remove("active");
+            recipeVideo.value = "";
+            videoPreview.style.display = "none";
+            recipeVideo.removeAttribute("required");
+            recipeImage.setAttribute("required", "");
+          } else {
+            imageUpload.classList.remove("active");
+            videoUpload.classList.add("active");
+            recipeImage.value = "";
+            document.querySelector("#imagePreview img").src =
+              "/public/assets/upload-image.svg";
+            document.querySelector("#imagePreview p").style.display = "block";
+            recipeImage.removeAttribute("required");
+            recipeVideo.setAttribute("required", "");
+          }
+        });
+      });
+
+      // Add video preview functionality
+      recipeVideo.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          if (file.size > 100 * 1024 * 1024) {
+            // 100MB limit
+            alert("Video file is too large. Please choose a file under 100MB.");
+            this.value = "";
+            return;
+          }
+          const video = document.querySelector(".video-preview");
+          video.src = URL.createObjectURL(file);
+          video.style.display = "block";
+          document.querySelector("#videoPreview img").style.display = "none";
+          document.querySelector("#videoPreview p").style.display = "none";
+        }
+      });
       function addIngredient() {
         const item = document.createElement("div");
         item.className = "ingredient-item";
@@ -279,11 +364,21 @@
       });
 
       // Form submission
+      // Update your existing form submission handler
       document
         .getElementById("recipeForm")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
           const formData = new FormData(this);
+
+          // Remove the unused media input from formData
+          if (
+            document.querySelector('.media-type-btn[data-type="image"].active')
+          ) {
+            formData.delete("recipeVideo");
+          } else {
+            formData.delete("recipeImage");
+          }
 
           try {
             const response = await fetch("/user/recipes", {

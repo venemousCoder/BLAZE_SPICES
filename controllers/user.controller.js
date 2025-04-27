@@ -1,8 +1,9 @@
 // Description: This file contains the user controller.
 // It exports a function that renders the home view.
-// const = require("../models/user");
 const recipe = require("../models/recipe");
 const { User } = require("../models/user"); // Make sure this is the discriminator!
+const path = require("path");
+const fs = require("fs");
 
 function getDahsboard(req, res, next) {
   if (req.user.role === "admin") {
@@ -210,6 +211,124 @@ function getFeeds(req, res, next) {
     });
 }
 
+// Render the edit recipe page with current recipe data
+function getUpdateRecipe(req, res, next) {
+  const recipeId = req.params.id;
+  recipe
+    .findById(recipeId)
+    .then((recipeDoc) => {
+      if (!recipeDoc) {
+        return res.status(404).redirect("/error");
+      }
+      // Only allow the owner to edit
+      if (String(recipeDoc.owner) !== String(req.user._id)) {
+        return res.status(403).redirect("/error");
+      }
+      return res.render("updaterecipe", {
+        recipe: recipeDoc,
+        user: req.user,
+        currentPage: "edit-recipe",
+      });
+    })
+    .catch((err) => {
+      console.error("Error loading recipe for edit:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+// Handle the update recipe form submission
+function updateRecipe(req, res, next) {
+  const recipeId = req.params.id;
+  recipe
+    .findById(recipeId)
+    .then(async (recipeDoc) => {
+      if (!recipeDoc) {
+        return res.status(404).redirect("/error");
+      }
+      // Only allow the owner to update
+      if (String(recipeDoc.owner) !== String(req.user._id)) {
+        return res.status(403).redirect("/error");
+      }
+
+      // Update fields
+      recipeDoc.title = req.body.title;
+      recipeDoc.description = req.body.description;
+      recipeDoc.ingredients = Array.isArray(req.body.ingredients)
+        ? req.body.ingredients
+        : [req.body.ingredients];
+      recipeDoc.steps = Array.isArray(req.body.steps)
+        ? req.body.steps
+        : [req.body.steps];
+      recipeDoc.preparationTime = req.body.preparationTime;
+      recipeDoc.cookingTime = req.body.cookingTime;
+      recipeDoc.cuisine = req.body.cuisine;
+      recipeDoc.category = req.body.category;
+      recipeDoc.difficulty = req.body.difficulty;
+      recipeDoc.servings = req.body.servings;
+
+      // Handle image update if a new file is uploaded
+        // Optionally delete the old image file
+        if (req.file) {
+          if (req.file.mimetype.startsWith("image/")) {
+            recipeDoc.image = `/uploads/recipes/${req.file.filename}`;
+          } else if (req.file.mimetype.startsWith("video/")) {
+            recipeDoc.video = `/uploads/videos/${req.file.filename}`;
+          }
+        }
+
+      await recipeDoc.save();
+      return res.redirect(`/user/recipes`);
+    })
+    .catch((err) => {
+      console.error("Error updating recipe:", err);
+      return res.status(500).redirect("/error");
+    });
+}
+
+// Delete a recipe (and remove from user's posts)
+function deleteRecipe(req, res, next) {
+  const recipeId = req.params.id;
+  recipe
+    .findById(recipeId)
+    .then(async (recipeDoc) => {
+      if (!recipeDoc) {
+        return res
+          .status(404)
+          .json({ status: "error", message: "Recipe not found" });
+      }
+      // Only allow the owner to delete
+      if (String(recipeDoc.owner) !== String(req.user._id)) {
+        return res.status(403).json({ status: "error", message: "Forbidden" });
+      }
+
+      // Optionally delete the image file
+      if (recipeDoc.image && recipeDoc.image.startsWith("/uploads/recipes/")) {
+        const imgPath = path.join(__dirname, "../public", recipeDoc.image);
+        fs.unlink(imgPath, (err) => {
+          if (err) console.warn("Could not delete recipe image:", err);
+        });
+      }
+
+      // Remove recipe from user's posts
+      await User.findByIdAndUpdate(recipeDoc.owner, {
+        $pull: { posts: recipeId },
+      });
+
+      // Delete the recipe
+      await recipe.deleteOne({ _id: recipeId });
+
+      return res
+        .status(200)
+        .json({ status: "success", message: "Recipe deleted" });
+    })
+    .catch((err) => {
+      console.error("Error deleting recipe:", err);
+      return res
+        .status(500)
+        .json({ status: "error", message: "Failed to delete recipe" });
+    });
+}
+
 function getRecipes(req, res, next) {
   User.findById(req.user._id)
     .populate({
@@ -220,7 +339,6 @@ function getRecipes(req, res, next) {
       },
     })
     .then((user) => {
-      console.log("USERFROMGETRECIPES: ", user.posts);
       if (!user) {
         return res.status(404).redirect("/error");
       }
@@ -265,13 +383,6 @@ function createRecipe(req, res, next) {
     owner: req.user._id,
     title: req.body.title,
     description: req.body.description,
-    ingredients: req.body.ingredients,
-      // .replace("[", "")
-      // .replace("]", "")
-      // .split(","),
-    steps: req.body.steps,
-    // .replace("[", "").replace("]", "").split(","),
-    image: req.file ? `/uploads/recipes/${req.file.filename}` : null, // Save the image path
     preparationTime: req.body.preparationTime,
     cookingTime: req.body.cookingTime,
     likes: 0,
@@ -283,6 +394,22 @@ function createRecipe(req, res, next) {
     likedBy: [],
   };
 
+  // Handle media
+  if (req.file) {
+    if (req.file.mimetype.startsWith("image/")) {
+      newRecipe.image = `/uploads/recipes/${req.file.filename}`;
+    } else if (req.file.mimetype.startsWith("video/")) {
+      newRecipe.video = `/uploads/videos/${req.file.filename}`;
+    }
+  }
+
+  newRecipe.ingredients = Array.isArray(req.body.ingredients)
+    ? req.body.ingredients
+    : [req.body.ingredients];
+  newRecipe.steps = Array.isArray(req.body.steps)
+    ? req.body.steps
+    : [req.body.steps];
+
   recipe
     .create(newRecipe)
     .then((recipe) => {
@@ -290,33 +417,10 @@ function createRecipe(req, res, next) {
         return res.status(500).redirect("/error");
       }
       // Add the recipe to the user's posts array
-      console.log(recipe._id);
       User.findByIdAndUpdate(req.user._id, {
         $addToSet: { posts: recipe._id },
       })
-        .then((user) => {
-          //notify followers
-          const notification = {
-            read: false,
-            from: user.id,
-            message: `made a new recipe 🥣`,
-            type: "recipe",
-            reference: recipe._id, // ID of the new recipe
-            createdAt: new Date(),
-          };
-          User.updateMany(
-            { following: user.id },
-            { notifications: notification },
-            { new: true }
-          )
-            .then(() => {
-              console.log("Recipe created successfully:", recipe);
-              return res.status(201).redirect("/user/feeds");
-            })
-            .catch((err) => {
-              console.error("Error updating user posts:", err);
-            });
-        })
+        .then(() => res.status(201).redirect("/user/feeds"))
         .catch((err) => {
           console.error("Error updating user posts:", err);
         });
@@ -351,6 +455,7 @@ function getProfile(req, res, next) {
   const userId = req.params.id;
   User.findById(userId)
     .populate("posts")
+    .populate("posts.owner")
     .then((user) => {
       if (!user) {
         return res.status(404).redirect("/error");
@@ -868,6 +973,32 @@ function markAsRead(req, res, next) {
 
 //**********************************************/
 //*
+// *  VIDEO UPLOAD
+//*
+//**********************************************/
+
+// This function is used to upload a video for a recipe
+async function uploadRecipeVideo(req, res, next) {
+  const recipeId = req.params.id;
+  if (!req.file) {
+    return res.status(400).json({ status: "error", message: "No video uploaded" });
+  }
+  try {
+    const recipeDoc = await recipe.findById(recipeId);
+    if (!recipeDoc) {
+      return res.status(404).json({ status: "error", message: "Recipe not found" });
+    }
+    // Save the video path (adjust the field as needed)
+    recipeDoc.video = `/uploads/videos/${req.file.filename}`;
+    await recipeDoc.save();
+    return res.status(200).json({ status: "success", video: recipeDoc.video });
+  } catch (err) {
+    console.error("Error uploading video:", err);
+    return res.status(500).json({ status: "error", message: "Failed to upload video" });
+  }
+}
+
+//*
 function hi(req, res, next) {
   return res.render("hello", { bye: req.params.id });
 }
@@ -882,6 +1013,9 @@ module.exports = {
   getUpdatePassword,
   updatePassword,
   logout,
+  updateRecipe,
+  getUpdateRecipe,
+  deleteRecipe,
   getRecipeById,
   getRecipes,
   getNewRecipePage,
@@ -904,5 +1038,6 @@ module.exports = {
   getNotifications,
   markAllAsRead,
   markAsRead,
+  uploadRecipeVideo,
   hi,
 };

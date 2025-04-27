@@ -11,9 +11,9 @@ const recipeSchema = mongoose.Schema(
     likes: {
       type: Number,
       default: 0,
-     },
+    },
 
-     likedBy: [
+    likedBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Account",
@@ -95,6 +95,7 @@ const recipeSchema = mongoose.Schema(
           ref: "Account",
           required: true,
         },
+        video: { type: String }, // Add this field if not present
         content: {
           type: String,
           required: true,

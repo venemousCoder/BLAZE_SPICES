@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Recipe | Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/home.css">
+    <link rel="stylesheet" href="/public/css/sidebar.css">
+    <link rel="stylesheet" href="/public/css/updaterecipe.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <%- include('./partials/sidebar.ejs') %>
+    
+    <main class="updaterecipe-page">
+        
+        <form class="recipe-form" id="recipeForm" enctype="multipart/form-data">
+            <div class="form-header">
+                <h1>Edit Recipe</h1>
+                <p>Update your culinary masterpiece</p>
+            </div>
+
+            <div class="form-grid">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h2>Basic Information</h2>
+                    <div class="form-group">
+                        <label for="title">Recipe Title</label>
+                        <input type="text" id="title" name="title" required maxlength="100"
+                            value="<%= recipe.title %>" placeholder="e.g., Homemade Chocolate Chip Cookies">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" required
+                            placeholder="Describe your recipe"><%= recipe.description %></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select category</option>
+                                <% ['Appetizer', 'Main Course', 'Dessert', 'Salad', 'Soup', 'Beverage', 'Snack', 'Side Dish'].forEach(cat => { %>
+                                    <option value="<%= cat %>" <%= recipe.category === cat ? 'selected' : '' %>><%= cat %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cuisine">Cuisine</label>
+                            <select id="cuisine" name="cuisine" required>
+                                <option value="">Select cuisine</option>
+                                <% ['African', 'Asian', 'European', 'American', 'Middle Eastern', 'Latin American', 'Caribbean', 'Oceania', 'Fusion', 'Other'].forEach(cuisine => { %>
+                                    <option value="<%= cuisine %>" <%= recipe.cuisine === cuisine ? 'selected' : '' %>><%= cuisine %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="difficulty">Difficulty</label>
+                            <select id="difficulty" name="difficulty" required>
+                                <option value="">Select difficulty</option>
+                                <% ['Easy', 'Medium', 'Hard'].forEach(diff => { %>
+                                    <option value="<%= diff %>" <%= recipe.difficulty === diff ? 'selected' : '' %>><%= diff %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="servings">Servings</label>
+                            <input type="number" id="servings" name="servings" required min="1" max="50"
+                                value="<%= recipe.servings %>" placeholder="e.g., 4">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Information -->
+                <div class="form-section">
+                    <h2>Time Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="preparationTime">Preparation Time (minutes)</label>
+                            <input type="number" id="preparationTime" name="preparationTime" required min="0"
+                                value="<%= recipe.preparationTime %>" placeholder="e.g., 15">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cookingTime">Cooking Time (minutes)</label>
+                            <input type="number" id="cookingTime" name="cookingTime" required min="0"
+                                value="<%= recipe.cookingTime %>" placeholder="e.g., 30">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ingredients -->
+                <div class="form-section">
+                    <h2>Ingredients</h2>
+                    <div id="ingredientsList">
+                        <% recipe.ingredients.forEach(ingredient => { %>
+                            <div class="ingredient-item">
+                                <input type="text" name="ingredients" required value="<%= ingredient %>" placeholder="e.g., 2 cups flour">
+                                <button type="button" class="remove-btn" onclick="removeIngredient(this)">×</button>
+                            </div>
+                        <% }) %>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addIngredient()">+ Add Ingredient</button>
+                </div>
+
+                <!-- Steps -->
+                <div class="form-section">
+                    <h2>Preparation Steps</h2>
+                    <div id="stepsList">
+                        <% recipe.steps.forEach((step, index) => { %>
+                            <div class="step-item">
+                                <span class="step-number"><%= index + 1 %></span>
+                                <textarea name="steps" required placeholder="Describe this step"><%= step %></textarea>
+                                <button type="button" class="remove-btn" onclick="removeStep(this)">×</button>
+                            </div>
+                        <% }) %>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addStep()">+ Add Step</button>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="form-section">
+                    <h2>Recipe Image</h2>
+                    <div class="image-upload">
+                        <input type="file" id="recipeImage" name="recipeImage" accept="image/*">
+                        <div class="image-preview" id="imagePreview">
+                            <img src="<%= recipe.image %>" alt="Current recipe image">
+                            <p>Click or drag to change image</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="secondary-btn" onclick="window.location.href='/user/recipes'">Cancel</button>
+                <button type="submit" class="primary-btn">Update Recipe</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        function addIngredient() {
+            const item = document.createElement('div');
+            item.className = 'ingredient-item';
+            item.innerHTML = `
+                <input type="text" name="ingredients" required placeholder="e.g., 2 cups flour">
+                <button type="button" class="remove-btn" onclick="removeIngredient(this)">×</button>
+            `;
+            document.getElementById('ingredientsList').appendChild(item);
+        }
+
+        function removeIngredient(btn) {
+            const list = document.getElementById('ingredientsList');
+            if (list.children.length > 1) {
+                btn.parentElement.remove();
+            }
+        }
+
+        function addStep() {
+            const list = document.getElementById('stepsList');
+            const item = document.createElement('div');
+            item.className = 'step-item';
+            item.innerHTML = `
+                <span class="step-number">${list.children.length + 1}</span>
+                <textarea name="steps" required placeholder="Describe this step"></textarea>
+                <button type="button" class="remove-btn" onclick="removeStep(this)">×</button>
+            `;
+            list.appendChild(item);
+            updateStepNumbers();
+        }
+
+        function removeStep(btn) {
+            const list = document.getElementById('stepsList');
+            if (list.children.length > 1) {
+                btn.parentElement.remove();
+                updateStepNumbers();
+            }
+        }
+
+        function updateStepNumbers() {
+            document.querySelectorAll('.step-number').forEach((span, index) => {
+                span.textContent = index + 1;
+            });
+        }
+
+        // Form submission
+        document.getElementById('recipeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('/user/recipes/<%= recipe._id %>/edit', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    window.location.href = '/user/recipes';
+                    console.log("FORM DATA:: ", formData)
+                } else {
+                    document.getElementById('recipeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('/user/recipes/<%= recipe._id %>/edit', {
+                    method: 'POST',
+                    // headers: { "Content-Type": "application/json" },
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    window.location.href = '/user/recipes';
+                    console.log("FORM DATA:: ", formData)
+                } else {
+                    throw new Error('Failed to update recipe');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to update recipe. Please try again.');
+            }
+        }); new Error('Failed to update recipe');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to update recipe. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -5,6 +5,8 @@ const jwtauth = require("../utils/jwt");
 const multer = require("multer");
 const path = require("path");
 const uploadd = require("../utils/multer");
+const uploadVideo = require("../utils/multerVideo");
+const mediaUpload = require("../utils/mediaUpload");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -48,7 +50,7 @@ router.get("/updatepass", usercontrollers.getUpdatePassword);
 
 router.post(
   "/recipes",
-  upload.single("recipeImage"),
+  mediaUpload,
   usercontrollers.createRecipe
 );
 
@@ -56,41 +58,63 @@ router.get("/myprofile", usercontrollers.getMyProfile);
 
 router.get("/profile/:id", usercontrollers.getProfile);
 
-router.post('/follow/:id', usercontrollers.followUser);
+router.post("/follow/:id", usercontrollers.followUser);
 
-router.post('/unfollow/:id', usercontrollers.unfollowUser);
+router.post("/unfollow/:id", usercontrollers.unfollowUser);
 
-router.get('/followers', usercontrollers.getFollowers);
+router.get("/followers", usercontrollers.getFollowers);
 
-router.get('/following', usercontrollers.getFollowing);
+router.get("/following", usercontrollers.getFollowing);
 
-router.get('/followers/:id', usercontrollers.getUserFollowers);
+router.get("/followers/:id", usercontrollers.getUserFollowers);
 
-router.get('/following/:id', usercontrollers.getUserFollowing);
+router.get("/following/:id", usercontrollers.getUserFollowing);
 
 //like and unlike
-router.post('/like/:id', usercontrollers.likeRecipe);
+router.post("/like/:id", usercontrollers.likeRecipe);
 
-router.get('/recipes', usercontrollers.getRecipes)
+router.get("/recipes", usercontrollers.getRecipes);
 
-router.get('/recipe/:id', usercontrollers.getRecipeById);
+router.get("/recipes/:id/edit", usercontrollers.getUpdateRecipe);
 
-router.get('/liked-recipes', usercontrollers.getLikedRecipes);
+router.post(
+  "/recipes/:id/edit",
+  mediaUpload,
+  usercontrollers.updateRecipe
+);
 
-router.get('/newrecipe', usercontrollers.getNewRecipePage)
+router.post(
+  "/recipes/:id/upload-video",
+  uploadVideo.single("recipeVideo"),
+  usercontrollers.uploadRecipeVideo
+);
 
-router.get('/recipe/:id/comments', usercontrollers.getComments);
+router.delete("/recipes/:id/delete", usercontrollers.deleteRecipe);
 
-router.post('/recipe/:id/comments', usercontrollers.createComment);
+router.get("/recipe/:id", usercontrollers.getRecipeById);
 
-router.post('/recipe/:id/comments/:commentId/edit', usercontrollers.updateComment);
+router.get("/liked-recipes", usercontrollers.getLikedRecipes);
 
-router.post('/recipe/:id/comments/:commentId/delete', usercontrollers.deleteComment);
+router.get("/newrecipe", usercontrollers.getNewRecipePage);
 
-router.get("/notifications", usercontrollers.getNotifications)
+router.get("/recipe/:id/comments", usercontrollers.getComments);
 
-router.post("/notifications/:id/read", usercontrollers.markAsRead)
+router.post("/recipe/:id/comments", usercontrollers.createComment);
 
-router.post("/notifications/mark-all-read", usercontrollers.markAllAsRead)
+router.post(
+  "/recipe/:id/comments/:commentId/edit",
+  usercontrollers.updateComment
+);
+
+router.post(
+  "/recipe/:id/comments/:commentId/delete",
+  usercontrollers.deleteComment
+);
+
+router.get("/notifications", usercontrollers.getNotifications);
+
+router.post("/notifications/:id/read", usercontrollers.markAsRead);
+
+router.post("/notifications/mark-all-read", usercontrollers.markAllAsRead);
 
 module.exports = router;

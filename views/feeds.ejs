@@ -163,27 +163,35 @@
             <input type="text" id="title" name="title" required />
           </div>
 
-          <div class="form-group">
-            <label for="recipeImage">Recipe Image</label>
-            <div class="image-upload-container">
-              <div class="image-preview" id="imagePreview">
-                <img
-                  src="/public/assets/place-holder.png"
-                  alt=""
-                  id="preview"
-                />
-                <div class="upload-text">Click or drag to upload</div>
-              </div>
-              <input
-                type="file"
-                id="recipeImage"
-                name="recipeImage"
-                accept="image/*"
-                class="image-input"
-                required
-              />
-            </div>
+          <!-- Add this inside your recipe modal form, replacing the existing image upload section -->
+<div class="form-group media-upload-section">
+  <h2>Recipe Media</h2>
+  <div class="media-type-selector">
+      <button type="button" class="media-type-btn active" data-type="image">Image</button>
+      <button type="button" class="media-type-btn" data-type="video">Video</button>
+  </div>
+  
+  <div class="media-upload active" id="imageUpload">
+      <div class="image-upload-container">
+          <div class="image-preview" id="imagePreview">
+              <img src="/public/assets/place-holder.png" alt="" id="preview" />
+              <div class="upload-text">Click or drag to upload image</div>
           </div>
+          <input type="file" id="recipeImage" name="recipeImage" accept="image/*" class="image-input" />
+      </div>
+  </div>
+
+  <div class="media-upload" id="videoUpload">
+      <div class="image-upload-container">
+          <div class="image-preview" id="videoPreview">
+              <img src="/public/assets/upload-video.svg" alt="" />
+              <div class="upload-text">Click or drag to upload video (Max 100MB)</div>
+          </div>
+          <input type="file" id="recipeVideo" name="recipeVideo" accept="video/*" class="image-input" />
+      </div>
+      <video controls class="video-preview" style="display: none;"></video>
+  </div>
+</div>
 
           <div class="form-group">
             <label for="description">Description</label>

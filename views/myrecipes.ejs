@@ -73,7 +73,7 @@
             </div>
             <div class="recipe-controls">
               <a
-                href="/user/recipe/edit/<%= recipe._id %>"
+                href="/user/recipes/<%= recipe._id %>/edit"
                 class="edit-btn"
                 aria-label="Edit recipe"
               >
@@ -105,7 +105,7 @@
     <script>
       function deleteRecipe(recipeId) {
         if (confirm("Are you sure you want to delete this recipe?")) {
-          fetch(`/user/recipe/delete/${recipeId}`, {
+          fetch(`/user/recipes/${recipeId}/delete`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
