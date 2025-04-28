@@ -11,6 +11,11 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="shortcut icon"
+      href="../public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
   </head>
   <body>
     <%- include('./partials/sidebar.ejs') %>
@@ -351,17 +356,19 @@
       }
 
       // Image preview
-      document.getElementById("image").addEventListener("change", function (e) {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            document.querySelector("#imagePreview img").src = e.target.result;
-            document.querySelector("#imagePreview p").style.display = "none";
-          };
-          reader.readAsDataURL(file);
-        }
-      });
+      document
+        .getElementById("recipeImage")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              document.querySelector("#imagePreview img").src = e.target.result;
+              document.querySelector("#imagePreview p").style.display = "none";
+            };
+            reader.readAsDataURL(file);
+          }
+        });
 
       // Form submission
       // Update your existing form submission handler
@@ -369,7 +376,18 @@
         .getElementById("recipeForm")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
+
+          // Set the form action based on media type
+          if (
+            document.querySelector('.media-type-btn[data-type="video"].active')
+          ) {
+            this.action = "/user/recipes/vid";
+          } else {
+            this.action = "/user/recipes";
+          }
+
           const formData = new FormData(this);
+          console.log("Form data", formData)
 
           // Remove the unused media input from formData
           if (
@@ -381,7 +399,7 @@
           }
 
           try {
-            const response = await fetch("/user/recipes", {
+            const response = await fetch(this.action, {
               method: "POST",
               body: formData,
             });

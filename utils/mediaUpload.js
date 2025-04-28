@@ -1,32 +1,32 @@
-const uploadImage = require("./multer");      // Your image multer instance
-const uploadVideo = require("./multerVideo"); // Your video multer instance
+const uploadImage = require("./multer");
+const uploadVideo = require("./multerVideo");
+const multer = require("multer");
+const {uploadRecipeVideo} = require("../controllers/user.controller")
 
-function mediaUpload(req, res, next) {
-  // Use field names from your form
-  const hasImage = req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data') && req.body && req.body.recipeImage;
-  const hasVideo = req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data') && req.body && req.body.recipeVideo;
+// Accept both fields, but only one will be present (or none)
+const mediaUpload = multer().fields([
+  { name: "recipeImage", maxCount: 1 },
+  { name: "recipeVideo", maxCount: 1 },
+]);
 
-  // But since req.body is not populated yet, check req.files after multer runs
-  // Instead, check req.files after multer runs, but we need to decide before
-  // So, check req.files after upload, or use two fields in multer.fields
+function handleMediaUpload(req, res, next) {
+  mediaUpload(req, res, function (err) {
+    if (err) return next(err);
 
-  // Instead, check req.files after upload, or use two fields in multer.fields
-  // So, use .fields and allow both, but only one will be present
-
-  // Use both uploaders, but only one file will be present
-  const imageUploader = uploadImage.single("recipeImage");
-  const videoUploader = uploadVideo.single("recipeVideo");
-
-  imageUploader(req, res, function (err) {
-    if (err && err.field !== "recipeImage") return next(err);
-    if (req.file) return next(); // Image uploaded
-
-    // If no image, try video
-    videoUploader(req, res, function (err2) {
-      if (err2) return next(err2);
-      return next();
-    });
+    // If an image is present, process it
+    if (req.files && req.files.recipeImage) {
+      return uploadImage.single("recipeImage")(req, res, next);
+    }
+    // If a video is present, process it
+    if (req.files && req.files.recipeVideo) {
+      uploadRecipeVideo(req, res, function (err) {
+        if (err) return next(err);
+      });
+      return uploadVideo.single("recipeVideo")(req, res, next);
+    }
+    // If neither is present, just continue
+    return next();
   });
 }
 
-module.exports = mediaUpload;
+module.exports = handleMediaUpload;

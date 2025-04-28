@@ -4,6 +4,36 @@ const recipe = require("../models/recipe");
 const { User } = require("../models/user"); // Make sure this is the discriminator!
 const path = require("path");
 const fs = require("fs");
+const cloudinary = require("../utils/cloudinary"); // adjust path as needed
+
+//************************** */
+//
+//  CLOUDINARY HELPER FUNCTION
+//
+//************************** */
+function deleteCloudinaryMedia(url) {
+  if (!url) return;
+  // Extract public_id from URL
+  // Example: https://res.cloudinary.com/<cloud_name>/.../blaze_spices/recipes/images/abc123.jpg
+  const matches = url.match(
+    /\/blaze_spices\/recipes\/(?:images|videos)\/([^\.\/]+)\./
+  );
+  if (matches && matches[1]) {
+    const publicId = `blaze_spices/recipes/${
+      url.includes("/images/") ? "images" : "videos"
+    }/${matches[1]}`;
+    const resourceType = url.includes("/videos/") ? "video" : "image";
+    cloudinary.uploader.destroy(
+      publicId,
+      { resource_type: resourceType },
+      (error, result) => {
+        if (error) console.warn("Cloudinary deletion error:", error);
+      }
+    );
+  }
+}
+
+// *****************************CONTROLLERS START*****************
 
 function getDahsboard(req, res, next) {
   if (req.user.role === "admin") {
@@ -187,7 +217,7 @@ function getFeeds(req, res, next) {
               if (!recipes) {
                 return res.status(404).redirect("/error");
               }
-              console.log("RECIPES: ", topUsers);
+              // console.log("RECIPE.VID", recipes);
               return res.render("feeds", {
                 recipe: recipes,
                 user: req.user,
@@ -266,15 +296,52 @@ function updateRecipe(req, res, next) {
       recipeDoc.difficulty = req.body.difficulty;
       recipeDoc.servings = req.body.servings;
 
-      // Handle image update if a new file is uploaded
-        // Optionally delete the old image file
-        if (req.file) {
-          if (req.file.mimetype.startsWith("image/")) {
-            recipeDoc.image = `/uploads/recipes/${req.file.filename}`;
-          } else if (req.file.mimetype.startsWith("video/")) {
-            recipeDoc.video = `/uploads/videos/${req.file.filename}`;
+      // Handle image or video update if a new file is uploaded
+      if (req.file) {
+        if (req.file.mimetype.startsWith("image/")) {
+          recipeDoc.image = req.file.path; // Cloudinary URL
+        } else if (req.file.mimetype.startsWith("video/")) {
+          recipeDoc.video = req.file.path; // Cloudinary URL
+        }
+      }
+      // Optionally delete the old image or video file
+      if (req.file) {
+        // Delete old image if new image uploaded
+        if (req.file.mimetype.startsWith("image/") && recipeDoc.image) {
+          if (recipeDoc.image.startsWith("/uploads/recipes/")) {
+            // Local file
+            const oldPath = path.join(__dirname, "../public", recipeDoc.image);
+            fs.unlink(oldPath, (err) => {
+              if (err) console.warn("Could not delete old image:", err);
+            });
+          } else if (recipeDoc.image.startsWith("http")) {
+            // Cloudinary
+            deleteCloudinaryMedia(recipeDoc.image);
           }
         }
+        // Delete old video if new video uploaded
+        if (req.file.mimetype.startsWith("video/") && recipeDoc.video) {
+          if (recipeDoc.video.startsWith("/uploads/videos/")) {
+            // Local file
+            const oldPath = path.join(__dirname, "../public", recipeDoc.video);
+            fs.unlink(oldPath, (err) => {
+              if (err) console.warn("Could not delete old video:", err);
+            });
+          } else if (recipeDoc.video.startsWith("http")) {
+            // Cloudinary
+            deleteCloudinaryMedia(recipeDoc.video);
+          }
+        }
+      }
+
+      //LOCAL UPLOAD FOR MULTER
+      // if (req.file) {
+      //   if (req.file.mimetype.startsWith("image/")) {
+      //     recipeDoc.image = `/uploads/recipes/${req.file.filename}`;
+      //   } else if (req.file.mimetype.startsWith("video/")) {
+      //     recipeDoc.video = `/uploads/videos/${req.file.filename}`;
+      //   }
+      // }
 
       await recipeDoc.save();
       return res.redirect(`/user/recipes`);
@@ -301,13 +368,42 @@ function deleteRecipe(req, res, next) {
         return res.status(403).json({ status: "error", message: "Forbidden" });
       }
 
-      // Optionally delete the image file
-      if (recipeDoc.image && recipeDoc.image.startsWith("/uploads/recipes/")) {
-        const imgPath = path.join(__dirname, "../public", recipeDoc.image);
-        fs.unlink(imgPath, (err) => {
-          if (err) console.warn("Could not delete recipe image:", err);
-        });
+      // Optionally delete the old image or video file
+      if (req.file) {
+        // Delete old image if new image uploaded
+        if (req.file.mimetype.startsWith("image/") && recipeDoc.image) {
+          if (recipeDoc.image.startsWith("/uploads/recipes/")) {
+            // Local file
+            const oldPath = path.join(__dirname, "../public", recipeDoc.image);
+            fs.unlink(oldPath, (err) => {
+              if (err) console.warn("Could not delete old image:", err);
+            });
+          } else if (recipeDoc.image.startsWith("http")) {
+            // Cloudinary
+            deleteCloudinaryMedia(recipeDoc.image);
+          }
+        }
+        // Delete old video if new video uploaded
+        if (req.file.mimetype.startsWith("video/") && recipeDoc.video) {
+          if (recipeDoc.video.startsWith("/uploads/videos/")) {
+            // Local file
+            const oldPath = path.join(__dirname, "../public", recipeDoc.video);
+            fs.unlink(oldPath, (err) => {
+              if (err) console.warn("Could not delete old video:", err);
+            });
+          } else if (recipeDoc.video.startsWith("http")) {
+            // Cloudinary
+            deleteCloudinaryMedia(recipeDoc.video);
+          }
+        }
       }
+      // Optionally delete the image file FOR LOCAL MULTER
+      // if (recipeDoc.image && recipeDoc.image.startsWith("/uploads/recipes/")) {
+      //   const imgPath = path.join(__dirname, "../public", recipeDoc.image);
+      //   fs.unlink(imgPath, (err) => {
+      //     if (err) console.warn("Could not delete recipe image:", err);
+      //   });
+      // }
 
       // Remove recipe from user's posts
       await User.findByIdAndUpdate(recipeDoc.owner, {
@@ -397,9 +493,9 @@ function createRecipe(req, res, next) {
   // Handle media
   if (req.file) {
     if (req.file.mimetype.startsWith("image/")) {
-      newRecipe.image = `/uploads/recipes/${req.file.filename}`;
+      newRecipe.image = req.file.path; // Cloudinary URL
     } else if (req.file.mimetype.startsWith("video/")) {
-      newRecipe.video = `/uploads/videos/${req.file.filename}`;
+      newRecipe.video = req.file.path; // Cloudinary URL
     }
   }
 
@@ -409,7 +505,7 @@ function createRecipe(req, res, next) {
   newRecipe.steps = Array.isArray(req.body.steps)
     ? req.body.steps
     : [req.body.steps];
-
+  console.log("From Create controller: ", newRecipe);
   recipe
     .create(newRecipe)
     .then((recipe) => {
@@ -980,21 +1076,31 @@ function markAsRead(req, res, next) {
 // This function is used to upload a video for a recipe
 async function uploadRecipeVideo(req, res, next) {
   const recipeId = req.params.id;
+  console.log("VIDEO UPLOAD");
+  console.log("RECIPE ID: ", recipeId);
+  console.log("FILE: ", req.file);
   if (!req.file) {
-    return res.status(400).json({ status: "error", message: "No video uploaded" });
+    return res
+      .status(400)
+      .json({ status: "error", message: "No video uploaded" });
   }
   try {
     const recipeDoc = await recipe.findById(recipeId);
     if (!recipeDoc) {
-      return res.status(404).json({ status: "error", message: "Recipe not found" });
+      return res
+        .status(404)
+        .json({ status: "error", message: "Recipe not found" });
     }
     // Save the video path (adjust the field as needed)
     recipeDoc.video = `/uploads/videos/${req.file.filename}`;
     await recipeDoc.save();
-    return res.status(200).json({ status: "success", video: recipeDoc.video });
+    var video = recipeDoc.video;
+    return next(video);
   } catch (err) {
     console.error("Error uploading video:", err);
-    return res.status(500).json({ status: "error", message: "Failed to upload video" });
+    return res
+      .status(500)
+      .json({ status: "error", message: "Failed to upload video" });
   }
 }
 

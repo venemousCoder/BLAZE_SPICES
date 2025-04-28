@@ -88,6 +88,7 @@ const recipeSchema = mongoose.Schema(
       required: true,
     },
     image: { type: String }, // Add this field to store the image path
+    video: { type: String }, // Add this field if not present
     comments: [
       {
         user: {
@@ -95,7 +96,6 @@ const recipeSchema = mongoose.Schema(
           ref: "Account",
           required: true,
         },
-        video: { type: String }, // Add this field if not present
         content: {
           type: String,
           required: true,

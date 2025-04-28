@@ -1,26 +1,26 @@
 const router = require("express").Router();
-const homecontrollers = require("../controllers/home.controller");
+// const homecontrollers = require("../controllers/home.controller");
 const usercontrollers = require("../controllers/user.controller");
 const jwtauth = require("../utils/jwt");
-const multer = require("multer");
-const path = require("path");
+// const multer = require("multer");
+// const path = require("path");
 const uploadd = require("../utils/multer");
 const uploadVideo = require("../utils/multerVideo");
 const mediaUpload = require("../utils/mediaUpload");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../public/uploads/recipes"));
-    console.log(
-      "Destination: ",
-      path.join(__dirname, "../public/uploads/recipes")
-    );
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, path.join(__dirname, "/public/uploads/recipes"));
+//     console.log(
+//       "Destination: ",
+//       path.join(__dirname, "../public/uploads/recipes")
+//     );
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, Date.now() + "-" + file.originalname);
+//   },
+// });
+// const upload = multer({ storage: storage });
 
 router.post(
   "/profile/update",
@@ -50,8 +50,14 @@ router.get("/updatepass", usercontrollers.getUpdatePassword);
 
 router.post(
   "/recipes",
-  mediaUpload,
+  uploadd.single("recipeImage"),
   usercontrollers.createRecipe
+);
+
+router.post(
+  "/recipes/vid",
+  uploadVideo.single("recipeVideo"),
+  usercontrollers.createRecipe // <-- Only this, not uploadRecipeVideo
 );
 
 router.get("/myprofile", usercontrollers.getMyProfile);
@@ -79,14 +85,14 @@ router.get("/recipes/:id/edit", usercontrollers.getUpdateRecipe);
 
 router.post(
   "/recipes/:id/edit",
-  mediaUpload,
+  uploadd.single("recipeImage"),
   usercontrollers.updateRecipe
 );
 
 router.post(
-  "/recipes/:id/upload-video",
+  "/recipes/:id/edit/vid",
   uploadVideo.single("recipeVideo"),
-  usercontrollers.uploadRecipeVideo
+  usercontrollers.updateRecipe
 );
 
 router.delete("/recipes/:id/delete", usercontrollers.deleteRecipe);

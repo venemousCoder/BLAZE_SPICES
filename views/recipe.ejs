@@ -1,125 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= recipe.title %> | Blaze Recipes</title>
-    <link rel="stylesheet" href="/public/css/home.css">
-    <link rel="stylesheet" href="/public/css/sidebar.css">
-    <link rel="stylesheet" href="/public/css/recipe.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link rel="stylesheet" href="/public/css/sidebar.css" />
+    <link rel="stylesheet" href="/public/css/recipe.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="shortcut icon"
+      href="../public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
     <%- include('./partials/sidebar.ejs') %>
 
     <main class="recipe-page">
-        <div class="recipe-header">
-            <button onclick="window.history.back()" class="back-btn" aria-label="Go back">
-                <img src="/public/assets/arrow-left.svg" alt="">
-            </button>
-            <h1><%= recipe.title %></h1>
+      <div class="recipe-header">
+        <button
+          onclick="window.history.back()"
+          class="back-btn"
+          aria-label="Go back"
+        >
+          <img src="/public/assets/arrow-left.svg" alt="" />
+        </button>
+        <h1><%= recipe.title %></h1>
+      </div>
+
+      <div class="recipe-content">
+        <div class="recipe-hero">
+          <% if (recipe.video) { %> <% function getVideoMime(url) { if
+          (url.endsWith('.webm')) return 'video/webm'; if (url.endsWith('.ogg'))
+          return 'video/ogg'; if (url.endsWith('.mov')) return
+          'video/quicktime'; if (url.endsWith('.avi')) return 'video/avi'; if
+          (url.endsWith('.mkv')) return 'video/x-matroska'; return 'video/mp4';
+          } %>
+          <video
+            class="recipe-video"
+            controls
+            poster="<%= recipe.image || '/public/assets/recipe-video-placeholder.png' %>"
+          >
+            <source src="<%= recipe.video %>" type="<%= getVideoMime(recipe.video) %>" />
+            Your browser does not support the video tag.
+          </video>
+          <% } else { %>
+          <img
+            src="<%= recipe.image %>"
+            alt="Image of <%= recipe.title %>"
+            class="recipe-img"
+          />
+          <% } %>
+          <div class="recipe-meta">
+            <div class="author-info">
+              <img
+                src="<%= recipe.owner.profileImage || '/public/assets/default-profile.png' %>"
+                alt="<%= recipe.owner.username %>'s profile picture"
+                class="author-avatar"
+              />
+              <div class="author-details">
+                <a
+                  href="/user/profile/<%= recipe.owner._id %>"
+                  class="author-name"
+                >
+                  <%= recipe.owner.username %>
+                </a>
+                <span class="recipe-date">
+                  <%= new Date(recipe.createdAt).toLocaleDateString('en-US', {
+                  month: 'long', day: 'numeric', year: 'numeric' }) %>
+                </span>
+              </div>
+            </div>
+            <div class="recipe-stats">
+              <button
+                class="like-btn stat-btn"
+                aria-label="Like recipe"
+                data-recipe-id="<%= recipe._id %>"
+                data-liked="<%= recipe.likedBy?.includes(user._id) ? 'true' : 'false' %>"
+              >
+                <img
+                  src="/public/assets/<%= recipe.likedBy?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>"
+                  alt="Like icon"
+                  class="like-icon"
+                />
+                <span class="like-count"><%= recipe.likes %></span>
+              </button>
+              <a
+                href="/user/recipe/<%= recipe._id %>/comments"
+                class="comment-btn stat-btn"
+              >
+                <img src="/public/assets/comment-icon.svg" alt="Comments" />
+                <span><%= recipe.comments?.length || 0 %></span>
+              </a>
+            </div>
+          </div>
         </div>
 
-        <div class="recipe-content">
-            <div class="recipe-hero">
-                <img src="<%= recipe.image %>" alt="<%= recipe.title %>" class="recipe-image">
-                <div class="recipe-meta">
-                    <div class="author-info">
-                        <img src="<%= recipe.owner.profileImage || '/public/assets/default-profile.png' %>" 
-                             alt="<%= recipe.owner.username %>'s profile picture"
-                             class="author-avatar">
-                        <div class="author-details">
-                            <a href="/user/profile/<%= recipe.owner._id %>" class="author-name">
-                                <%= recipe.owner.username %>
-                            </a>
-                            <span class="recipe-date">
-                                <%= new Date(recipe.createdAt).toLocaleDateString('en-US', {
-                                    month: 'long',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                }) %>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="recipe-stats">
-                        <button class="like-btn stat-btn" 
-                                aria-label="Like recipe"
-                                data-recipe-id="<%= recipe._id %>"
-                                data-liked="<%= recipe.likedBy?.includes(user._id) ? 'true' : 'false' %>">
-                            <img src="/public/assets/<%= recipe.likedBy?.includes(user._id) ? 'heartlike.svg' : 'heartlike-unlike.svg' %>" 
-                                 alt="Like icon" 
-                                 class="like-icon">
-                            <span class="like-count"><%= recipe.likes %></span>
-                        </button>
-                        <a href="/user/recipe/<%= recipe._id %>/comments" class="comment-btn stat-btn">
-                            <img src="/public/assets/comment-icon.svg" alt="Comments">
-                            <span><%= recipe.comments?.length || 0 %></span>
-                        </a>
-                    </div>
-                </div>
+        <div class="recipe-info-grid">
+          <div class="info-card prep-time">
+            <img src="/public/assets/clock.svg" alt="" />
+            <div class="info-content">
+              <h3>Prep Time</h3>
+              <p><%= recipe.preparationTime %> min</p>
             </div>
-
-            <div class="recipe-info-grid">
-                <div class="info-card prep-time">
-                    <img src="/public/assets/clock.svg" alt="">
-                    <div class="info-content">
-                        <h3>Prep Time</h3>
-                        <p><%= recipe.preparationTime %> min</p>
-                    </div>
-                </div>
-                <div class="info-card cook-time">
-                    <img src="/public/assets/cook.svg" alt="">
-                    <div class="info-content">
-                        <h3>Cook Time</h3>
-                        <p><%= recipe.cookingTime %> min</p>
-                    </div>
-                </div>
-                <div class="info-card servings">
-                    <img src="/public/assets/serving.svg" alt="">
-                    <div class="info-content">
-                        <h3>Servings</h3>
-                        <p><%= recipe.servings %></p>
-                    </div>
-                </div>
-                <div class="info-card difficulty">
-                    <img src="/public/assets/difficulty.svg" alt="">
-                    <div class="info-content">
-                        <h3>Difficulty</h3>
-                        <p><%= recipe.difficulty %></p>
-                    </div>
-                </div>
+          </div>
+          <div class="info-card cook-time">
+            <img src="/public/assets/cook.svg" alt="" />
+            <div class="info-content">
+              <h3>Cook Time</h3>
+              <p><%= recipe.cookingTime %> min</p>
             </div>
-
-            <section class="recipe-section">
-                <h2>Description</h2>
-                <p class="recipe-description"><%= recipe.description %></p>
-            </section>
-
-            <section class="recipe-section">
-                <h2>Ingredients</h2>
-                <ul class="ingredients-list">
-                    <% recipe.ingredients.forEach(ingredient => { %>
-                        <li>
-                            <span class="ingredient-bullet">•</span>
-                            <%= ingredient %>
-                        </li>
-                    <% }) %>
-                </ul>
-            </section>
-
-            <section class="recipe-section">
-                <h2>Instructions</h2>
-                <ol class="instructions-list">
-                    <% recipe.steps.forEach((step, index) => { %>
-                        <li>
-                            <span class="step-number"><%= index + 1 %></span>
-                            <%= step %>
-                        </li>
-                    <% }) %>
-                </ol>
-            </section>
+          </div>
+          <div class="info-card servings">
+            <img src="/public/assets/serving.svg" alt="" />
+            <div class="info-content">
+              <h3>Servings</h3>
+              <p><%= recipe.servings %></p>
+            </div>
+          </div>
+          <div class="info-card difficulty">
+            <img src="/public/assets/difficulty.svg" alt="" />
+            <div class="info-content">
+              <h3>Difficulty</h3>
+              <p><%= recipe.difficulty %></p>
+            </div>
+          </div>
         </div>
+
+        <section class="recipe-section">
+          <h2>Description</h2>
+          <p class="recipe-description"><%= recipe.description %></p>
+        </section>
+
+        <section class="recipe-section">
+          <h2>Ingredients</h2>
+          <ul class="ingredients-list">
+            <% recipe.ingredients.forEach(ingredient => { %>
+            <li>
+              <span class="ingredient-bullet">•</span>
+              <%= ingredient %>
+            </li>
+            <% }) %>
+          </ul>
+        </section>
+
+        <section class="recipe-section">
+          <h2>Instructions</h2>
+          <ol class="instructions-list">
+            <% recipe.steps.forEach((step, index) => { %>
+            <li>
+              <span class="step-number"><%= index + 1 %></span>
+              <%= step %>
+            </li>
+            <% }) %>
+          </ol>
+        </section>
+      </div>
     </main>
-        <script src="/public/js/like.js"></script>
-</body>
+    <script src="/public/js/like.js"></script>
+  </body>
 </html>

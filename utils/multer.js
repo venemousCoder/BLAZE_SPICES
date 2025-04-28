@@ -1,5 +1,8 @@
 const multer = require("multer");
 const path = require("path");
+const { imageStorage } = require('./cloudinaryStorage');
+
+const uploadImage = multer({ storage: imageStorage });
 
 // Configure multer for profile image uploads
 const storage = multer.diskStorage({
@@ -30,6 +33,6 @@ const upload = multer({
 
 // Update the route to use multer
 
-module.exports = upload;
+module.exports = uploadImage;
 // In your route file, you can use this upload middleware
 // const upload = require("../utils/multer");

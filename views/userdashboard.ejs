@@ -83,11 +83,18 @@
                 <% user.posts.forEach(recipe => { %>
                     <div class="recipe-card">
                         <a href="/user/recipe/<%= recipe._id %>" class="recipe-card-link">
-                            <img 
-                                src="<%= recipe.image %>" 
-                                alt="<%= recipe.title %>" 
-                                class="recipe-img"
-                            />
+                            <% if (recipe.video) { %>
+                                <video class="recipe-video" controls poster="<%= recipe.image || '/public/assets/recipe-video-placeholder.png' %>">
+                                  <source src="<%= recipe.video %>" type="video/mp4" />
+                                  Your browser does not support the video tag.
+                                </video>
+                              <% } else { %>
+                                <img
+                                  src="<%= recipe.image %>"
+                                  alt="Image of <%= recipe.title %>"
+                                  class="recipe-img"
+                                />
+                              <% } %>
                             <%
                                 const totalMins = Number(recipe.cookingTime) + Number(recipe.preparationTime);
                                 let timeDisplay;

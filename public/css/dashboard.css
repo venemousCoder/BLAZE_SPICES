@@ -520,3 +520,12 @@
         grid-template-columns: 1fr;
     }
 }
+
+.recipe-video {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: #000;
+  }

@@ -8,13 +8,18 @@
     <link rel="stylesheet" href="/public/css/sidebar.css">
     <link rel="stylesheet" href="/public/css/updaterecipe.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+      rel="shortcut icon"
+      href="../public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
 </head>
 <body>
     <%- include('./partials/sidebar.ejs') %>
     
     <main class="updaterecipe-page">
         
-        <form class="recipe-form" id="recipeForm" enctype="multipart/form-data">
+        <form class="recipe-form" id="recipeForm" data-recipe-id="<%= recipe._id %>" enctype="multipart/form-data">
             <div class="form-header">
                 <h1>Edit Recipe</h1>
                 <p>Update your culinary masterpiece</p>
@@ -125,16 +130,53 @@
                 </div>
 
                 <!-- Image Upload -->
-                <div class="form-section">
-                    <h2>Recipe Image</h2>
-                    <div class="image-upload">
-                        <input type="file" id="recipeImage" name="recipeImage" accept="image/*">
-                        <div class="image-preview" id="imagePreview">
-                            <img src="<%= recipe.image %>" alt="Current recipe image">
-                            <p>Click or drag to change image</p>
-                        </div>
-                    </div>
-                </div>
+               <!-- Replace the Image Upload section with this -->
+<div class="form-section media-upload-section">
+    <h2>Recipe Media</h2>
+    <div class="media-type-selector">
+        <button type="button" class="media-type-btn <%= recipe.video ? '' : 'active' %>" data-type="image">
+            Image
+        </button>
+        <button type="button" class="media-type-btn <%= recipe.video ? 'active' : '' %>" data-type="video">
+            Video
+        </button>
+    </div>
+    
+    <div class="media-upload <%= recipe.video ? '' : 'active' %>" id="imageUpload">
+        <input
+            type="file"
+            id="recipeImage"
+            name="recipeImage"
+            accept="image/*"
+            class="media-input"
+        />
+        <div class="image-preview" id="imagePreview">
+            <img src="<%= recipe.image || '/public/assets/upload-image.svg' %>" alt="Recipe media" />
+            <p>Click or drag to change image</p>
+        </div>
+    </div>
+
+    <div class="media-upload <%= recipe.video ? 'active' : '' %>" id="videoUpload">
+        <input
+            type="file"
+            id="recipeVideo"
+            name="recipeVideo"
+            accept="video/*"
+            class="media-input"
+        />
+        <div class="image-preview" id="videoPreview">
+            <% if (recipe.video) { %>
+                <video controls class="video-preview">
+                    <source src="<%= recipe.video %>" type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
+            <% } else { %>
+                <img src="/public/assets/upload-video.svg" alt="Upload video" />
+                <p>Click or drag video here (Max 100MB)</p>
+            <% } %>
+        </div>
+    </div>
+</div>
             </div>
 
             <div class="form-actions">
@@ -145,6 +187,59 @@
     </main>
 
     <script>
+        // Add media type switching logic
+const mediaTypeBtns = document.querySelectorAll('.media-type-btn');
+const imageUpload = document.getElementById('imageUpload');
+const videoUpload = document.getElementById('videoUpload');
+const recipeImage = document.getElementById('recipeImage');
+const recipeVideo = document.getElementById('recipeVideo');
+
+mediaTypeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Update button states
+        mediaTypeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Show/hide upload sections
+        if (btn.dataset.type === 'image') {
+            imageUpload.classList.add('active');
+            videoUpload.classList.remove('active');
+            recipeVideo.value = '';
+            recipeVideo.removeAttribute('required');
+            recipeImage.setAttribute('required', '');
+        } else {
+            imageUpload.classList.remove('active');
+            videoUpload.classList.add('active');
+            recipeImage.value = '';
+            recipeImage.removeAttribute('required');
+            recipeVideo.setAttribute('required', '');
+        }
+    });
+});
+
+// Video preview functionality
+recipeVideo.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        if (file.size > 100 * 1024 * 1024) { // 100MB limit
+            alert('Video file is too large. Please choose a file under 100MB.');
+            this.value = '';
+            return;
+        }
+        const videoPreview = document.querySelector('#videoUpload .video-preview');
+        if (!videoPreview) {
+            const newVideo = document.createElement('video');
+            newVideo.className = 'video-preview';
+            newVideo.controls = true;
+            document.querySelector('#videoPreview').appendChild(newVideo);
+        }
+        const video = document.querySelector('#videoUpload .video-preview');
+        video.src = URL.createObjectURL(file);
+        video.style.display = 'block';
+        document.querySelector('#videoPreview img')?.remove();
+        document.querySelector('#videoPreview p')?.remove();
+    }
+});
         function addIngredient() {
             const item = document.createElement('div');
             item.className = 'ingredient-item';
@@ -190,46 +285,41 @@
         }
 
         // Form submission
-        document.getElementById('recipeForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            try {
-                const response = await fetch('/user/recipes/<%= recipe._id %>/edit', {
-                    method: 'POST',
-                    body: formData,
-                });
+        // Update form submission handler
+document.getElementById('recipeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const recipeId = this.dataset.recipeId;
+    // Set the form action based on media type
+    const isVideo = document.querySelector('.media-type-btn[data-type="video"].active');
+    this.action = isVideo ? 
+        `/user/recipes/${recipeId}/edit/vid` : 
+        `/user/recipes/${recipeId}/edit`;
 
-                if (response.ok) {
-                    window.location.href = '/user/recipes';
-                    console.log("FORM DATA:: ", formData)
-                } else {
-                    document.getElementById('recipeForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            try {
-                const response = await fetch('/user/recipes/<%= recipe._id %>/edit', {
-                    method: 'POST',
-                    // headers: { "Content-Type": "application/json" },
-                    body: formData,
-                });
+    const formData = new FormData(this);
+    
+    // Remove the unused media input from formData
+    if (document.querySelector('.media-type-btn[data-type="image"].active')) {
+        formData.delete('recipeVideo');
+    } else {
+        formData.delete('recipeImage');
+    }
 
-                if (response.ok) {
-                    window.location.href = '/user/recipes';
-                    console.log("FORM DATA:: ", formData)
-                } else {
-                    throw new Error('Failed to update recipe');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to update recipe. Please try again.');
-            }
-        }); new Error('Failed to update recipe');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to update recipe. Please try again.');
-            }
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
         });
+
+        if (response.ok) {
+            window.location.href = '/user/recipes';
+        } else {
+            throw new Error('Failed to update recipe');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to update recipe. Please try again.');
+    }
+});
     </script>
 </body>
 </html>
