@@ -13,8 +13,16 @@
       href="../public/assets/favicon/favicon.ico"
       type="image/x-icon"
     />
+    <link rel="stylesheet" href="/css/loader.css">
 </head>
 <body>
+    <!-- Add this right after <body> tag -->
+<div class="loader-overlay" id="loaderOverlay">
+    <div style="text-align: center;">
+        <span class="loader"></span>
+        <p class="loader-text">Please wait while we process your recipe...</p>
+    </div>
+</div>
     <%- include('./partials/sidebar.ejs') %>
     
     <main class="updaterecipe-page">
@@ -286,10 +294,15 @@ recipeVideo.addEventListener('change', function(e) {
 
         // Form submission
         // Update form submission handler
+// In your existing form submission handler
+// In your existing form submission handler
 document.getElementById('recipeForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const recipeId = this.dataset.recipeId;
-    // Set the form action based on media type
+    
+    // Show loader
+    document.getElementById('loaderOverlay').style.display = 'flex';
+    
+    const recipeId = document.getElementById('recipeId').value;
     const isVideo = document.querySelector('.media-type-btn[data-type="video"].active');
     this.action = isVideo ? 
         `/user/recipes/${recipeId}/edit/vid` : 
@@ -297,13 +310,6 @@ document.getElementById('recipeForm').addEventListener('submit', async function(
 
     const formData = new FormData(this);
     
-    // Remove the unused media input from formData
-    if (document.querySelector('.media-type-btn[data-type="image"].active')) {
-        formData.delete('recipeVideo');
-    } else {
-        formData.delete('recipeImage');
-    }
-
     try {
         const response = await fetch(this.action, {
             method: 'POST',
@@ -316,6 +322,8 @@ document.getElementById('recipeForm').addEventListener('submit', async function(
             throw new Error('Failed to update recipe');
         }
     } catch (error) {
+        // Hide loader on error
+        document.getElementById('loaderOverlay').style.display = 'none';
         console.error('Error:', error);
         alert('Failed to update recipe. Please try again.');
     }

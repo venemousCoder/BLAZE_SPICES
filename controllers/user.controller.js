@@ -5,6 +5,7 @@ const { User } = require("../models/user"); // Make sure this is the discriminat
 const path = require("path");
 const fs = require("fs");
 const cloudinary = require("../utils/cloudinary"); // adjust path as needed
+const axios = require("axios");
 
 //************************** */
 //
@@ -1104,6 +1105,32 @@ async function uploadRecipeVideo(req, res, next) {
   }
 }
 
+//***************************************/
+//
+//  EXPLORE AND SAVE - UNSAVE
+//
+//************************************ */
+
+// Explore recipes from TheMealDB API
+async function explore(req, res, next) {
+  const query = req.query.q || ""; // Search query from user input
+  try {
+    const apiUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
+    const response = await axios.get(apiUrl);
+    const meals = response.data.meals || [];
+    return res.render("explore", {
+      user: req.user,
+      recipes: meals,
+      currentPage: "explore",
+      searchQuery: query,
+    });
+  } catch (err) {
+    console.error("Error fetching from TheMealDB:", err);
+    return res.status(500).redirect("/error");
+  }
+}
+
+
 //*
 function hi(req, res, next) {
   return res.render("hello", { bye: req.params.id });
@@ -1145,5 +1172,6 @@ module.exports = {
   markAllAsRead,
   markAsRead,
   uploadRecipeVideo,
+  explore,
   hi,
 };

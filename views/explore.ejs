@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blaze Recipes - Explore</title>
+    <link rel="stylesheet" href="../public/css/explore.css">
+    <link rel="stylesheet" href="../public/css/home.css">
+    <link rel="stylesheet" href="../public/css/sidebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <%- include('./partials/sidebar.ejs')%>
+    
+    <main class="explore-page">
+        <section class="search-section">
+            <h1>Discover New Recipes</h1>
+            <div class="search-filters">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search recipes..." aria-label="Search recipes">
+                    <button class="search-btn" aria-label="Search">
+                        <img src="../public/assets/search-icon.svg" alt="">
+                    </button>
+                </div>
+                <div class="filters">
+                    <select id="categoryFilter" aria-label="Filter by category">
+                        <option value="">All Categories</option>
+                        <option value="Appetizer">Appetizer</option>
+                        <option value="Main Course">Main Course</option>
+                        <option value="Dessert">Dessert</option>
+                        <!-- Add other categories -->
+                    </select>
+                    <select id="cuisineFilter" aria-label="Filter by cuisine">
+                        <option value="">All Cuisines</option>
+                        <option value="African">African</option>
+                        <option value="Asian">Asian</option>
+                        <option value="European">European</option>
+                        <!-- Add other cuisines -->
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="recipes-grid">
+            <% recipes.forEach(recipe => { %>
+                <div class="recipe-card">
+                    <a href="/user/recipe/<%= recipe._id %>" class="recipe-card-link">
+                        <% if (recipe.video) { %>              
+                            <video class="recipe-video" poster="<%= recipe.image || '/public/assets/recipe-video-placeholder.png' %>">
+                                <source src="<%= recipe.video %>" type="video/mp4">
+                                Your browser does not support video playback.
+                            </video>
+                        <% } else { %>
+                            <img src="<%= recipe.image %>" alt="<%= recipe.title %>" class="recipe-img">
+                        <% } %>
+                        
+                        <div class="recipe-info">
+                            <h3 class="recipe-title"><%= recipe.title %></h3>
+                            <p class="recipe-author">By <a href="/user/profile/<%= recipe.owner._id %>" class="author-link"><%= recipe.owner.username %></a></p>
+                            <div class="recipe-meta">
+                                <span class="difficulty"><%= recipe.difficulty %></span>
+                                <span class="cooking-time">
+                                    <%= parseInt(recipe.preparationTime) + parseInt(recipe.cookingTime) %> min
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="recipe-actions">
+                        <button class="save-btn" aria-label="Save recipe" 
+                                data-recipe-id="<%= recipe._id %>"
+                                data-saved="<%= user.savedRecipes?.includes(recipe._id) ? 'true' : 'false' %>">
+                            <img src="/public/assets/<%= user.savedRecipes?.includes(recipe._id) ? 'bookmark-filled.svg' : 'bookmark.svg' %>" 
+                                 alt="" class="save-icon">
+                            <span class="visually-hidden">Save</span>
+                        </button>
+                        <button class="share-btn" aria-label="Share recipe">
+                            <img src="/public/assets/share-unshare.svg" alt="" class="share-icon">
+                            <span class="visually-hidden">Share</span>
+                        </button>
+                    </div>
+                </div>
+            <% }) %>
+        </section>
+    </main>
+
+    <script>
+        // Save recipe functionality
+        document.querySelectorAll('.save-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const recipeId = this.dataset.recipeId;
+                const isSaved = this.dataset.saved === 'true';
+                const icon = this.querySelector('.save-icon');
+                
+                try {
+                    const response = await fetch(`/user/recipes/${recipeId}/save`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        this.dataset.saved = (!isSaved).toString();
+                        icon.src = `/public/assets/${!isSaved ? 'bookmark-filled.svg' : 'bookmark.svg'}`;
+                    }
+                } catch (error) {
+                    console.error('Error saving recipe:', error);
+                }
+            });
+        });
+
+        // Share functionality
+        document.querySelectorAll('.share-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const recipeUrl = window.location.origin + this.closest('.recipe-card')
+                                      .querySelector('.recipe-card-link').getAttribute('href');
+                
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'Check out this recipe!',
+                            url: recipeUrl
+                        });
+                    } catch (err) {
+                        console.error('Error sharing:', err);
+                    }
+                } else {
+                    // Fallback to clipboard
+                    try {
+                        await navigator.clipboard.writeText(recipeUrl);
+                        alert('Recipe link copied to clipboard!');
+                    } catch (err) {
+                        console.error('Error copying to clipboard:', err);
+                    }
+                }
+            });
+        });
+
+        // Filter functionality
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const cuisineFilter = document.getElementById('cuisineFilter');
+
+        [searchInput, categoryFilter, cuisineFilter].forEach(element => {
+            element.addEventListener('change', filterRecipes);
+        });
+
+        searchInput.addEventListener('input', filterRecipes);
+
+        function filterRecipes() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const category = categoryFilter.value;
+            const cuisine = cuisineFilter.value;
+            
+            document.querySelectorAll('.recipe-card').forEach(card => {
+                const title = card.querySelector('.recipe-title').textContent.toLowerCase();
+                const recipeCategory = card.dataset.category;
+                const recipeCuisine = card.dataset.cuisine;
+                
+                const matchesSearch = title.includes(searchTerm);
+                const matchesCategory = !category || recipeCategory === category;
+                const matchesCuisine = !cuisine || recipeCuisine === cuisine;
+                
+                card.style.display = matchesSearch && matchesCategory && matchesCuisine ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

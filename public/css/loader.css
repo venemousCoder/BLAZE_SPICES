@@ -1,0 +1,33 @@
+/* loader.css */
+.loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #fffbe6;
+}
+
+.loader {
+    width: 60px;
+    height: 60px;
+    border: 6px solid #ffb347;
+    border-top: 6px solid #ff6347;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    box-shadow: 0 0 10px #ffb34733;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg);}
+    100% { transform: rotate(360deg);}
+}
+
+/* Optional: Add a label below the loader */
+.loader-label {
+    margin-top: 16px;
+    text-align: center;
+    color: #ff6347;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}

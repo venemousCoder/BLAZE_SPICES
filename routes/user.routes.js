@@ -123,4 +123,7 @@ router.post("/notifications/:id/read", usercontrollers.markAsRead);
 
 router.post("/notifications/mark-all-read", usercontrollers.markAllAsRead);
 
+router.get("/explore", usercontrollers.explore);
+
+
 module.exports = router;

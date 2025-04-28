@@ -16,8 +16,16 @@
       href="../public/assets/favicon/favicon.ico"
       type="image/x-icon"
     />
+    <link rel="stylesheet" href="/css/loader.css">
   </head>
   <body>
+    <!-- Add this right after <body> tag -->
+<div class="loader-overlay" id="loaderOverlay">
+  <div style="text-align: center;">
+      <span class="loader"></span>
+      <p class="loader-text">Please wait while we process your recipe...</p>
+  </div>
+</div>
     <%- include('./partials/sidebar.ejs') %>
 
     <main class="newrecipe-page">
@@ -372,48 +380,37 @@
 
       // Form submission
       // Update your existing form submission handler
-      document
-        .getElementById("recipeForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
+      // In your existing form submission handler
+document.getElementById('recipeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Show loader
+    document.getElementById('loaderOverlay').style.display = 'flex';
+    
+    // Set the form action based on media type
+    const isVideo = document.querySelector('.media-type-btn[data-type="video"].active');
+    this.action = isVideo ? '/user/recipes/vid' : '/user/recipes';
 
-          // Set the form action based on media type
-          if (
-            document.querySelector('.media-type-btn[data-type="video"].active')
-          ) {
-            this.action = "/user/recipes/vid";
-          } else {
-            this.action = "/user/recipes";
-          }
-
-          const formData = new FormData(this);
-          console.log("Form data", formData)
-
-          // Remove the unused media input from formData
-          if (
-            document.querySelector('.media-type-btn[data-type="image"].active')
-          ) {
-            formData.delete("recipeVideo");
-          } else {
-            formData.delete("recipeImage");
-          }
-
-          try {
-            const response = await fetch(this.action, {
-              method: "POST",
-              body: formData,
-            });
-
-            if (response.ok) {
-              window.location.href = "/user/recipes";
-            } else {
-              throw new Error("Failed to create recipe");
-            }
-          } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to create recipe. Please try again.");
-          }
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
         });
+
+        if (response.ok) {
+            window.location.href = '/user/recipes';
+        } else {
+            throw new Error('Failed to create recipe');
+        }
+    } catch (error) {
+        // Hide loader on error
+        document.getElementById('loaderOverlay').style.display = 'none';
+        console.error('Error:', error);
+        alert('Failed to create recipe. Please try again.');
+    }
+});
     </script>
   </body>
 </html>
