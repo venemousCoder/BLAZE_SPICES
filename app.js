@@ -33,7 +33,7 @@ app.use(
     secret: process.env.SECRET_KEY,
   })
 );
-
+app.use(cors());
 mongoose
   .connect(process.env.DBURI)
   .then(() => {
