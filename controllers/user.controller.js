@@ -1113,16 +1113,51 @@ async function uploadRecipeVideo(req, res, next) {
 
 // Explore recipes from TheMealDB API
 async function explore(req, res, next) {
+  console.log("EXPLORE");
   const query = req.query.q || ""; // Search query from user input
+  const category = req.query.category || ""; // Category filter
+  const area = req.query.area || ""; // Cuisine/Area filter
+  
   try {
-    const apiUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
-    const response = await axios.get(apiUrl);
-    const meals = response.data.meals || [];
+    let apiUrl;
+    let meals = [];
+
+    // Get categories for filter dropdown
+    const categoriesResponse = await axios.get('https://www.themealdb.com/api/json/v1/1/categories.php');
+    const categories = categoriesResponse.data.categories;
+
+    if (query) {
+      apiUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
+      const response = await axios.get(apiUrl);
+      meals = response.data.meals || [];
+    } else if (category) {
+      apiUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`;
+      const response = await axios.get(apiUrl);
+      meals = response.data.meals || [];
+    } else if (area) {
+      apiUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(area)}`;
+      const response = await axios.get(apiUrl);
+      meals = response.data.meals || [];
+    } else {
+      // No search/filter: Show 10 random meals
+      const randomMeals = await Promise.all(
+        Array(10).fill().map(async () => {
+          const response = await axios.get('https://www.themealdb.com/api/json/v1/1/random.php');
+          return response.data.meals[0];
+        })
+      );
+      meals = randomMeals;
+    }
+    console.log(meals)
     return res.render("explore", {
       user: req.user,
-      recipes: meals,
+      meals: meals,
+      categories: categories,
       currentPage: "explore",
       searchQuery: query,
+      selectedCategory: category,
+      selectedArea: area,
+      isInitialLoad: !query && !category && !area
     });
   } catch (err) {
     console.error("Error fetching from TheMealDB:", err);
@@ -1130,6 +1165,84 @@ async function explore(req, res, next) {
   }
 }
 
+async function getSavedRecipes(req, res, next) {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).redirect('/error');
+    }
+
+    // Fetch saved TheMealDB recipes
+    const savedMeals = await Promise.all(
+      user.savedExternalRecipes.map(async (mealId) => {
+        try {
+          const response = await axios.get(
+            `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`
+          );
+          return response.data.meals[0];
+        } catch (err) {
+          console.error(`Error fetching meal ${mealId}:`, err);
+          return null;
+        }
+      })
+    );
+
+    // Filter out any failed requests
+    const validMeals = savedMeals.filter(meal => meal !== null);
+
+    return res.render('savedRecipes', {
+      user: req.user,
+      savedRecipes: validMeals,
+      currentPage: 'saved-recipes'
+    });
+  } catch (err) {
+    console.error('Error fetching saved recipes:', err);
+    return res.status(500).redirect('/error');
+  }
+}
+
+async function saveRecipe(req, res) {
+  try {
+    const mealId = req.params.id;
+    const userId = req.user._id;
+    const isExternal = req.path.includes('external');
+
+    const user = await User.findById(userId);
+    
+    if (isExternal) {
+      // Handle external (TheMealDB) recipes
+      const isSaved = user.savedExternalRecipes.includes(mealId);
+      
+      await User.findByIdAndUpdate(userId, {
+        [isSaved ? '$pull' : '$addToSet']: { 
+          savedExternalRecipes: mealId 
+        }
+      });
+      
+    } else {
+      // Handle internal recipes
+      const isSaved = user.savedRecipes.includes(mealId);
+      
+      await User.findByIdAndUpdate(userId, {
+        [isSaved ? '$pull' : '$addToSet']: { 
+          savedRecipes: mealId 
+        }
+      });
+    }
+
+    return res.json({ 
+      success: true, 
+      isSaved: !isSaved 
+    });
+  } catch (error) {
+    console.error('Error saving recipe:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Failed to save recipe' 
+    });
+  }
+}
 
 //*
 function hi(req, res, next) {
@@ -1173,5 +1286,7 @@ module.exports = {
   markAsRead,
   uploadRecipeVideo,
   explore,
+  saveRecipe,
+  getSavedRecipes,
   hi,
 };

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saved Recipes - Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/savedRecipes.css" />
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link rel="stylesheet" href="/public/css/sidebar.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="shortcut icon"
+      href="/public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <%- include('./partials/sidebar.ejs')%>
+
+    <main class="saved-recipes-page">
+      <section class="header-section">
+        <h1>Saved Recipes</h1>
+        <p class="recipe-count"><%= savedRecipes.length %> recipes saved</p>
+      </section>
+
+      <% if (savedRecipes.length === 0) { %>
+      <div class="empty-state">
+        <img src="/public/assets/empty-recipes.svg" alt="No saved recipes" />
+        <h2>No Saved Recipes Yet</h2>
+        <p>Explore recipes and save your favorites for later!</p>
+        <a href="/user/explore" class="explore-btn">Explore Recipes</a>
+      </div>
+      <% } else { %>
+      <!-- Replace the recipe card section with this -->
+      <section class="recipes-grid">
+        <% savedRecipes.forEach(recipe => { %>
+        <div class="recipe-card" data-recipe-id="<%= recipe.idMeal %>">
+          <a
+            href="https://www.themealdb.com/meal/<%= recipe.idMeal %>"
+            class="recipe-card-link"
+            target="_blank"
+          >
+            <img
+              src="<%= recipe.strMealThumb %>"
+              alt="<%= recipe.strMeal %>"
+              class="recipe-img"
+            />
+
+            <div class="recipe-info">
+              <h3 class="recipe-title"><%= recipe.strMeal %></h3>
+              <div class="recipe-meta">
+                <span class="category"><%= recipe.strCategory %></span>
+                <span class="area"><%= recipe.strArea %></span>
+              </div>
+
+              <div class="recipe-tags">
+                <% if (recipe.strTags) { %> <%
+                recipe.strTags.split(',').forEach(tag => { %>
+                <span class="tag"><%= tag.trim() %></span>
+                <% }) %> <% } %>
+              </div>
+            </div>
+          </a>
+
+          <div class="recipe-actions">
+            <button
+              class="unsave-btn"
+              aria-label="Remove from saved recipes"
+              data-recipe-id="<%= recipe.idMeal %>"
+            >
+              <img
+                src="/public/assets/bookmark-filled.svg"
+                alt=""
+                class="bookmark-icon"
+              />
+              <span>Saved</span>
+            </button>
+
+            <button
+              class="share-btn"
+              aria-label="Share recipe"
+              data-recipe-url="https://www.themealdb.com/meal/<%= recipe.idMeal %>"
+            >
+              <img
+                src="/public/assets/share-unshare.svg"
+                alt=""
+                class="share-icon"
+              />
+              <span>Share</span>
+            </button>
+          </div>
+        </div>
+        <% }) %>
+      </section>
+      <% } %>
+    </main>
+
+    <script>
+      // Unsave functionality
+      document.querySelectorAll(".unsave-btn").forEach((btn) => {
+        btn.addEventListener("click", async function () {
+          const recipeId = this.dataset.recipeId;
+          const card = this.closest(".recipe-card");
+
+          try {
+            const response = await fetch(`/user/recipes/${recipeId}/save`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            });
+
+            if (response.ok) {
+              // Animate and remove the card
+              card.style.opacity = "0";
+              setTimeout(() => {
+                card.remove();
+                // Update recipe count
+                const countElement = document.querySelector(".recipe-count");
+                const currentCount = parseInt(countElement.textContent);
+                countElement.textContent = `${currentCount - 1} recipes saved`;
+
+                // Show empty state if no recipes left
+                if (currentCount - 1 === 0) {
+                  location.reload();
+                }
+              }, 300);
+            }
+          } catch (error) {
+            console.error("Error unsaving recipe:", error);
+          }
+        });
+      });
+
+      // Share functionality
+      document.querySelectorAll(".share-btn").forEach((btn) => {
+        btn.addEventListener("click", async function () {
+          const recipeUrl =
+            window.location.origin +
+            this.closest(".recipe-card")
+              .querySelector(".recipe-card-link")
+              .getAttribute("href");
+
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: "Check out this recipe!",
+                url: recipeUrl,
+              });
+            } catch (err) {
+              console.error("Error sharing:", err);
+            }
+          } else {
+            try {
+              await navigator.clipboard.writeText(recipeUrl);
+              alert("Recipe link copied to clipboard!");
+            } catch (err) {
+              console.error("Error copying to clipboard:", err);
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const PassportLocalMongoose = require("passport-local-mongoose");
 const crypto = require("crypto");
+const { type } = require("os");
 
 const AccountScheme = mongoose.Schema(
   {
@@ -64,6 +65,10 @@ const userSchema = new mongoose.Schema({
       ref: "Recipe",
     },
   ],
+  savedExternalRecipes: [{
+    type: String, // Store TheMealDB idMeal
+    default: []
+  }],
   bio: {
     type: String,
     default: "I am a passionate cook",
