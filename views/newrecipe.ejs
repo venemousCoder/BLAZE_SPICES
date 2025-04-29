@@ -26,6 +26,7 @@
       <p class="loader-text">Please wait while we process your recipe...</p>
   </div>
 </div>
+<%- include('./partials/header') %>
     <%- include('./partials/sidebar.ejs') %>
 
     <main class="newrecipe-page">
@@ -412,5 +413,6 @@ document.getElementById('recipeForm').addEventListener('submit', async function(
     }
 });
     </script>
+    <script src="/public/js/sidebar.js"></script>
   </body>
 </html>

@@ -11,6 +11,7 @@ const Router = require("./routes/index.routes");
 const cors = require("cors");
 const ejs = require("ejs");
 const path = require("path");
+const expressLayouts = require("express-ejs-layouts");
 
 const store = new MongoDBstore({
   uri: process.env.DBURI,
@@ -33,6 +34,7 @@ app.use(
     secret: process.env.SECRET_KEY,
   })
 );
+
 app.use(cors());
 mongoose
   .connect(process.env.DBURI)
@@ -52,6 +54,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(require("cors")({ origin: "*" }));
 app.set("view engine", "ejs");
+
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -140,6 +143,13 @@ passport.deserializeUser((obj, done) => {
       // console.error("Error during deserialization:", err);
       done(err, null);
     });
+});
+
+app.set("views", path.join(__dirname, "views"));
+
+app.use((req, res, next) => {
+  res.locals.layout = "layout"; // default layout name
+  next();
 });
 
 app.use("/", Router);

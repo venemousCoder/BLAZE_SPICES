@@ -11,6 +11,7 @@
     <link rel="shortcut icon" href="/public/assets/favicon/favicon.ico" type="image/x-icon">
 </head>
 <body>
+    <%- include('./partials/header') %>
     <%- include('./partials/sidebar.ejs')%>
     
     <main class="explore-page">
@@ -202,5 +203,6 @@ document.querySelectorAll('.save-btn').forEach(btn => {
         };
     }
     </script>
+    <script src="/public/js/sidebar.js"></script>
 </body>
 </html>

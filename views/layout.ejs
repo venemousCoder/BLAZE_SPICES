@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title><%#= title %></title>
+      <% if (typeof stylesheet !== 'undefined') { %>
+        <link rel="stylesheet" href="/css/<%= stylesheet %>">
+      <% } %>
+    </head>
+    
+  <body>
+    <button class="hamburger-menu" id="hamburger" aria-label="Open menu">
+      <img src="/public/assets/menu.svg" alt="" />
+    </button>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <%- body %>
+  </body>
+</html>

@@ -18,6 +18,7 @@
     />
   </head>
   <body>
+    <%- include('./partials/header') %>
     <%- include('./partials/sidebar.ejs')%>
 
     <main class="saved-recipes-page">
@@ -97,7 +98,7 @@
       </section>
       <% } %>
     </main>
-
+    <script src="/public/js/sidebar.js"></script>
     <script>
       // Unsave functionality
       document.querySelectorAll(".unsave-btn").forEach((btn) => {
