@@ -131,7 +131,6 @@ const userSchema = new mongoose.Schema({
   ],
   resetPasswordToken: {
     type: String,
-    unique: true,
   },
   resetPasswordExpires: {
     type: Number,
