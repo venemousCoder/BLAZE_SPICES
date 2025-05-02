@@ -1186,6 +1186,34 @@ async function explore(req, res, next) {
   }
 }
 
+async function getExternalRecipe(req, res, next) {
+  try {
+    const mealId = req.params.id;
+    // Fetch recipe details from TheMealDB
+    const response = await axios.get(
+      `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`
+    );
+    const meal = response.data.meals && response.data.meals[0];
+
+    if (!meal) {
+      return res.status(404).render("error", { message: "Recipe not found" });
+    }
+
+    return res.render("externalrecipes", {
+      user: req.user,
+      meal,
+      currentPage: "external-recipe",
+    });
+  } catch (err) {
+    console.error("Error fetching external recipe:", err);
+    return res.status(500).render("error", {
+      message: "Failed to load recipe",
+      error: err,
+      status: 500,
+    });
+  }
+}
+
 async function getSavedRecipes(req, res, next) {
   try {
     const user = await User.findById(req.user._id);
@@ -1227,34 +1255,50 @@ async function saveRecipe(req, res) {
   try {
     const mealId = req.params.id;
     const userId = req.user._id;
-    const isExternal = req.path.includes("external");
-
+    // Use a more reliable way to check if it's an external recipe
+    // For example, you can use a route parameter or query, or check the URL pattern
+    // Here, let's assume you use /user/save/external/:id for external and /user/save/:id for internal
+    const isExternal = req.originalUrl.includes("/external/");
     const user = await User.findById(userId);
+    console.log("isExternal: ", isExternal, req.originalUrl);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
 
     if (isExternal) {
-      // Handle external (TheMealDB) recipes
-      const isSaved = user.savedExternalRecipes.includes(mealId);
+      const savedExternalRecipes = Array.isArray(user.savedExternalRecipes)
+        ? user.savedExternalRecipes
+        : [];
+      const isSaved = savedExternalRecipes.includes(mealId);
 
       await User.findByIdAndUpdate(userId, {
         [isSaved ? "$pull" : "$addToSet"]: {
           savedExternalRecipes: mealId,
         },
       });
+      return res.json({
+        success: true,
+        isSaved: !isSaved,
+      });
     } else {
-      // Handle internal recipes
-      const isSaved = user.savedRecipes.includes(mealId);
+      const savedRecipes = Array.isArray(user.savedRecipes)
+        ? user.savedRecipes
+        : [];
+      const isSaved = savedRecipes.includes(mealId);
 
       await User.findByIdAndUpdate(userId, {
         [isSaved ? "$pull" : "$addToSet"]: {
           savedRecipes: mealId,
         },
       });
+      return res.json({
+        success: true,
+        isSaved: !isSaved,
+      });
     }
-
-    return res.json({
-      success: true,
-      isSaved: !isSaved,
-    });
   } catch (error) {
     console.error("Error saving recipe:", error);
     return res.status(500).json({
@@ -1470,7 +1514,7 @@ async function getGroupChat(req, res) {
       .populate({
         path: "messages",
         populate: { path: "sender", select: "username profileImage" },
-        options: { sort: { createdAt: 1 } }
+        options: { sort: { createdAt: 1 } },
       })
       .populate("members", "username profileImage");
 
@@ -1478,8 +1522,8 @@ async function getGroupChat(req, res) {
 
     // Clear unread messages for this group
     await User.updateOne(
-      { _id: req.user._id, 'unreadMessages.group': group._id },
-      { $set: { 'unreadMessages.$.count': 0 } }
+      { _id: req.user._id, "unreadMessages.group": group._id },
+      { $set: { "unreadMessages.$.count": 0 } }
     );
 
     // Rest of your existing code...
@@ -1487,7 +1531,7 @@ async function getGroupChat(req, res) {
       user: req.user,
       group,
       messages: group.messages,
-      currentPage: "groups"
+      currentPage: "groups",
     });
   } catch (err) {
     console.error("Error loading group chat:", err);
@@ -1537,6 +1581,7 @@ module.exports = {
   markAsRead,
   uploadRecipeVideo,
   explore,
+  getExternalRecipe,
   saveRecipe,
   getSavedRecipes,
   getGroups,

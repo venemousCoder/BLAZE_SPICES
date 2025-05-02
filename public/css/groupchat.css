@@ -144,13 +144,17 @@
     margin-bottom: 0.5rem;
 }
 
-.message-header a {
+.message-header a,
+.member-info a
+{
     text-decoration: none;
     color: inherit;
     transition: all 0.2s ease;
 }
 
-.message-header a:hover {
+.message-header a:hover,
+.member-info a:hover
+{
     opacity: 0.8;
     text-decoration: underline;
 }

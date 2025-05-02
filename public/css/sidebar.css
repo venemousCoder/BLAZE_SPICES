@@ -45,7 +45,7 @@ body {
 .hamburger-menu {
   display: none; /* Hidden by default on desktop */
   position: fixed;
-  top: 1rem;
+  top: 3rem;
   left: 1rem;
   z-index: 1001;
   background: white;
@@ -91,7 +91,8 @@ body {
   display: block;
   width: 20px;
   height: 2px;
-  background: var(--text-primary);
+  right: 5px;
+  background: var(--primary-color);
   margin: 0 auto;
   transition: all 0.3s ease;
 }
@@ -102,7 +103,8 @@ body {
   position: absolute;
   width: 10px;
   height: 2px;
-  background: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--primary-color);
   transition: all 0.3s ease;
 }
 

@@ -40,9 +40,8 @@
         <% savedRecipes.forEach(recipe => { %>
         <div class="recipe-card" data-recipe-id="<%= recipe.idMeal %>">
           <a
-            href="https://www.themealdb.com/meal/<%= recipe.idMeal %>"
+            href="/user/external/recipe/<%= recipe.idMeal %>"
             class="recipe-card-link"
-            target="_blank"
           >
             <img
               src="<%= recipe.strMealThumb %>"

@@ -60,74 +60,106 @@ module.exports = (io) => {
     // ...existing code...
     socket.on("group:message", async ({ groupId, message, user }) => {
       const group = await Group.findById(groupId);
-      if (
-        group.blocked_members.map(String).includes(user.id) ||
-        !group.members.map(String).includes(user.id)
-      ) {
-        socket.emit("error", {
-          message: "You are blocked or not a member of this group.",
-        });
-        return;
-      }
       try {
-        // Verify membership again as an extra security measure
-        const isMember = socket.group.members.some(
-          (memberId) => memberId.toString() === user.id
-        );
+        // Check if group is locked
+        if (group.locked) {
+          const isAdmin = group.admin.toString() === user.id;
+          const isMod = group.moderators.map(String).includes(user.id);
+          if (!isAdmin && !isMod) {
+            socket.emit("error", {
+              message:
+                "Group is locked. Only admins and moderators can send messages.",
+            });
+            return;
+          }
+        }
 
-        if (!isMember) {
-          socket.emit("error", { message: "Not authorized to send messages" });
+        // Check if user is a member
+        if (!group.members.map(String).includes(user.id)) {
+          socket.emit("error", {
+            message: "You are not a member of this group.",
+          });
           return;
         }
 
+        // Check if user is blocked
+        if (group.blocked_members.map(String).includes(user.id)) {
+          socket.emit("error", { message: "You are blocked from this group." });
+          return;
+        }
+        if (
+          group.blocked_members.map(String).includes(user.id) ||
+          !group.members.map(String).includes(user.id)
+        ) {
+          socket.emit("error", {
+            message: "You are blocked or not a member of this group.",
+          });
+          return;
+        }
         try {
-          const savedMsg = await Message.create({
-            group: groupId,
-            sender: user.id,
-            content: String(message),
-            createdAt: new Date(),
-          });
-
-          const group = await Group.findByIdAndUpdate(groupId, {
-            $push: { messages: savedMsg._id },
-          });
-
-          // Increment unread count for all group members except sender
-          await User.updateMany(
-            {
-              _id: { $in: group.members, $ne: user.id },
-              "unreadMessages.group": { $ne: groupId },
-            },
-            {
-              $push: {
-                unreadMessages: { group: groupId, count: 1 },
-              },
-            }
+          // Verify membership again as an extra security measure
+          const isMember = socket.group.members.some(
+            (memberId) => memberId.toString() === user.id
           );
 
-          await User.updateMany(
-            {
-              _id: { $in: group.members, $ne: user.id },
-              "unreadMessages.group": groupId,
-            },
-            {
-              $inc: {
-                "unreadMessages.$.count": 1,
-              },
-            }
-          );
+          if (!isMember) {
+            socket.emit("error", {
+              message: "Not authorized to send messages",
+            });
+            return;
+          }
 
-          io.to(groupId).emit("group:newMessage", {
-            groupId,
-            user,
-            message,
-            timestamp: savedMsg.createdAt,
-          });
+          try {
+            const savedMsg = await Message.create({
+              group: groupId,
+              sender: user.id,
+              content: String(message),
+              createdAt: new Date(),
+            });
+
+            const group = await Group.findByIdAndUpdate(groupId, {
+              $push: { messages: savedMsg._id },
+            });
+
+            // Increment unread count for all group members except sender
+            await User.updateMany(
+              {
+                _id: { $in: group.members, $ne: user.id },
+                "unreadMessages.group": { $ne: groupId },
+              },
+              {
+                $push: {
+                  unreadMessages: { group: groupId, count: 1 },
+                },
+              }
+            );
+
+            await User.updateMany(
+              {
+                _id: { $in: group.members, $ne: user.id },
+                "unreadMessages.group": groupId,
+              },
+              {
+                $inc: {
+                  "unreadMessages.$.count": 1,
+                },
+              }
+            );
+
+            io.to(groupId).emit("group:newMessage", {
+              groupId,
+              user,
+              message,
+              timestamp: savedMsg.createdAt,
+            });
+          } catch (err) {
+            console.error("Error saving group message:", err);
+          }
         } catch (err) {
-          console.error("Error saving group message:", err);
+          console.error("Socket error:", err);
+          socket.emit("error", { message: "Server error" });
         }
       } catch (err) {
-        console.error("Socket error:", err);
         socket.emit("error", { message: "Server error" });
       }
     });

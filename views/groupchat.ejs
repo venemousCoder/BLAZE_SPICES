@@ -25,6 +25,11 @@
         <div class="chat-header">
             <div class="group-info">
                 <h1><%= group.group_name %></h1>
+                <% if (group.locked) { %>
+                    <span title="Group is locked" style="color:#ff4d4d; margin-left:8px;">
+                        <img src="/public/assets/lock.svg" alt="Locked" style="width:20px;vertical-align:middle;">
+                    </span>
+                <% } %>
                 <span class="member-count"><%= group.members.length %> members</span>
             </div>
             <button class="settings-btn" aria-label="Group settings">
@@ -97,7 +102,7 @@
                             <div class="member-info">
                                 <img src="<%= member.profileImage || '/public/assets/default-profile.png' %>" 
                                      alt="" class="member-avatar">
-                                <span class="member-name"><%= member.username %></span>
+                                <a class="" href="/user/profile/<%= member._id %>"><span class="member-name"><%= member.username %></span></a>
                                 <% if (member._id.toString() === group.admin.toString()) { %>
                                     <span class="role-badge admin">Admin</span>
                                 <% } else if (group.moderators.includes(member._id)) { %>
@@ -258,360 +263,227 @@
     <script src="/public/js/sidebar.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io({
-    auth: {
-        groupId: "<%= group._id %>",
-        userId: "<%= user._id %>"
-    }
-});
+    const socket = io({
+        auth: {
+            groupId: "<%= group._id %>",
+            userId: "<%= user._id %>"
+        }
+    });
+    const groupLocked = "<%= group.locked ? 'true' : 'false' %>";
+const isAdmin = "<%= user._id.toString() === group.admin.toString() %>" === "true";
+const isMod = "<%= JSON.stringify(group.moderators.map(String)).includes(user._id.toString()) %>";
 
-const loadingOverlay = document.getElementById('loadingOverlay');
-    
+if (groupLocked && !(isAdmin || isMod)) {
+    messageInput.disabled = true;
+    messageInput.placeholder = "Group is locked. Only admins and moderators can send messages.";
+    document.querySelector('.send-btn').disabled = true;
+    document.querySelector('.send-btn').style.opacity = 0.5;
+}
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const groupId = "<%= group._id %>";
+    const currentUser = {
+        id: "<%= user._id %>",
+        username: "<%= user.username %>",
+        profileImage: "<%= user.profileImage %>"
+    };
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const messagesContainer = document.getElementById('messagesContainer');
+
+    // --- Socket Events ---
     socket.on('connect', () => {
         loadingOverlay.style.display = 'none';
     });
-    
-    socket.on('connect_error', () => {
+
+    socket.on('connect_error', (err) => {
         loadingOverlay.innerHTML = '<p>Access denied. Redirecting...</p>';
-    });
-
-socket.on("connect_error", (err) => {
-    console.error('Connection error:', err.message);
-    if (err.message.includes('Not a member')) {
-        window.location.href = '/user/groups';
-    }
-});
-
-socket.on("error", (data) => {
-    console.error('Socket error:', data.message);
-    if (data.message.includes('Not authorized')) {
-        window.location.href = '/user/groups';
-    }
-});
-        const groupId = "<%= group._id %>";
-        const currentUser = {
-            id: "<%= user._id %>",
-            username: "<%= user.username %>",
-            profileImage: "<%= user.profileImage %>"
-        };
-        // Add this after your socket initialization and before the message handling
-
-function scrollToBottom(smooth = true) {
-    const messagesContainer = document.getElementById('messagesContainer');
-    if (!messagesContainer) return;
-
-    const scrollOptions = {
-        top: messagesContainer.scrollHeight,
-        behavior: smooth ? 'smooth' : 'auto'
-    };
-    
-    messagesContainer.scrollTo(scrollOptions);
-}
-        const messagesContainer = document.getElementById('messagesContainer');
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        // Join chat room
-        socket.emit("group:join", { groupId, userId: currentUser.id });
-
-        // Handle message submission
-        const messageForm = document.getElementById('messageForm');
-        const messageInput = document.getElementById('messageInput');
-        // const messagesContainer = document.getElementById('messagesContainer');
-
-        messageForm.onsubmit = (e) => {
-            e.preventDefault();
-            const message = messageInput.value.trim();
-            if (message) {
-                socket.emit("group:message", {
-                    groupId,
-                    message,
-                    user: currentUser
-                });
-                messageInput.value = '';
-            }
-        };
-
-        // Auto-resize textarea
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
-        });
-
-        // Receive messages
-        socket.on("group:newMessage", (data) => {
-            appendMessage(data);
-        });
-
-        // Replace your existing appendMessage function
-
-        // Add to your existing script section in groupchat.ejs
-// Handle dropdowns
-document.querySelectorAll('.dropdown').forEach(dropdown => {
-    const btn = dropdown.querySelector('.action-btn');
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('active');
-    });
-});
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', () => {
-    document.querySelectorAll('.dropdown.active').forEach(dropdown => {
-        dropdown.classList.remove('active');
-    });
-});
-
-// Block member handler
-document.querySelectorAll('.block-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        if (!confirm('Are you sure you want to block this member?')) return;
-        
-        const userId = btn.dataset.userid;
-        try {
-            const response = await fetch(`/user/groups/${groupId}/block`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
-            });
-            
-            if (response.ok) location.reload();
-            else {
-                const error = await response.json();
-                alert(error.message || 'Failed to block member');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to block member');
-        }
-    });
-});
-
-// Unblock member handler
-document.querySelectorAll('.unblock-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        const userId = btn.dataset.userid;
-        try {
-            const response = await fetch(`/user/groups/${groupId}/unblock`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
-            });
-            
-            if (response.ok) location.reload();
-            else {
-                const error = await response.json();
-                alert(error.message || 'Failed to unblock member');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to unblock member');
-        }
-    });
-});
-function appendMessage(data) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${data.user.id === currentUser.id ? 'own-message' : ''}`;
-    
-    messageDiv.innerHTML = `
-        <div class="message-content">
-            <div class="message-header">
-                <img src="${data.user.profileImage || '/public/assets/default-profile.png'}" 
-                     alt="" class="user-avatar">
-                <a href="/user/profile/${data.user.id}"><span class="username">${data.user.username}</span></a>
-                <span class="timestamp">${new Date(data.timestamp).toLocaleTimeString()}</span>
-            </div>
-            <p class="message-text">${data.message}</p>
-        </div>
-    `;
-    
-    messagesContainer.appendChild(messageDiv);
-    
-    // Check if user was already at bottom before adding message
-    const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight;
-    
-    // If user was at bottom or this is their own message, scroll to bottom
-    if (wasAtBottom || data.user.id === currentUser.id) {
-        scrollToBottom(true);
-    }
-}
-
-// Add this to your existing script in groupchat.ejs
-const settingsBtn = document.querySelector('.settings-btn');
-const modal = document.getElementById('groupSettingsModal');
-const closeModal = modal.querySelector('.close-modal');
-const tabBtns = modal.querySelectorAll('.tab-btn');
-const settingsForm = document.getElementById('groupSettingsForm');
-
-// Toggle modal
-function toggleModal() {
-    modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
-}
-
-settingsBtn?.addEventListener('click', toggleModal);
-closeModal.addEventListener('click', toggleModal);
-modal.addEventListener('click', (e) => {
-    if (e.target === modal) toggleModal();
-});
-
-// Tab switching
-tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const targetTab = btn.dataset.tab;
-        
-        // Update button states
-        tabBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // Update tab panels
-        modal.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.remove('active');
-        });
-        modal.querySelector(`#${targetTab}-tab`).classList.add('active');
-    });
-});
-
-// Handle member actions
-document.querySelectorAll('.promote-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        const userId = btn.dataset.userid;
-        try {
-            const response = await fetch(`/user/groups/${groupId}/promote`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
-            });
-            
-            if (response.ok) location.reload();
-            else {
-                const error = await response.json();
-                alert(error.message || 'Failed to promote user');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to promote user');
-        }
-    });
-});
-
-document.querySelectorAll('.kick-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        if (!confirm('Are you sure you want to kick this member?')) return;
-        
-        const userId = btn.dataset.userid;
-        try {
-            const response = await fetch(`/user/groups/${groupId}/kick`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
-            });
-            
-            if (response.ok) location.reload();
-            else {
-                const error = await response.json();
-                alert(error.message || 'Failed to kick user');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to kick user');
-        }
-    });
-});
-
-// Add to your existing script
-document.querySelectorAll('.demote-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        if (!confirm('Are you sure you want to remove this moderator?')) return;
-        
-        const userId = btn.dataset.userid;
-        try {
-            const response = await fetch(`/user/groups/${groupId}/demote`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
-            });
-            
-            if (response.ok) location.reload();
-            else {
-                const error = await response.json();
-                alert(error.message || 'Failed to demote moderator');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to demote moderator');
-        }
-    });
-});
-
-// Add delete group functionality
-const deleteGroupBtn = document.querySelector('.delete-group-btn');
-deleteGroupBtn?.addEventListener('click', async () => {
-    if (!confirm('Are you sure you want to delete this group? This action cannot be undone!')) return;
-    
-    try {
-        const response = await fetch(`/user/groups/${groupId}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (response.ok) {
+        if (err && err.message && err.message.includes('Not a member')) {
             window.location.href = '/user/groups';
-        } else {
-            const error = await response.json();
-            alert(error.message || 'Failed to delete group');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to delete group');
-    }
-});
+    });
 
-// Handle settings form
-settingsForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(settingsForm);
-    
-    try {
-        const response = await fetch(`/user/groups/${groupId}/settings`, {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (response.ok) {
-            location.reload();
-        } else {
-            const error = await response.json();
-            alert(error.message || 'Failed to update group settings');
+    socket.on("error", (data) => {
+        if (data && data.message && data.message.includes('Not authorized')) {
+            window.location.href = '/user/groups';
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to update group settings');
-    }
-});
+    });
 
-// Update your form submission handler
-messageForm.onsubmit = (e) => {
-    e.preventDefault();
-    const message = messageInput.value.trim();
-    if (message) {
-        socket.emit("group:message", {
-            groupId,
-            message,
-            user: currentUser
-        });
-        messageInput.value = '';
-        messageInput.style.height = 'auto'; // Reset textarea height
+    socket.emit("group:join", { groupId, userId: currentUser.id });
+
+    socket.on("group:newMessage", (data) => {
+        appendMessage(data);
+        scrollToBottom();
+    });
+
+    // --- Scroll to Bottom (Auto-scroll) ---
+    function scrollToBottom(force = false) {
+        // Only scroll if user is near the bottom or force is true
+        const threshold = 100;
+        const atBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < threshold;
+        if (atBottom || force) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+
+    // On page load, scroll to bottom
+    window.addEventListener('DOMContentLoaded', () => {
         scrollToBottom(true);
+    });
+
+    // --- Message Submission ---
+    messageForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (message) {
+            socket.emit("group:message", {
+                groupId,
+                message,
+                user: currentUser
+            });
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+        }
+    };
+
+    // --- Auto-resize textarea ---
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+
+    // --- Append Message ---
+    function appendMessage(data) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${data.user.id === currentUser.id ? 'own-message' : ''}`;
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-header">
+                    <img src="${data.user.profileImage || '/public/assets/default-profile.png'}" 
+                         alt="" class="user-avatar">
+                    <a href="/user/profile/${data.user.id}"><span class="username">${data.user.username}</span></a>
+                    <span class="timestamp">${new Date(data.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <p class="message-text"></p>
+            </div>
+        `;
+        messageDiv.querySelector('.message-text').textContent = data.message;
+        messagesContainer.appendChild(messageDiv);
     }
-};
 
-// Add scroll to bottom on initial load (without smooth scroll)
-window.addEventListener('DOMContentLoaded', () => {
-    scrollToBottom(false);
-});
-
-        // Leave chat room when leaving page
-        window.addEventListener('beforeunload', () => {
-            socket.emit("group:leave", { groupId, userId: currentUser.id });
+    // --- Dropdowns ---
+    document.querySelectorAll('.dropdown').forEach(dropdown => {
+        const btn = dropdown.querySelector('.action-btn');
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
         });
+    });
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown.active').forEach(dropdown => {
+            dropdown.classList.remove('active');
+        });
+    });
+
+    // --- Member Actions ---
+    function handleAction(selector, url, confirmMsg, successReload = true) {
+        document.querySelectorAll(selector).forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (confirmMsg && !confirm(confirmMsg)) return;
+                const userId = btn.dataset.userid;
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId })
+                    });
+                    if (response.ok && successReload) location.reload();
+                    else if (!response.ok) {
+                        const error = await response.json();
+                        alert(error.message || 'Action failed');
+                    }
+                } catch (error) {
+                    alert('Action failed');
+                }
+            });
+        });
+    }
+    handleAction('.block-btn', `/user/groups/${groupId}/block`, 'Are you sure you want to block this member?');
+    handleAction('.unblock-btn', `/user/groups/${groupId}/unblock`);
+    handleAction('.promote-btn', `/user/groups/${groupId}/promote`);
+    handleAction('.demote-btn', `/user/groups/${groupId}/demote`, 'Are you sure you want to remove this moderator?');
+    handleAction('.kick-btn', `/user/groups/${groupId}/kick`, 'Are you sure you want to kick this member?');
+
+    // --- Delete Group ---
+    const deleteGroupBtn = document.querySelector('.delete-group-btn');
+    deleteGroupBtn?.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to delete this group? This action cannot be undone!')) return;
+        try {
+            const response = await fetch(`/user/groups/${groupId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                window.location.href = '/user/groups';
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Failed to delete group');
+            }
+        } catch (error) {
+            alert('Failed to delete group');
+        }
+    });
+
+    // --- Settings Modal ---
+    const settingsBtn = document.querySelector('.settings-btn');
+    const modal = document.getElementById('groupSettingsModal');
+    const closeModal = modal.querySelector('.close-modal');
+    const tabBtns = modal.querySelectorAll('.tab-btn');
+    const settingsForm = document.getElementById('groupSettingsForm');
+
+    function toggleModal() {
+        modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    }
+    settingsBtn?.addEventListener('click', toggleModal);
+    closeModal.addEventListener('click', toggleModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) toggleModal();
+    });
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.dataset.tab;
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            modal.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            modal.querySelector(`#${targetTab}-tab`).classList.add('active');
+        });
+    });
+
+    // --- Settings Form ---
+    settingsForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(settingsForm);
+        try {
+            const response = await fetch(`/user/groups/${groupId}/settings`, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                location.reload();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Failed to update group settings');
+            }
+        } catch (error) {
+            alert('Failed to update group settings');
+        }
+    });
+
+    // --- Leave Room on Unload ---
+    window.addEventListener('beforeunload', () => {
+        socket.emit("group:leave", { groupId, userId: currentUser.id });
+    });
     </script>
 </body>
 </html>

@@ -43,8 +43,8 @@
                 <div class="recipe-card" 
                      data-category="<%= meal.strCategory %>" 
                      data-area="<%= meal.strArea %>">
-                    <a href="https://www.themealdb.com/meal/<%= meal.idMeal %>" 
-                       class="recipe-card-link" target="_blank">
+                    <a href="/user/external/recipe/<%= meal.idMeal %>"
+                       class="recipe-card-link">
                         <img src="<%= meal.strMealThumb %>" 
                              alt="<%= meal.strMeal %>" 
                              class="recipe-img">
@@ -95,7 +95,7 @@
                 const icon = this.querySelector('.save-icon');
                 
                 try {
-                    const response = await fetch(`/user/externalrecipes/${recipeId}/save`, {
+                    const response = await fetch(`/user/external/recipe/${recipeId}/save`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' }
                     });
@@ -120,7 +120,7 @@ document.querySelectorAll('.save-btn').forEach(btn => {
         const text = this.querySelector('.save-text');
         
         try {
-            const response = await fetch(`/user/externalrecipes/${recipeId}/save`, {
+            const response = await fetch(`/user/external/recipe/${recipeId}/save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Details | Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/externalrecipes.css">
+    <link rel="stylesheet" href="/public/css/home.css">
+    <link rel="stylesheet" href="/public/css/sidebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <%- include('./partials/header') %>
+    <%- include('./partials/sidebar') %>
+
+    <main class="recipe-page">
+        <div class="recipe-header">
+            <button onclick="window.history.back()" class="back-btn" aria-label="Go back">
+                <img src="/public/assets/arrow-left.svg" alt="">
+            </button>
+            <h1><%= meal.strMeal %></h1>
+        </div>
+
+        <div class="recipe-content">
+            <div class="recipe-hero">
+                <img src="<%= meal.strMealThumb %>" 
+                     alt="<%= meal.strMeal %>" 
+                     class="recipe-image">
+                
+                <div class="recipe-meta">
+                    <div class="recipe-tags">
+                        <span class="tag category"><%= meal.strCategory %></span>
+                        <span class="tag cuisine"><%= meal.strArea %></span>
+                        <% if (meal.strTags) { %>
+                            <% meal.strTags.split(',').forEach(tag => { %>
+                                <span class="tag"><%= tag.trim() %></span>
+                            <% }) %>
+                        <% } %>
+                    </div>
+                    
+                    <div class="recipe-actions">
+                        <button class="save-btn" 
+                                aria-label="Save recipe" 
+                                data-recipe-id="<%= meal.idMeal %>">
+                            <img src="/public/assets/bookmark.svg" alt="">
+                            Save Recipe
+                        </button>
+                        <% if (meal.strYoutube) { %>
+                            <button class="watch-btn" 
+                                    onclick="toggleVideo()"
+                                    aria-label="Watch video">
+                                <img src="/public/assets/play.svg" alt="">
+                                Watch Video
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <% if (meal.strYoutube) { %>
+                <div id="videoOverlay" class="video-overlay" onclick="toggleVideo()">
+                    <div class="video-container" onclick="event.stopPropagation()">
+                        <button class="close-video" onclick="toggleVideo()" aria-label="Close video">
+                            <img src="/public/assets/close.svg" alt="">
+                        </button>
+                        <iframe 
+                            id="youtubeVideo"
+                            src="<%= meal.strYoutube.replace('watch?v=', 'embed/') %>"
+                            title="Recipe Video"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            <% } %>
+            <section class="recipe-section ingredients">
+                <h2>Ingredients</h2>
+                <ul class="ingredients-list">
+                    <% for(let i = 1; i <= 20; i++) { %>
+                        <% if (meal[`strIngredient${i}`]) { %>
+                            <li>
+                                <span class="measure"><%= meal[`strMeasure${i}`] %></span>
+                                <%= meal[`strIngredient${i}`] %>
+                            </li>
+                        <% } %>
+                    <% } %>
+                </ul>
+            </section>
+
+            <section class="recipe-section instructions">
+                <h2>Instructions</h2>
+                <div class="instructions-content">
+                    <% meal.strInstructions.split('\r\n').forEach((step, index) => { %>
+                        <% if (step.trim()) { %>
+                            <div class="instruction-step">
+                                <span class="step-number"><%= index + 1 %></span>
+                                <p><%= step.trim() %></p>
+                            </div>
+                        <% } %>
+                    <% }) %>
+                </div>
+            </section>
+
+            <% if (meal.strSource) { %>
+                <div class="recipe-source">
+                    <a href="<%= meal.strSource %>" 
+                       target="_blank" 
+                       rel="noopener noreferrer">
+                        View Original Recipe
+                        <img src="/public/assets/external-link.svg" alt="">
+                    </a>
+                </div>
+            <% } %>
+        </div>
+    </main>
+
+    <script src="/public/js/sidebar.js"></script>
+    <script>
+        function toggleVideo() {
+            const overlay = document.getElementById('videoOverlay');
+            const iframe = document.getElementById('youtubeVideo');
+            
+            if (overlay.classList.contains('active')) {
+                overlay.classList.remove('active');
+                // Stop video when closing
+                iframe.src = iframe.src;
+            } else {
+                overlay.classList.add('active');
+            }
+        }
+    
+        // Close video on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const overlay = document.getElementById('videoOverlay');
+                if (overlay.classList.contains('active')) {
+                    toggleVideo();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

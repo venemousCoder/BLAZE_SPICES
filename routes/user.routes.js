@@ -112,9 +112,11 @@ router.post("/notifications/mark-all-read", usercontrollers.markAllAsRead);
 
 router.get("/explore", usercontrollers.explore);
 
+router.get("/external/recipe/:id", usercontrollers.getExternalRecipe);
+
 router.post("/recipes/:id/save", usercontrollers.saveRecipe);
 
-router.post("/externalrecipes/:id/save", usercontrollers.saveRecipe);
+router.post("/external/recipe/:id/save", usercontrollers.saveRecipe);
 
 router.get("/saved", usercontrollers.getSavedRecipes);
 
