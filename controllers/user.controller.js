@@ -2,8 +2,10 @@
 // It exports a function that renders the home view.
 const recipe = require("../models/recipe");
 const { User } = require("../models/user"); // Make sure this is the discriminator!
+const Group = require("../models/group");
 const path = require("path");
 const fs = require("fs");
+const Message = require("../models/messages");
 const cloudinary = require("../utils/cloudinary"); // adjust path as needed
 const axios = require("axios");
 
@@ -589,7 +591,7 @@ function getMyProfile(req, res, next) {
     });
 }
 
-function editProfile(req, res, next) {
+async function editProfile(req, res, next) {
   const userId = req.user._id;
   const updateData = {
     username: req.body.username,
@@ -598,28 +600,35 @@ function editProfile(req, res, next) {
     tag: req.body.tag,
   };
 
-  // Add profile image to updateData if a new image was uploaded
+  // Upload profile image to Cloudinary if a new image was uploaded
   if (req.file) {
-    updateData.profileImage = `/uploads/profile/${req.file.filename}`;
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "blaze_spices/profile",
+        resource_type: "image",
+      });
+      updateData.profileImage = result.secure_url;
+    } catch (err) {
+      console.error("Cloudinary upload error:", err);
+      res.locals.error = "Failed to upload profile image";
+      return res.status(500).redirect("/error");
+    }
   }
 
   User.findByIdAndUpdate(userId, updateData, {
     new: true,
-    runValidators: true, // This ensures enum validation for tag
+    runValidators: true,
   })
     .then((updatedUser) => {
       if (!updatedUser) {
         return res.status(404).redirect("/error");
       }
-
-      // Update session user data
       req.user = updatedUser;
       req.session.save((err) => {
         if (err) {
           console.error("Session save error:", err);
           return res.status(500).redirect("/error");
         }
-        // Redirect back to dashboard with success message
         res.locals.message = "Profile updated successfully";
         return res.redirect("/user/dashboard");
       });
@@ -843,7 +852,7 @@ function likeRecipe(req, res, next) {
         const notification = {
           read: false,
           from: userId,
-          message: `liked your post`,
+          message: `liked your post 👍`,
           type: "like",
           reference: recipeId, // ID of the post
           createdAt: new Date(),
@@ -1117,38 +1126,50 @@ async function explore(req, res, next) {
   const query = req.query.q || ""; // Search query from user input
   const category = req.query.category || ""; // Category filter
   const area = req.query.area || ""; // Cuisine/Area filter
-  
+
   try {
     let apiUrl;
     let meals = [];
 
     // Get categories for filter dropdown
-    const categoriesResponse = await axios.get('https://www.themealdb.com/api/json/v1/1/categories.php');
+    const categoriesResponse = await axios.get(
+      "https://www.themealdb.com/api/json/v1/1/categories.php"
+    );
     const categories = categoriesResponse.data.categories;
 
     if (query) {
-      apiUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
+      apiUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(
+        query
+      )}`;
       const response = await axios.get(apiUrl);
       meals = response.data.meals || [];
     } else if (category) {
-      apiUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`;
+      apiUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(
+        category
+      )}`;
       const response = await axios.get(apiUrl);
       meals = response.data.meals || [];
     } else if (area) {
-      apiUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(area)}`;
+      apiUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(
+        area
+      )}`;
       const response = await axios.get(apiUrl);
       meals = response.data.meals || [];
     } else {
       // No search/filter: Show 10 random meals
       const randomMeals = await Promise.all(
-        Array(10).fill().map(async () => {
-          const response = await axios.get('https://www.themealdb.com/api/json/v1/1/random.php');
-          return response.data.meals[0];
-        })
+        Array(10)
+          .fill()
+          .map(async () => {
+            const response = await axios.get(
+              "https://www.themealdb.com/api/json/v1/1/random.php"
+            );
+            return response.data.meals[0];
+          })
       );
       meals = randomMeals;
     }
-    console.log(meals)
+    console.log(meals);
     return res.render("explore", {
       user: req.user,
       meals: meals,
@@ -1157,7 +1178,7 @@ async function explore(req, res, next) {
       searchQuery: query,
       selectedCategory: category,
       selectedArea: area,
-      isInitialLoad: !query && !category && !area
+      isInitialLoad: !query && !category && !area,
     });
   } catch (err) {
     console.error("Error fetching from TheMealDB:", err);
@@ -1168,9 +1189,9 @@ async function explore(req, res, next) {
 async function getSavedRecipes(req, res, next) {
   try {
     const user = await User.findById(req.user._id);
-    
+
     if (!user) {
-      return res.status(404).redirect('/error');
+      return res.status(404).redirect("/error");
     }
 
     // Fetch saved TheMealDB recipes
@@ -1189,16 +1210,16 @@ async function getSavedRecipes(req, res, next) {
     );
 
     // Filter out any failed requests
-    const validMeals = savedMeals.filter(meal => meal !== null);
+    const validMeals = savedMeals.filter((meal) => meal !== null);
 
-    return res.render('savedRecipes', {
+    return res.render("savedRecipes", {
       user: req.user,
       savedRecipes: validMeals,
-      currentPage: 'saved-recipes'
+      currentPage: "saved-recipes",
     });
   } catch (err) {
-    console.error('Error fetching saved recipes:', err);
-    return res.status(500).redirect('/error');
+    console.error("Error fetching saved recipes:", err);
+    return res.status(500).redirect("/error");
   }
 }
 
@@ -1206,41 +1227,271 @@ async function saveRecipe(req, res) {
   try {
     const mealId = req.params.id;
     const userId = req.user._id;
-    const isExternal = req.path.includes('external');
+    const isExternal = req.path.includes("external");
 
     const user = await User.findById(userId);
-    
+
     if (isExternal) {
       // Handle external (TheMealDB) recipes
       const isSaved = user.savedExternalRecipes.includes(mealId);
-      
+
       await User.findByIdAndUpdate(userId, {
-        [isSaved ? '$pull' : '$addToSet']: { 
-          savedExternalRecipes: mealId 
-        }
+        [isSaved ? "$pull" : "$addToSet"]: {
+          savedExternalRecipes: mealId,
+        },
       });
-      
     } else {
       // Handle internal recipes
       const isSaved = user.savedRecipes.includes(mealId);
-      
+
       await User.findByIdAndUpdate(userId, {
-        [isSaved ? '$pull' : '$addToSet']: { 
-          savedRecipes: mealId 
-        }
+        [isSaved ? "$pull" : "$addToSet"]: {
+          savedRecipes: mealId,
+        },
       });
     }
 
-    return res.json({ 
-      success: true, 
-      isSaved: !isSaved 
+    return res.json({
+      success: true,
+      isSaved: !isSaved,
     });
   } catch (error) {
-    console.error('Error saving recipe:', error);
-    return res.status(500).json({ 
-      success: false, 
-      error: 'Failed to save recipe' 
+    console.error("Error saving recipe:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to save recipe",
     });
+  }
+}
+
+// **********************************************/
+// *
+//*  GROUPS
+//*
+// **********************************************/
+
+async function getGroups(req, res, next) {
+  try {
+    // Fetch all groups, optionally populate members or owner if needed
+    const groups = await Group.find().populate(
+      "members",
+      "username profileImage"
+    );
+    // console.log("GROUPS", typeof groups)
+    return res.render("groups", {
+      user: req.user,
+      groups: groups,
+      currentPage: "groups",
+    });
+  } catch (err) {
+    console.error("Error fetching groups:", err);
+    return res.status(500).redirect("/error");
+  }
+}
+
+async function createGroup(req, res, next) {
+  console.log("CREATE GROUP");
+  try {
+    const { group_name, group_description, group_type } = req.body;
+    console.log("Group Name: ", group_name);
+    // Validate required fields
+    if (!group_name || !group_description || !group_type) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+    // Handle group image upload (required)
+    let group_image;
+    if (req.file) {
+      // Upload to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "blaze_spices/groups",
+        resource_type: "image",
+      });
+      group_image = result.secure_url;
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, message: "Group image is required" });
+    }
+
+    // Create the group
+    const group = new Group({
+      group_name,
+      group_description,
+      group_type,
+      group_image,
+      admin: req.user._id,
+      members: [req.user._id],
+      moderators: [],
+      blocked_members: [],
+      messages: [],
+    });
+
+    await group.save();
+    // Add group to the user's groups array
+    await User.findByIdAndUpdate(req.user._id, {
+      $addToSet: { groups: group._id },
+    });
+    // Optionally, send a notification to the user about group creation
+
+    return res.status(201).json({
+      ok: true,
+    });
+  } catch (err) {
+    console.error("Error creating group:", err);
+    return res.status(500).redirect("/error");
+  }
+}
+
+/**
+ * Delete a group (only by owner)
+ */
+async function deleteGroup(req, res, next) {
+  try {
+    const groupId = req.params.id;
+    const userId = req.user._id;
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).redirect("/error");
+    }
+    if (String(group.owner) !== String(userId)) {
+      return res.status(403).redirect("/error");
+    }
+
+    await Group.findByIdAndDelete(groupId)
+      // Optionally remove group from users' group lists if you track that
+      .then(() => {
+        User.updateMany({ groups: groupId }, { $pull: { groups: groupId } })
+          .then((result) => {
+            console.log("Users updated:", result);
+            return res.redirect("/user/groups");
+          })
+          .catch((err) => {
+            console.error("Error updating users:", err);
+          });
+      });
+  } catch (err) {
+    console.error("Error deleting group:", err);
+    return res.status(500).redirect("/error");
+  }
+}
+
+/**
+ * Update group description and privacy (only by owner)
+ */
+async function updateGroup(req, res, next) {
+  try {
+    const groupId = req.params.id;
+    const userId = req.user._id;
+    const { description, privacy } = req.body;
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).redirect("/error");
+    }
+    if (String(group.owner) !== String(userId)) {
+      return res.status(403).redirect("/error");
+    }
+
+    group.description = description || group.description;
+    if (privacy === "public" || privacy === "private") {
+      group.privacy = privacy;
+    }
+    await group.save();
+
+    return res.redirect("/user/groups");
+  } catch (err) {
+    console.error("Error updating group:", err);
+    return res.status(500).redirect("/error");
+  }
+}
+
+/**
+ * Update member role (owner or moderator only can update)
+ * body: { memberId, role } where role is "member" or "moderator"
+ */
+async function updateGroupRole(req, res, next) {
+  try {
+    const groupId = req.params.id;
+    const userId = req.user._id;
+    const { memberId, role } = req.body;
+
+    if (!["member", "moderator"].includes(role)) {
+      return res.status(400).json({ success: false, message: "Invalid role" });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).redirect("/error");
+    }
+
+    // Only owner or moderator can update roles
+    const isOwner = String(group.owner) === String(userId);
+    const isModerator = group.moderators && group.moderators.includes(userId);
+
+    if (!isOwner && !isModerator) {
+      return res.status(403).redirect("/error");
+    }
+
+    // Remove from both arrays first
+    group.moderators = group.moderators || [];
+    group.members = group.members || [];
+
+    group.moderators = group.moderators.filter(
+      (id) => String(id) !== String(memberId)
+    );
+    group.members = group.members.filter(
+      (id) => String(id) !== String(memberId)
+    );
+
+    if (role === "moderator") {
+      group.moderators.push(memberId);
+    } else {
+      group.members.push(memberId);
+    }
+
+    await group.save();
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Error updating group role:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to update role" });
+  }
+}
+
+// In your getGroupChat controller
+async function getGroupChat(req, res) {
+  try {
+    const group = await Group.findById(req.params.id)
+      .populate({
+        path: "messages",
+        populate: { path: "sender", select: "username profileImage" },
+        options: { sort: { createdAt: 1 } }
+      })
+      .populate("members", "username profileImage");
+
+    if (!group) return res.status(404).redirect("/error");
+
+    // Clear unread messages for this group
+    await User.updateOne(
+      { _id: req.user._id, 'unreadMessages.group': group._id },
+      { $set: { 'unreadMessages.$.count': 0 } }
+    );
+
+    // Rest of your existing code...
+    res.render("groupchat", {
+      user: req.user,
+      group,
+      messages: group.messages,
+      currentPage: "groups"
+    });
+  } catch (err) {
+    console.error("Error loading group chat:", err);
+    res.status(500).redirect("/error");
   }
 }
 
@@ -1288,5 +1539,11 @@ module.exports = {
   explore,
   saveRecipe,
   getSavedRecipes,
+  getGroups,
+  createGroup,
+  deleteGroup,
+  updateGroup,
+  updateGroupRole,
+  getGroupChat,
   hi,
 };

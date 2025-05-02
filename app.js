@@ -12,7 +12,30 @@ const cors = require("cors");
 const ejs = require("ejs");
 const path = require("path");
 const expressLayouts = require("express-ejs-layouts");
+const http = require("http").createServer(app);
+const { Server } = require("socket.io");
+const groupSockets = require('./controllers/groupsockets.controller');
+const io = new Server(http, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("message", (data) => {
+    // Broadcast the message to all connected clients
+    io.emit("message", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+groupSockets(io);
+// Replace app.listen with http.listen at the end of the file
 const store = new MongoDBstore({
   uri: process.env.DBURI,
   collection: "sessions",
@@ -166,7 +189,7 @@ app.use("/", Router);
 //   );
 //   return next();
 // });
-app.listen(PORT, () => {
+http.listen(PORT, () => {
   console.log("Conneted to server at port " + PORT);
 });
 

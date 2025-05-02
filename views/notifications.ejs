@@ -32,50 +32,49 @@
       </div>
 
       <div class="notifications-list">
-        <% if (notifications.length > 0) { %> <%
-        notifications.forEach(notification => { %>
-        <div
-          class="notification-card <%= !notification.read ? 'unread' : '' %>"
-          data-id="<%= notification._id %>"
-        >
-          <a
-            class="notification-link"
-            href="<%= notification.type === 'follow' ? 
-                           `/user/profile/${notification.reference}` : 
-                           `/user/recipe/${notification.reference}` %>"
-          >
-            <div class="notification-avatar">
-              <img
-                src="<%= notification.from.profileImage || '/public/assets/default-profile.png' %>"
-                alt="<%= notification.from.username %>'s profile picture"
-              />
+        <% if (notifications.length > 0) { %>
+          <% notifications.forEach(notification => { %>
+            <div class="notification-card <%= !notification.read ? 'unread' : '' %>" 
+                 data-id="<%= notification._id %>">
+              <a class="notification-link" 
+                 href="<% if (notification.type.startsWith('group-')) { %>
+                         /user/groups/<%= notification.reference %>/chat
+                       <% } else if (notification.type === 'follow') { %>
+                         /user/profile/<%= notification.reference %>
+                       <% } else { %>
+                         /user/recipe/<%= notification.reference %>
+                       <% } %>">
+                <div class="notification-avatar">
+                  <img src="<%= notification.from && notification.from.profileImage ? 
+                               notification.from.profileImage : 
+                               '/public/assets/default-profile.png' %>"
+                       alt="<%= notification.from && notification.from.username ? 
+                               notification.from.username : 'User' %>'s profile picture"/>
+                </div>
+                <div class="notification-content">
+                  <p>
+                    <strong><%= notification.from.username %></strong>
+                    <%= notification.message %>
+                  </p>
+                  <span class="notification-time">
+                    <%= new Date(notification.createdAt).toLocaleDateString('en-US',
+                        { month: 'short', day: 'numeric', hour: '2-digit', 
+                          minute: '2-digit' }) %>
+                  </span>
+                </div>
+                <% if (!notification.read) { %>
+                  <div class="unread-indicator"></div>
+                <% } %>
+              </a>
             </div>
-            <div class="notification-content">
-              <p>
-                <strong><%= notification.from.username %></strong>
-                <%= notification.message %>
-              </p>
-              <span class="notification-time">
-                <%= new Date(notification.createdAt).toLocaleDateString('en-US',
-                { month: 'short', day: 'numeric', hour: '2-digit', minute:
-                '2-digit' }) %>
-              </span>
-            </div>
-            <% if (!notification.read) { %>
-            <div class="unread-indicator"></div>
-            <% } %>
-          </a>
-        </div>
-        <% }) %> <% } else { %>
-        <div class="empty-notifications">
-          <img
-            src="/public/assets/notification-empty.svg"
-            alt=""
-            class="empty-icon"
-          />
-          <h2>No notifications yet</h2>
-          <p>When you get notifications, they'll show up here</p>
-        </div>
+          <% }); %>
+        <% } else { %>
+          <div class="empty-notifications">
+            <img src="/public/assets/notification-empty.svg" 
+                 alt="" class="empty-icon" />
+            <h2>No notifications yet</h2>
+            <p>When you get notifications, they'll show up here</p>
+          </div>
         <% } %>
       </div>
     </main>

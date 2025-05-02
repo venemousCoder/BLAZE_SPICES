@@ -1,3 +1,18 @@
+<%
+  var unreadGroupCount = 0;
+  if (user.unreadMessages && Array.isArray(user.unreadMessages)) {
+    unreadGroupCount = user.unreadMessages.reduce(function(total, group) {
+      return total + (group.count || 0);
+    }, 0);
+  }
+
+  var unreadNotificationCount = 0;
+  if (user.notifications && Array.isArray(user.notifications)) {
+    unreadNotificationCount = user.notifications.filter(function(n) {
+      return !n.read;
+    }).length;
+  }
+%>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-header">
@@ -71,17 +86,38 @@
     </li>
     <!-- Add this after the Feeds link -->
     <li>
-        <a href="/user/notifications" class="<%= currentPage === 'notifications' ? 'active' : '' %>">
-            <img src="/public/assets/notification-icon.svg" alt="" />
-            Notifications
-            <% if (user.notifications && user.notifications.filter(n => !n.read).length > 0) { %>
-                <span class="notification-badge" 
-                      aria-label="<%= user.notifications.filter(n => !n.read).length %> unread notifications">
-                    <%= user.notifications.filter(n => !n.read).length > 99 ? '99+' : 
-                        user.notifications.filter(n => !n.read).length %>
-                </span>
-            <% } %>
-        </a>
+      <a
+        href="/user/notifications"
+        class="<%= currentPage === 'notifications' ? 'active' : '' %>"
+      >
+        <img src="/public/assets/notification-icon.svg" alt="" />
+        Notifications
+        <% if (unreadNotificationCount > 0) { %>
+          <span
+            class="notification-badge"
+            aria-label="<%= unreadNotificationCount %> unread notifications"
+          >
+            <%= unreadNotificationCount > 99 ? '99+' : unreadNotificationCount %>
+          </span>
+        <% } %>
+      </a>
+    </li>
+    <li>
+      <a
+        href="/user/groups"
+        class="<%= currentPage === 'groups' ? 'active' : '' %>"
+      >
+        <img src="/public/assets/groups-icon.svg" alt="" />
+        Groups
+        <% if (unreadGroupCount > 0) { %>
+          <span
+            class="notification-badge"
+            aria-label="<%= unreadGroupCount %> unread messages"
+          >
+            <%= unreadGroupCount > 99 ? '99+' : unreadGroupCount %>
+          </span>
+        <% } %>
+      </a>
     </li>
   </ul>
 

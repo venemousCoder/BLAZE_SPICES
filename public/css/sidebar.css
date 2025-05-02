@@ -1,4 +1,9 @@
-/* Add these to sidebar.css */
+:root {
+  --primary-color: #ff4d4d;
+  --text-primary: #222;
+  --text-secondary: #888;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -95,7 +100,7 @@ body {
 .hamburger-icon::after {
   content: '';
   position: absolute;
-  width: 20px;
+  width: 10px;
   height: 2px;
   background: var(--text-primary);
   transition: all 0.3s ease;
@@ -126,13 +131,15 @@ body {
   position: fixed;
   left: 0;
   top: 0;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
   width: 280px;
   background: white;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
   z-index: 1000;
   transition: transform 0.3s ease;
 }
@@ -153,9 +160,61 @@ body {
 }
 
 .nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-bottom: 1rem; /* Add space for footer */
+}
+
+.sidebar-footer {
+  flex: 0 0 auto; /* Prevent footer from shrinking */
+  position: sticky;
+  bottom: 0;
+  background: white; /* Match sidebar background */
+  width: 100%;
+  padding: 1rem 0;
+  margin-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+/* Update mobile styles */
+@media (max-width: 1024px) {
+  .sidebar {
+      padding-bottom: 80px; /* Extra space for footer */
+  }
+
+  .nav-links {
+      margin-bottom: 1rem;
+  }
+
+  .sidebar-footer {
+      padding: 1rem;
+      margin: 0 -1rem; /* Compensate for sidebar padding */
+      width: calc(100% + 2rem);
+  }
+}
+
+/* Small screen optimizations */
+@media (max-width: 480px) {
+  .sidebar {
+      padding-bottom: 70px;
+  }
+
+  .nav-links {
+      margin-bottom: 0.5rem;
+  }
+
+  .nav-links a {
+      padding: 0.875rem;
+  }
+
+  .sidebar-footer {
+      padding: 0.75rem;
+  }
+
+  .settings-link,
+  .logout-btn {
+      padding: 0.875rem;
+  }
 }
 
 .nav-link {

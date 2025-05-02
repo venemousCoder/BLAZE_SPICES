@@ -1,26 +1,13 @@
 const router = require("express").Router();
 // const homecontrollers = require("../controllers/home.controller");
 const usercontrollers = require("../controllers/user.controller");
+const groupcontrollers = require("../controllers/group.controller");
 const jwtauth = require("../utils/jwt");
 // const multer = require("multer");
 // const path = require("path");
 const uploadd = require("../utils/multer");
 const uploadVideo = require("../utils/multerVideo");
 const mediaUpload = require("../utils/mediaUpload");
-
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, path.join(__dirname, "/public/uploads/recipes"));
-//     console.log(
-//       "Destination: ",
-//       path.join(__dirname, "../public/uploads/recipes")
-//     );
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, Date.now() + "-" + file.originalname);
-//   },
-// });
-// const upload = multer({ storage: storage });
 
 router.post(
   "/profile/update",
@@ -130,5 +117,55 @@ router.post("/recipes/:id/save", usercontrollers.saveRecipe);
 router.post("/externalrecipes/:id/save", usercontrollers.saveRecipe);
 
 router.get("/saved", usercontrollers.getSavedRecipes);
+
+router.get("/groups", usercontrollers.getGroups);
+
+router.post(
+  "/groups",
+  uploadd.single("group_image"),
+  usercontrollers.createGroup
+);
+
+// Delete a group (owner only)
+router.post("/groups/:id/delete", usercontrollers.deleteGroup);
+
+// Update group description/privacy (owner only)
+router.post("/groups/:id/update", usercontrollers.updateGroup);
+
+// Update a member's role (owner or moderator only)
+router.post("/groups/:id/role", usercontrollers.updateGroupRole);
+
+// Join group (DB update)
+router.post("/groups/:id/join", groupcontrollers.joinGroup);
+// Leave group (DB update)
+router.post("/groups/:id/leave", groupcontrollers.leaveGroup);
+
+router.get(
+  "/groups/:id/chat",
+  groupcontrollers.checkGroupMembership,
+  usercontrollers.getGroupChat
+);
+
+router.post("/groups/:id/promote", groupcontrollers.promoteToModerator);
+
+router.post("/groups/:id/kick", groupcontrollers.kickMember);
+
+router.post(
+  "/groups/:id/settings",
+  uploadd.single("group_image"),
+  groupcontrollers.updateGroupSettings
+);
+
+router.post("/groups/:id/demote", groupcontrollers.demoteModerator);
+
+router.delete("/groups/:id", groupcontrollers.deleteGroup);
+
+router.post("/groups/:id/approve", groupcontrollers.approveJoinRequest);
+
+router.post("/groups/:id/reject", groupcontrollers.rejectJoinRequest);
+
+router.post("/groups/:id/block", groupcontrollers.blockMember);
+
+router.post("/groups/:id/unblock", groupcontrollers.unblockMember);
 
 module.exports = router;

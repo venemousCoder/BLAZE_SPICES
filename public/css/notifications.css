@@ -53,6 +53,8 @@
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    padding: 0;
+    margin-bottom: 0.5rem;
 }
 
 .notification-link {
@@ -61,11 +63,9 @@
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    padding: 1rem;
     width: 100%;
-}
-
-.notification-card {
-    padding: 0; /* Remove padding from card */
+    position: relative;
 }
 
 .notification-card a {
@@ -91,6 +91,10 @@
     background: #f8f9ff;
 }
 
+.notification-avatar {
+    flex-shrink: 0;
+}
+
 .notification-avatar img {
     width: 40px;
     height: 40px;
@@ -106,6 +110,7 @@
     margin: 0;
     line-height: 1.4;
     color: var(--text-color);
+    word-wrap: break-word; /* Ensures long text wraps properly */
 }
 
 .notification-time {
@@ -116,10 +121,13 @@
 }
 
 .unread-indicator {
+    flex-shrink: 0;
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: var(--primary-color);
+    margin-left: auto;
+    align-self: center;
     position: absolute;
     right: 1rem;
     top: 50%;

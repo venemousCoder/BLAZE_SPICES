@@ -20,10 +20,6 @@ const AccountScheme = mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    groups: {
-      type: [],
-      default: [],
-    },
   },
   {
     timestamps: true,
@@ -65,10 +61,12 @@ const userSchema = new mongoose.Schema({
       ref: "Recipe",
     },
   ],
-  savedExternalRecipes: [{
-    type: String, // Store TheMealDB idMeal
-    default: []
-  }],
+  savedExternalRecipes: [
+    {
+      type: String, // Store TheMealDB idMeal
+      default: [],
+    },
+  ],
   bio: {
     type: String,
     default: "I am a passionate cook",
@@ -77,10 +75,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "/uploads/profile/default-profile.png",
   },
-  groups: {
-    id: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
-    role: { type: String },
-  },
+  groups: [
+    {
+      id: { type: mongoose.Schema.Types.ObjectId, ref: "group" },
+    },
+  ],
+  unreadMessages: [{
+    group: { type: mongoose.Schema.Types.ObjectId, ref: 'group' },
+    count: { type: Number, default: 0 }
+  }],
   posts: [
     {
       type: mongoose.Schema.Types.ObjectId,

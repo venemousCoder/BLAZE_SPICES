@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Groups | Blaze Recipes</title>
+    <link rel="stylesheet" href="/css/home.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/groups.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="shortcut icon"
+      href="/public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <script src="/socket.io/socket.io.js"></script>
+    <%- include('./partials/header') %> <%- include('./partials/sidebar.ejs') %>
+
+    <main class="groups-page">
+      <div class="groups-header">
+        <h1>Cooking Groups</h1>
+        <button class="create-group-btn">Create Group</button>
+      </div>
+
+      <div class="groups-filters">
+        <div class="search-bar">
+          <input
+            type="text"
+            id="groupSearch"
+            placeholder="Search groups..."
+            aria-label="Search groups"
+          />
+          <button class="search-btn" aria-label="Search">
+            <img src="/public/assets/search-icon.svg" alt="" />
+          </button>
+        </div>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">
+            All Groups
+          </button>
+          <button class="filter-btn" data-filter="my">My Groups</button>
+        </div>
+      </div>
+
+      <div class="groups-grid">
+        <% groups.forEach(group => { %>
+        <div class="group-card" data-group-id="<%= group._id %>">
+          <div class="group-banner">
+            <img
+              src="<%= group.bannerImage || '/public/assets/default-group-banner.jpg' %>"
+              alt="<%= group.name %> banner"
+              class="group-banner-img"
+            />
+          </div>
+          <div class="group-info">
+            <h3 class="group-name"><%= group.name %></h3>
+            <p class="group-description"><%= group.description %></p>
+            <div class="group-meta">
+              <span class="member-count">
+                <img src="/public/assets/members-icon.svg" alt="" />
+                <%= group.members.length %> members
+              </span>
+              <span class="post-count">
+                <img src="/public/assets/post-icon.svg" alt="" />
+                <%#= group.posts.length %> posts
+              </span>
+            </div>
+          </div>
+          <div class="group-actions">
+            <% if (group.members.filter(m => String(m._id) ==
+            String(user._id)).length>0) { %>
+            <a href="/user/groups/<%= group._id %>/chat" class="view-chat-btn">
+              View Chat
+            </a>
+            <button
+              class="leave-group-btn"
+              data-group-id="<%= group._id %>"
+              data-user-id="<%= user._id %>"
+            >
+              Leave Group
+            </button>
+            <% } else { %>
+            <button
+              class="join-group-btn"
+              data-group-id="<%= group._id %>"
+              data-user-id="<%= user._id %>"
+            >
+              Join Group
+            </button>
+            <% } %>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+
+      <% if (groups.length === 0) { %>
+      <div class="empty-groups">
+        <img src="/public/assets/empty-groups.svg" alt="" class="empty-icon" />
+        <h2>No Groups Yet</h2>
+        <p>Create or join a group to start cooking together!</p>
+        <button class="create-group-btn">Create Your First Group</button>
+      </div>
+      <% } %>
+    </main>
+
+    <!-- Add after the main content, before scripts -->
+    <!-- Replace the existing createGroupModal div -->
+    <div id="createGroupModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Group</h2>
+          <button class="close-modal" aria-label="Close modal">&times;</button>
+        </div>
+        <form
+          id="createGroupForm"
+          method="POST"
+          action="/user/groups"
+          enctype="multipart/form-data"
+        >
+          <div class="form-group">
+            <label for="group_name">Group Name*</label>
+            <input
+              type="text"
+              id="group_name"
+              name="group_name"
+              required
+              minlength="3"
+              maxlength="50"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="group_description">Description*</label>
+            <textarea
+              id="group_description"
+              name="group_description"
+              required
+              minlength="10"
+              maxlength="500"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="group_image">Group Image*</label>
+            <input
+              type="file"
+              id="group_image"
+              name="group_image"
+              accept="image/*"
+              required
+            />
+            <small class="form-text">Upload a group image (required)</small>
+          </div>
+
+          <div class="form-group">
+            <label for="group_type">Group Type*</label>
+            <select id="group_type" name="group_type" required>
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+            </select>
+            <small class="form-text"
+              >Public groups are visible to everyone</small
+            >
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Create Group</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="/public/js/sidebar.js"></script>
+    // Replace the existing script section
+    <script>
+      const socket = io();
+      // Modal handling
+      const createBtn = document.querySelector(".create-group-btn");
+      const modal = document.getElementById("createGroupModal");
+      const closeModal = modal.querySelector(".close-modal");
+      const cancelBtn = modal.querySelector(".cancel-btn");
+      const form = document.getElementById("createGroupForm");
+
+      function toggleModal() {
+        modal.style.display = modal.style.display === "none" ? "flex" : "none";
+      }
+
+      createBtn.addEventListener("click", toggleModal);
+      closeModal.addEventListener("click", toggleModal);
+      cancelBtn.addEventListener("click", toggleModal);
+
+      // Close modal on outside click
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) toggleModal();
+      });
+
+      // Form submission feedback
+      // Update the form submission part in your existing script
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector(".submit-btn");
+
+        try {
+          // Disable submit button and show loading state
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Creating...";
+
+          const response = await fetch("/user/groups", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            location.reload();
+          } else {
+            console.log(formData);
+            const error = await response.json();
+            alert(error.message + "here" || "Failed to create group");
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Create Group";
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Failed to create group");
+          // Reset button state
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Create Group";
+        }
+      });
+
+      // Group search functionality
+      const searchInput = document.getElementById("groupSearch");
+      const groupCards = document.querySelectorAll(".group-card");
+
+      searchInput.addEventListener("input", function () {
+        const searchTerm = this.value.toLowerCase();
+        groupCards.forEach((card) => {
+          const groupName = card
+            .querySelector(".group-name")
+            .textContent.toLowerCase();
+          const groupDesc = card
+            .querySelector(".group-description")
+            .textContent.toLowerCase();
+          card.style.display =
+            groupName.includes(searchTerm) || groupDesc.includes(searchTerm)
+              ? "flex"
+              : "none";
+        });
+      });
+
+      // Filter buttons
+      // Filter buttons
+      document.querySelectorAll(".filter-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          document
+            .querySelector(".filter-btn.active")
+            .classList.remove("active");
+          this.classList.add("active");
+
+          const filter = this.dataset.filter;
+          groupCards.forEach((card) => {
+            const isMember = !card.querySelector(".join-group-btn"); // If no join button, user is a member
+            if (filter === "all") {
+              card.style.display = "flex";
+            } else if (filter === "my") {
+              card.style.display = isMember ? "flex" : "none";
+            }
+          });
+        });
+      });
+
+      // Join/Leave group functionality with loading states
+      document
+        .querySelectorAll(".join-group-btn, .leave-group-btn")
+        .forEach((btn) => {
+          btn.addEventListener("click", async function () {
+            const groupId = this.dataset.groupId;
+            const action = this.classList.contains("join-group-btn")
+              ? "join"
+              : "leave";
+            this.disabled = true;
+            const originalText = this.textContent;
+            this.textContent = action === "join" ? "Joining..." : "Leaving...";
+
+            try {
+              const response = await fetch(
+                `/user/groups/${groupId}/${action}`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                }
+              );
+
+              if (response.ok) {
+                socket.emit(`group:${action}`, {
+                  groupId,
+                  userId: this.dataset.userId,
+                });
+                location.reload();
+              } else {
+                this.disabled = false;
+                this.textContent = originalText;
+                const error = await response.json();
+                alert(error.message || `Failed to ${action} group`);
+              }
+            } catch (error) {
+              this.disabled = false;
+              this.textContent = originalText;
+              alert(`Failed to ${action} group`);
+            }
+          });
+        });
+    </script>
+  </body>
+</html>
