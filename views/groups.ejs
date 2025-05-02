@@ -36,7 +36,7 @@
             aria-label="Search groups"
           />
           <button class="search-btn" aria-label="Search">
-            <img src="/public/assets/search-icon.svg" alt="" />
+            <img src="/public/assets/explore-icon.svg" alt="" />
           </button>
         </div>
         <div class="filter-buttons">
@@ -58,8 +58,8 @@
             />
           </div>
           <div class="group-info">
-            <h3 class="group-name"><%= group.name %></h3>
-            <p class="group-description"><%= group.description %></p>
+            <h3 class="group-name"><%= group.group_name %></h3>
+            <p class="group-description"><%= group.group_description %></p>
             <div class="group-meta">
               <span class="member-count">
                 <img src="/public/assets/members-icon.svg" alt="" />
@@ -67,7 +67,7 @@
               </span>
               <span class="post-count">
                 <img src="/public/assets/post-icon.svg" alt="" />
-                <%#= group.posts.length %> posts
+                <%= group.messages.length %> messages
               </span>
             </div>
           </div>
@@ -100,16 +100,13 @@
 
       <% if (groups.length === 0) { %>
       <div class="empty-groups">
-        <img src="/public/assets/empty-groups.svg" alt="" class="empty-icon" />
+        <img src="/public/assets/groups-icon.svg" alt="" class="empty-icon" />
         <h2>No Groups Yet</h2>
         <p>Create or join a group to start cooking together!</p>
         <button class="create-group-btn">Create Your First Group</button>
       </div>
       <% } %>
     </main>
-
-    <!-- Add after the main content, before scripts -->
-    <!-- Replace the existing createGroupModal div -->
     <div id="createGroupModal" class="modal" style="display: none">
       <div class="modal-content">
         <div class="modal-header">
@@ -177,7 +174,6 @@
     </div>
 
     <script src="/public/js/sidebar.js"></script>
-    // Replace the existing script section
     <script>
       const socket = io();
       // Modal handling

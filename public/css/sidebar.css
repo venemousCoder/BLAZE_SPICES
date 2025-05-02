@@ -62,28 +62,28 @@ body {
 /* Show hamburger on mobile */
 @media (max-width: 1024px) {
   .hamburger-menu {
-      display: flex; /* Change to flex to center the icon */
+    display: flex; /* Change to flex to center the icon */
   }
 
   .sidebar {
-      transform: translateX(-100%);
+    transform: translateX(-100%);
   }
 
   .sidebar.active {
-      transform: translateX(0);
+    transform: translateX(0);
   }
 
   /* Ensure overlay is properly positioned */
   .sidebar-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-      display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
   }
 
   .sidebar-overlay.active {
-      display: block;
+    display: block;
   }
 }
 .hamburger-icon {
@@ -99,7 +99,7 @@ body {
 
 .hamburger-icon::before,
 .hamburger-icon::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 10px;
   height: 2px;
@@ -181,42 +181,48 @@ body {
 /* Update mobile styles */
 @media (max-width: 1024px) {
   .sidebar {
-      padding-bottom: 80px; /* Extra space for footer */
+    padding-bottom: 80px; /* Extra space for footer */
   }
 
   .nav-links {
-      margin-bottom: 1rem;
+    margin-bottom: 1rem;
   }
 
   .sidebar-footer {
-      padding: 1rem;
-      margin: 0 -1rem; /* Compensate for sidebar padding */
-      width: calc(100% + 2rem);
+    padding: 1rem;
+    margin: 0 -1rem; /* Compensate for sidebar padding */
+    width: calc(100% + 2rem);
   }
 }
 
 /* Small screen optimizations */
 @media (max-width: 480px) {
   .sidebar {
-      padding-bottom: 70px;
+    padding-bottom: 70px;
   }
 
   .nav-links {
-      margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
   }
 
   .nav-links a {
-      padding: 0.875rem;
+    padding: 0.875rem;
   }
 
   .sidebar-footer {
-      padding: 0.75rem;
+    padding: 0.75rem;
   }
 
   .settings-link,
   .logout-btn {
-      padding: 0.875rem;
+    padding: 0.875rem;
   }
+}
+
+.settings-link img,
+.logout-btn img {
+  width: 24px;
+  height: 24px;
 }
 
 .nav-link {
@@ -244,39 +250,39 @@ body {
 @media (max-width: 1024px) {
   .hamburger-menu,
   .close-sidebar {
-      display: block;
+    display: block;
   }
 
   .sidebar {
-      transform: translateX(-100%);
+    transform: translateX(-100%);
   }
 
   .sidebar.active {
-      transform: translateX(0);
+    transform: translateX(0);
   }
 
   .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-      backdrop-filter: blur(2px);
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
   }
 
   .sidebar-overlay.active {
-      display: block;
+    display: block;
   }
 }
 
 @media (max-width: 480px) {
   .sidebar {
-      width: 100%;
-      max-width: 280px;
+    width: 100%;
+    max-width: 280px;
   }
 
   .nav-link {
-      padding: 1rem;
+    padding: 1rem;
   }
 }
 
@@ -288,71 +294,71 @@ body {
 /* Update responsive styles */
 @media (max-width: 1024px) {
   .sidebar {
-      transform: translateX(-100%);
-      width: 100%;
-      max-width: 320px;
+    transform: translateX(-100%);
+    width: 100%;
+    max-width: 320px;
   }
 
   .hamburger-menu {
-      display: block;
+    display: block;
   }
 
   .sidebar.active {
-      transform: translateX(0);
+    transform: translateX(0);
   }
 
   .sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
 
   .sidebar-overlay.active {
-      display: block;
+    display: block;
   }
 
   /* Adjust nav links for touch */
   .nav-links a {
-      padding: 1rem;
+    padding: 1rem;
   }
 
   /* Increase touch targets */
   .settings-link,
   .logout-btn {
-      padding: 1rem;
+    padding: 1rem;
   }
 }
 
 /* Small screen optimizations */
 @media (max-width: 480px) {
   .sidebar {
-      padding: 1rem;
+    padding: 1rem;
   }
 
   .user-profile {
-      padding: 0.75rem;
-      margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
   }
 
   .profile-pic {
-      width: 40px;
-      height: 40px;
+    width: 40px;
+    height: 40px;
   }
 
   .user-info h3 {
-      font-size: 0.9rem;
+    font-size: 0.9rem;
   }
 
   .nav-links img {
-      width: 20px;
-      height: 20px;
+    width: 20px;
+    height: 20px;
   }
 }
 
