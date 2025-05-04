@@ -4,17 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Error - Blaze Recipes</title>
-    <link rel="stylesheet" href="../public/css/auth.css" />
+    <link rel="stylesheet" href="/public/css/auth.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link
       rel="shortcut icon"
-      href="../public/assets/favicon/favicon.ico"
+      href="/public/assets/favicon/favicon.ico"
       type="image/x-icon"
     />
-    <!-- <style>
+    <style>
         .error-code {
             font-size: 4rem;
             font-weight: 700;
@@ -37,7 +37,7 @@
             margin: 1rem 0;
             text-align: center;
         }
-    </style> -->
+    </style>
   </head>
   <body>
     <main class="auth-container">
@@ -46,12 +46,12 @@
           <div class="error-code"><%= status|| 404 %></div>
           <h1><%= error || "Page Not Found" %></h1>
           <p class="error-message">
-            <%# description || "The page you're looking for doesn't exist or has been moved." %>
+            <%= description || "The page you're looking for doesn't exist or has been moved." %>
           </p>
         </div>
 
         <img
-          src="../public/assets/error.svg"
+          src="/public/assets/error.svg"
           alt="Error illustration"
           class="error-image"
         />

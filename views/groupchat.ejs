@@ -61,7 +61,12 @@
               <% } %>
             </div>
           </div>
-
+          <button id="scrollBottomBtn" class="scroll-bottom-btn" aria-label="Scroll to bottom">
+            <img src="/public/assets/chevron-down.svg" alt="">
+        </button>
+        
+        <div class="chat-input">
+        </div>
         <div class="chat-input">
             <form id="messageForm" class="message-form">
                 <div class="input-wrapper">
@@ -270,15 +275,9 @@
         }
     });
     const groupLocked = "<%= group.locked ? 'true' : 'false' %>";
-const isAdmin = "<%= user._id.toString() === group.admin.toString() %>" === "true";
-const isMod = "<%= JSON.stringify(group.moderators.map(String)).includes(user._id.toString()) %>";
+    const isAdmin = "<%= user._id.toString() === group.admin.toString() %>" === "true";
+    const isMod = "<%= JSON.stringify(group.moderators.map(String)).includes(user._id.toString()) %>";
 
-if (groupLocked && !(isAdmin || isMod)) {
-    messageInput.disabled = true;
-    messageInput.placeholder = "Group is locked. Only admins and moderators can send messages.";
-    document.querySelector('.send-btn').disabled = true;
-    document.querySelector('.send-btn').style.opacity = 0.5;
-}
     const loadingOverlay = document.getElementById('loadingOverlay');
     const groupId = "<%= group._id %>";
     const currentUser = {
@@ -289,6 +288,13 @@ if (groupLocked && !(isAdmin || isMod)) {
     const messageForm = document.getElementById('messageForm');
     const messageInput = document.getElementById('messageInput');
     const messagesContainer = document.getElementById('messagesContainer');
+
+    if (groupLocked && !(isAdmin || isMod)) {
+        messageInput.disabled = true;
+        messageInput.placeholder = "Group is locked. Only admins and moderators can send messages.";
+        document.querySelector('.send-btn').disabled = true;
+        document.querySelector('.send-btn').style.opacity = 0.5;
+    }
 
     // --- Socket Events ---
     socket.on('connect', () => {
@@ -330,6 +336,49 @@ if (groupLocked && !(isAdmin || isMod)) {
         scrollToBottom(true);
     });
 
+    // --- Scroll to Bottom Button ---
+const scrollBottomBtn = document.getElementById('scrollBottomBtn');
+
+// Show/hide button based on scroll position
+messagesContainer.addEventListener('scroll', () => {
+    const threshold = 100;
+    const distanceFromBottom = 
+        messagesContainer.scrollHeight - 
+        messagesContainer.scrollTop - 
+        messagesContainer.clientHeight;
+    
+    if (distanceFromBottom > threshold) {
+        scrollBottomBtn.classList.add('visible');
+    } else {
+        scrollBottomBtn.classList.remove('visible');
+    }
+});
+
+// Scroll to bottom when button is clicked
+scrollBottomBtn.addEventListener('click', () => {
+    scrollToBottom(true);
+});
+
+// Update the existing scrollToBottom function
+function scrollToBottom(force = false) {
+    const threshold = 100;
+    const atBottom = 
+        messagesContainer.scrollHeight - 
+        messagesContainer.scrollTop - 
+        messagesContainer.clientHeight < threshold;
+    
+    if (atBottom || force) {
+        messagesContainer.scrollTo({
+            top: messagesContainer.scrollHeight,
+            behavior: force ? 'auto' : 'smooth'
+        });
+    }
+    
+    // Hide button after scrolling to bottom
+    if (force) {
+        scrollBottomBtn.classList.remove('visible');
+    }
+}
     // --- Message Submission ---
     messageForm.onsubmit = async (e) => {
         e.preventDefault();

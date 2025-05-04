@@ -37,13 +37,13 @@
             <div class="notification-card <%= !notification.read ? 'unread' : '' %>" 
                  data-id="<%= notification._id %>">
               <a class="notification-link" 
-                 href="<% if (notification.type.startsWith('group-')) { %>
-                         /user/groups/<%= notification.reference %>/chat
-                       <% } else if (notification.type === 'follow') { %>
-                         /user/profile/<%= notification.reference %>
-                       <% } else { %>
-                         /user/recipe/<%= notification.reference %>
-                       <% } %>">
+                               href="<% if (notification.type && notification.type.startsWith('group-')) { %>
+                                       /user/groups/<%= notification.reference %>/chat
+                                     <% } else if (notification.type === 'follow') { %>
+                                       /user/profile/<%= notification.reference %>
+                                     <% } else { %>
+                                       /user/recipe/<%= notification.reference %>
+                                     <% } %>">
                 <div class="notification-avatar">
                   <img src="<%= notification.from && notification.from.profileImage ? 
                                notification.from.profileImage : 

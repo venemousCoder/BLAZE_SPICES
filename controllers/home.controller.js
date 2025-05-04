@@ -25,7 +25,34 @@ function getSignUp(req, res) {
 function getLogin(req, res) {
   return res.render("login", {
     title: "Login",
-    message: res.locals.message,
+    message: "",
+    error: ""
+  });
+}
+
+function getContact(req, res) {
+  return res.render("contact", {
+    title: "Contact",
+    message: "",
+  });
+}
+function getAbout(req, res) {
+  return res.render("about", {
+    title: "About",
+    message: "",
+  });
+}
+
+function getTerms(req, res) {
+  return res.render("terms", {
+    title: "Terms",
+    message: "",
+  });
+}
+function getPrivacy(req, res) {
+  return res.render("privacy", {
+    title: "Privacy",
+    message: "",
   });
 }
 
@@ -33,4 +60,8 @@ module.exports = {
   getHome,
   getLogin,
   getSignUp,
+  getContact,
+  getAbout,
+  getTerms,
+  getPrivacy,
 };

@@ -4,23 +4,13 @@
       <img src="/public/assets/cover-removebg-preview.png" alt="Blaze LOGO" />
     </div>
     <div class="nav-links">
-      <% if (user._id) {%>
-      <a id="nav-link1" href="/">Feeds</a>
-      <%} else {%>
       <a id="nav-link1" href="/">Home</a>
-      <% } %>
-      <a id="nav-link2" href="/recipes">Recipes</a>
-      <a id="nav-link3" href="/about">About</a>
-      <a id="nav-link4" href="/contact">Contact</a>
+      <a id="nav-link2" href="/about">About</a>
+      <a id="nav-link3" href="/contact">Contact</a>
     </div>
     <div class="auth-buttons">
-      <% if (user._id){ %>
-      <a href="/user/logout" class="signup-btn">Logout</a>
-      <a href="/user/feeds">Feeds</a>
-      <% }else{ %>
       <a href="/login" class="login-btn">Login</a>
       <a href="/signup" class="signup-btn">Sign Up</a>
-      <% } %>
     </div>
     <!-- In your header.ejs -->
   </nav>

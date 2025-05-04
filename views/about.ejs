@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/about.css">
+    <link rel="stylesheet" href="/public/css/home.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="/public/assets/favicon/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <%- include('./partials/homeheader.ejs') %>
+    
+    <main class="about-page">
+        <section class="about-hero">
+            <div class="about-content">
+                <h1>About Blaze Recipes</h1>
+                <p class="tagline">Igniting Culinary Passion, One Recipe at a Time</p>
+            </div>
+        </section>
+
+        <section class="mission-section">
+            <div class="container">
+                <h2>Our Mission</h2>
+                <p>At Blaze Recipes, we're passionate about bringing people together through the love of cooking. Our platform is designed to create a vibrant community where food enthusiasts can share, discover, and celebrate culinary creativity.</p>
+            </div>
+        </section>
+
+        <section class="values-section">
+            <div class="container">
+                <h2>Our Values</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <img src="/public/assets/community.svg" alt="" aria-hidden="true">
+                        <h3>Community First</h3>
+                        <p>Building a supportive and inclusive cooking community</p>
+                    </div>
+                    <div class="value-card">
+                        <img src="/public/assets/innovation.svg" alt="" aria-hidden="true">
+                        <h3>Innovation</h3>
+                        <p>Constantly improving our platform for better user experience</p>
+                    </div>
+                    <div class="value-card">
+                        <img src="/public/assets/quality.svg" alt="" aria-hidden="true">
+                        <h3>Quality</h3>
+                        <p>Ensuring high-quality recipes and content</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="team-section">
+            <div class="container">
+                <h2>Meet the Team</h2>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <img src="/public/assets/team/ahmad-dalha.jpg" alt="Ahmad Dalha">
+                        <h3>Ahmad Dalha</h3>
+                        <p>Founder & Lead Developer</p>
+                    </div>
+                    <!-- Add more team members as needed -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%- include('./partials/footer.ejs') %>
+</body>
+</html>

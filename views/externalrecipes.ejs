@@ -10,8 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <%- include('./partials/header') %>
-    <%- include('./partials/sidebar') %>
+    <% if (isAuthenticated){ %>
+        <%- include('./partials/header') %>
+        <%- include('./partials/sidebar.ejs')%>
+    <% } %>
 
     <main class="recipe-page">
         <div class="recipe-header">
@@ -39,12 +41,14 @@
                     </div>
                     
                     <div class="recipe-actions">
-                        <button class="save-btn" 
-                                aria-label="Save recipe" 
-                                data-recipe-id="<%= meal.idMeal %>">
-                            <img src="/public/assets/bookmark.svg" alt="">
-                            Save Recipe
-                        </button>
+                        <% if (isAuthenticated){ %>
+                            <button class="save-btn" 
+                                    aria-label="Save recipe" 
+                                    data-recipe-id="<%= meal.idMeal %>">
+                                <img src="/public/assets/bookmark.svg" alt="">
+                                Save Recipe
+                            </button>   
+                        <% } %>
                         <% if (meal.strYoutube) { %>
                             <button class="watch-btn" 
                                     onclick="toggleVideo()"

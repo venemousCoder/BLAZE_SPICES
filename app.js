@@ -176,19 +176,19 @@ app.use((req, res, next) => {
 });
 
 app.use("/", Router);
-// app.use((req, res, next) => {
-//   console.log(
+app.use((req, res, next) => {
+  console.log(
 //     // "SESSION\n",
 //     // req.session,
 //     // "Authenticated\n",
 //     // req.isAuthenticated(),
 //     // "SESSION TOKEN\n",
 //     // req.session.token,
-//     // "LOCALS: ",
-//     // req.url
-//   );
-//   return next();
-// });
+    "LOCALS: ",
+    res.locals.message
+  );
+  return next();
+});
 http.listen(PORT, () => {
   console.log("Conneted to server at port " + PORT);
 });

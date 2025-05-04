@@ -1,20 +1,29 @@
 const router = require("express").Router();
-// const homecontrollers = require("../controllers/home.controller");
 const usercontrollers = require("../controllers/user.controller");
 const groupcontrollers = require("../controllers/group.controller");
 const jwtauth = require("../utils/jwt");
-// const multer = require("multer");
-// const path = require("path");
 const uploadd = require("../utils/multer");
 const uploadVideo = require("../utils/multerVideo");
-const mediaUpload = require("../utils/mediaUpload");
 
-router.post(
-  "/profile/update",
-  uploadd.single("profileImage"),
-  usercontrollers.editProfile
-);
+// **********************************************/
+//*
+//*  NO AUTH ROUTES
+//*
+// **********************************************/
+
 router.get("/tua", usercontrollers.testUserAccountDetails);
+
+router.get("/explore", usercontrollers.explore);
+
+router.get("/external/recipe/:id", usercontrollers.getExternalRecipe);
+
+
+// **********************************************/
+//*
+//*  PROTECTED ROUTES
+//*
+// **********************************************/
+
 router.use(jwtauth.userVerifyJwt);
 
 router.get("/logout", usercontrollers.logout);
@@ -34,6 +43,12 @@ router.get("/delete/everything", usercontrollers.deleteUserAndEverything);
 router.put("/updatepass", usercontrollers.updatePassword);
 
 router.get("/updatepass", usercontrollers.getUpdatePassword);
+
+router.post(
+  "/profile/update",
+  uploadd.single("profileImage"),
+  usercontrollers.editProfile
+);
 
 router.post(
   "/recipes",
@@ -109,10 +124,6 @@ router.get("/notifications", usercontrollers.getNotifications);
 router.post("/notifications/:id/read", usercontrollers.markAsRead);
 
 router.post("/notifications/mark-all-read", usercontrollers.markAllAsRead);
-
-router.get("/explore", usercontrollers.explore);
-
-router.get("/external/recipe/:id", usercontrollers.getExternalRecipe);
 
 router.post("/recipes/:id/save", usercontrollers.saveRecipe);
 

@@ -1,8 +1,9 @@
 function renderError(req, res, next) {
-  console.log("ERROR: ",res.locals.message," NEXT: ", next())
+  // console.log("ERROR: ", res.locals.message, " NEXT: ", next());
   return res.render("error", {
-    error: res.locals.message,
+    error: res.locals.error,
     status: res.locals.message,
+    description: res.locals.description,
   });
 }
 

@@ -44,22 +44,27 @@ function createUser(req, res, next) {
 
 function userLogin(req, res, next) {
   passport.authenticate("local", function (err, user) {
-    console.log("USER AUTH: ", user);
+    // console.log("USER AUTH: ", user);
     if (!user) {
-      res.locals.error = "User not found";
-      return res.status(404).redirect("/login");
+      return res.render("login", {
+        error: err,
+        description: "Account was not found",
+      });
     }
     if (err) {
-      res.locals.error = err;
-      return res.status(404).redirect("/login");
+      return res.render("login", {
+        error: err,
+        description:
+          "Failed to authenticate user, check credentials and try again.",
+      });
     }
     req.login(user, function (err) {
-      if (err)
-        return res.status(500).json({
-          status: "fail",
-          message: "failed to create session",
+      if (err) {
+        return res.render("login", {
           error: err,
+          description: "Session not created, check network connection and try again",
         });
+      }
       // Successfully authenticated and session created
       req.session.token = jwt.generateToken(req.user);
       userModels.Account.findOneAndUpdate(
@@ -69,20 +74,19 @@ function userLogin(req, res, next) {
         // .populate("groups.id", "-__v")
         // .populate("posts")
         .then((user) => {
-          req.user = user;
-          req.session.user = user; // Assign after populate completes
+          req.user = user._id;
+          req.session.user = user._id; // Assign after populate completes
           req.session.save((err) => {
             if (err) {
-              return res.status(500).json({
-                status: "fail",
-                message: "Failed to save session",
+              return res.render("login", {
                 error: err,
+                description: "Failed to save session.",
               });
             }
             console.log("Session saved successfully");
-            console.log("USER: ", req.user.posts);
-            console.log("SESSION: ", req.session);
-            console.log("req.USER: ", req.session.user);
+            console.log("USER: ", req.user);
+            // console.log("SESSION: ", req.session);
+            // console.log("req.USER: ", req.session.user);
             if (req.user.role === "admin") {
               res.status(200).redirect("/admin/dashboard");
               return next();
@@ -92,10 +96,9 @@ function userLogin(req, res, next) {
           });
         })
         .catch((err) => {
-          return res.status(500).json({
-            status: "fail",
-            message: "Error populating user data",
+          return res.render("login", {
             error: err,
+            description: "Login failed",
           });
         });
     });

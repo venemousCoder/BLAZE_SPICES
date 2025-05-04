@@ -55,7 +55,9 @@ function getDahsboard(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching user for dashboard:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -172,7 +174,9 @@ function updatePassword(req, res, next) {
               return res.status(200).redirect("/user/dashboard");
             })
             .catch((err) => {
-              return res.status(500).redirect("/error");
+              res.locals.error = err
+              res.locals.description = err.msg
+              return res.render("error", {error: err, description: err.message, status: 500})
             });
         });
       } else {
@@ -182,7 +186,11 @@ function updatePassword(req, res, next) {
     })
     .catch((err) => {
       res.locals.error = err;
-      return res.status(500).redirect("/error");
+      
+      res.locals
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -230,17 +238,23 @@ function getFeeds(req, res, next) {
             })
             .catch((err) => {
               console.error("Error fetching top users:", err);
-              return res.status(500).redirect("/error");
+              res.locals.error = err
+              res.locals.description = err.msg
+              return res.render("error", {error: err, description: err.message, status: 500})
             });
         })
         .catch((err) => {
           console.error("Error fetching user for dashboard:", err);
-          return res.status(500).redirect("/error");
+          res.locals.error = err
+          res.locals.description = err.msg
+          return res.render("error", {error: err, description: err.message, status: 500})
         });
     })
     .catch((err) => {
       console.error("Error getting top users", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -265,7 +279,9 @@ function getUpdateRecipe(req, res, next) {
     })
     .catch((err) => {
       console.error("Error loading recipe for edit:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -351,7 +367,9 @@ function updateRecipe(req, res, next) {
     })
     .catch((err) => {
       console.error("Error updating recipe:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -449,7 +467,9 @@ function getRecipes(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching recipes:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -513,7 +533,9 @@ function createRecipe(req, res, next) {
     .create(newRecipe)
     .then((recipe) => {
       if (!recipe) {
-        return res.status(500).redirect("/error");
+        res.locals.error = err
+        res.locals.description = err.msg
+        return res.render("error", {error: err, description: err.message, status: 500})
       }
       // Add the recipe to the user's posts array
       User.findByIdAndUpdate(req.user._id, {
@@ -526,7 +548,9 @@ function createRecipe(req, res, next) {
     })
     .catch((err) => {
       console.error("Error creating recipe:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -542,7 +566,9 @@ function testUserAccountDetails(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching user:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 //**********************************************/
@@ -567,7 +593,9 @@ function getProfile(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching user profile: ", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -587,7 +615,9 @@ function getMyProfile(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching user profile:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -611,7 +641,9 @@ async function editProfile(req, res, next) {
     } catch (err) {
       console.error("Cloudinary upload error:", err);
       res.locals.error = "Failed to upload profile image";
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     }
   }
 
@@ -627,7 +659,9 @@ async function editProfile(req, res, next) {
       req.session.save((err) => {
         if (err) {
           console.error("Session save error:", err);
-          return res.status(500).redirect("/error");
+          res.locals.error = err
+          res.locals.description = err.msg
+          return res.render("error", {error: err, description: err.message, status: 500})
         }
         res.locals.message = "Profile updated successfully";
         return res.redirect("/user/dashboard");
@@ -636,7 +670,9 @@ async function editProfile(req, res, next) {
     .catch((err) => {
       console.error("Profile update error:", err);
       res.locals.error = "Failed to update profile";
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -690,7 +726,9 @@ function followUser(req, res, next) {
     })
     .catch((err) => {
       console.error("Error following user:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -731,7 +769,9 @@ function unfollowUser(req, res, next) {
     })
     .catch((err) => {
       console.error("Error unfollowing user:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -750,7 +790,9 @@ function getFollowers(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching followers:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -769,7 +811,9 @@ function getFollowing(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching following:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -790,7 +834,9 @@ function getUserFollowers(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching followers:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -811,7 +857,9 @@ function getUserFollowing(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching following:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 // **********************************************/
@@ -914,7 +962,9 @@ function getLikedRecipes(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching liked recipes:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -941,7 +991,9 @@ function getComments(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching comments:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -974,7 +1026,9 @@ function createComment(req, res, next) {
     })
     .catch((err) => {
       console.error("Error adding comment:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -997,7 +1051,9 @@ function updateComment(req, res, next) {
     })
     .catch((err) => {
       console.error("Error updating comment:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -1013,6 +1069,8 @@ function deleteComment(req, res, next) {
     .then(() => res.redirect(`/user/recipe/${recipeId}/comments`))
     .catch((err) => {
       console.error("Error deleting comment:", err);
+      res.locals.error = err
+      res.locals.description = err.msg
       res.status(500).redirect("/error");
     });
 }
@@ -1039,6 +1097,8 @@ function getNotifications(req, res, next) {
     })
     .catch((err) => {
       console.error("Error fetching notifications:", err);
+      res.locals.error = err
+      res.locals.description = err.msg
       res.status(500).redirect("/error");
     });
 }
@@ -1054,7 +1114,9 @@ function markAllAsRead(req, res, next) {
     })
     .catch((err) => {
       console.error("Error marking notifications as read:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -1073,7 +1135,9 @@ function markAsRead(req, res, next) {
     })
     .catch((err) => {
       console.error("Error marking notifications as read:", err);
-      return res.status(500).redirect("/error");
+      res.locals.error = err
+      res.locals.description = err.msg
+      return res.render("error", {error: err, description: err.message, status: 500})
     });
 }
 
@@ -1169,10 +1233,11 @@ async function explore(req, res, next) {
       );
       meals = randomMeals;
     }
-    console.log(meals);
+    // console.log(meals);
     return res.render("explore", {
       user: req.user,
       meals: meals,
+      isAuthenticated: req.isAuthenticated(),
       categories: categories,
       currentPage: "explore",
       searchQuery: query,
@@ -1181,8 +1246,8 @@ async function explore(req, res, next) {
       isInitialLoad: !query && !category && !area,
     });
   } catch (err) {
-    console.error("Error fetching from TheMealDB:", err);
-    return res.status(500).redirect("/error");
+    console.error("Error fetching from TheMealDB");
+    return res.render("error", {error: err, description: "Network error", status: 500})
   }
 }
 
@@ -1202,12 +1267,13 @@ async function getExternalRecipe(req, res, next) {
     return res.render("externalrecipes", {
       user: req.user,
       meal,
+      isAuthenticated: req.isAuthenticated(),
       currentPage: "external-recipe",
     });
   } catch (err) {
     console.error("Error fetching external recipe:", err);
     return res.status(500).render("error", {
-      message: "Failed to load recipe",
+      description: "Failed to load recipe",
       error: err,
       status: 500,
     });
@@ -1247,7 +1313,9 @@ async function getSavedRecipes(req, res, next) {
     });
   } catch (err) {
     console.error("Error fetching saved recipes:", err);
-    return res.status(500).redirect("/error");
+    res.locals.error = err
+    res.locals.description = err.msg
+    return res.render("error", {error: err, description: err.message, status: 500})
   }
 }
 
@@ -1329,7 +1397,9 @@ async function getGroups(req, res, next) {
     });
   } catch (err) {
     console.error("Error fetching groups:", err);
-    return res.status(500).redirect("/error");
+    res.locals.error = err
+    res.locals.description = err.msg
+    return res.render("error", {error: err, description: err.message, status: 500})
   }
 }
 
@@ -1385,7 +1455,9 @@ async function createGroup(req, res, next) {
     });
   } catch (err) {
     console.error("Error creating group:", err);
-    return res.status(500).redirect("/error");
+    res.locals.error = err
+    res.locals.description = err.msg
+    return res.render("error", {error: err, description: err.message, status: 500})
   }
 }
 
@@ -1419,7 +1491,9 @@ async function deleteGroup(req, res, next) {
       });
   } catch (err) {
     console.error("Error deleting group:", err);
-    return res.status(500).redirect("/error");
+    res.locals.error = err
+    res.locals.description = err.msg
+    return res.render("error", {error: err, description: err.message, status: 500})
   }
 }
 
@@ -1449,7 +1523,9 @@ async function updateGroup(req, res, next) {
     return res.redirect("/user/groups");
   } catch (err) {
     console.error("Error updating group:", err);
-    return res.status(500).redirect("/error");
+    res.locals.error = err
+    res.locals.description = err.msg
+    return res.render("error", {error: err, description: err.message, status: 500})
   }
 }
 
@@ -1535,6 +1611,8 @@ async function getGroupChat(req, res) {
     });
   } catch (err) {
     console.error("Error loading group chat:", err);
+    res.locals.error = err
+    res.locals.description = err.msg
     res.status(500).redirect("/error");
   }
 }

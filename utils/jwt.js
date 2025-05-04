@@ -5,7 +5,7 @@ const secretKey = process.env.SECRET_KEY;
 
 // Function to generate a JWT
 function generateToken(payload) {
-  console.log("payload jwt: ", payload);
+  // console.log("payload jwt: ", payload);
   if (payload) {
     let signedToken = jwt.sign(
       {
@@ -35,11 +35,11 @@ function verifyToken(req, res, next) {
             }
             res.locals.message = "Unauthorized Access";
             console.log("Error culprit");
-            return res.status(401).redirect("/error");
+            return res.render("error", {error: error, description: error.message, status: 401})
           } else {
             res.locals.message = "User not found";
             console.log("Error culprit");
-            return res.status(401).redirect("/error");
+            return res.render("error", {error: error, description: error.message, status: 401})
           }
         });
       } else {
@@ -51,7 +51,7 @@ function verifyToken(req, res, next) {
   } else {
     res.locals.message = "Provide Token";
     console.log("Error culprit");
-    return res.status(401).redirect("/error");
+    return res.render("error", {error: error, description: error.message, status: 401})
   }
 }
 
@@ -68,24 +68,23 @@ function userVerifyJwt(req, res, next) {
               return next();
             }
             res.locals.message = "Unauthorized Access";
-            console.log("Error culprit");
-            return res.status(401).redirect("/error");
+            console.log("Error culprit0");
+            return res.status(401).redirect("/login");
           } else {
             res.locals.message = "User not found";
-            console.log("Error culprit");
-            return res.status(401).redirect("/error");
+            console.log("Error culprit1");
+            return res.render("error", {error: error, description: error.message, status: 401})
           }
         });
       } else {
         res.locals.message = "Cannot verify API token";
-        console.log("Error culprit");
+        console.log("Error culprit2");
         return res.status(401).redirect("/error/");
       }
     });
   } else {
-    res.locals.message = "Provide Token";
-    console.log("Error culprit");
-    return res.status(401).redirect("/error");
+    console.log("Error culprit3");
+    return res.redirect("/login")
   }
 }
 
