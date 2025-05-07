@@ -84,10 +84,10 @@ function userLogin(req, res, next) {
               });
             }
             console.log("Session saved successfully");
-            console.log("USER: ", req.user);
+            console.log("USER: ", user);
             // console.log("SESSION: ", req.session);
             // console.log("req.USER: ", req.session.user);
-            if (req.user.role === "admin") {
+            if (user.role === "admin") {
               res.status(200).redirect("/admin/dashboard");
               return next();
             }

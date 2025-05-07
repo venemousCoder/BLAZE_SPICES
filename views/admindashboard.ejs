@@ -3,17 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>amin</title>
-    <link
-      rel="shortcut icon"
-      href="../public/assets/favicon/favicon.ico"
-      type="image/x-icon"
-    />
+    <title>Admin Dashboard - Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/admindashboard.css">
+    <link rel="stylesheet" href="/public/css/home.css">
+    <link rel="stylesheet" href="/public/css/sidebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <%- include('./partials/header') %>
-    <h1>User <%= user.username %></h1>
-    <h2>Role <%= user.role %></h2>
-    <script src="/public/js/sidebar.js"></script>
+    <%- include('./partials/header.ejs') %>
+    <%- include('./partials/adminsidebar.ejs') %>
+
+    <main class="admin-dashboard">
+        <section class="admin-header">
+            <h1>Admin Dashboard</h1>
+            <p class="last-updated">Last updated: <%= new Date().toLocaleString() %></p>
+        </section>
+
+        <section class="overview-stats">
+            <div class="stat-card users">
+                <h3>Total Users</h3>
+                <p class="stat-number"><%= stats.userCount %></p>
+                <div class="stat-trend <%= stats.userTrend > 0 ? 'positive' : 'negative' %>">
+                    <img src="/public/assets/<%= stats.userTrend > 0 ? 'trend-up.svg' : 'trend-down.svg' %>" alt="">
+                    <span><%= Math.abs(stats.userTrend) %>% this week</span>
+                </div>
+            </div>
+
+            <div class="stat-card recipes">
+                <h3>Total Recipes</h3>
+                <p class="stat-number"><%= stats.recipeCount %></p>
+                <div class="stat-trend <%= stats.recipeTrend > 0 ? 'positive' : 'negative' %>">
+                    <img src="/public/assets/<%= stats.recipeTrend > 0 ? 'trend-up.svg' : 'trend-down.svg' %>" alt="">
+                    <span><%= Math.abs(stats.recipeTrend) %>% this week</span>
+                </div>
+            </div>
+
+            <div class="stat-card groups">
+                <h3>Active Groups</h3>
+                <p class="stat-number"><%= stats.groupCount %></p>
+            </div>
+
+            <div class="stat-card reports">
+                <h3>Pending Reports</h3>
+                <p class="stat-number"><%= stats.reportCount %></p>
+            </div>
+        </section>
+
+        <div class="admin-grid">
+            <section class="recent-users panel">
+                <div class="panel-header">
+                    <h2>Recent Users</h2>
+                    <a href="/admin/users" class="view-all">View All</a>
+                </div>
+                <div class="user-list">
+                    <% recentUsers.forEach(user => { %>
+                        <div class="user-item">
+                            <img src="<%= user.profileImage || '/public/assets/default-profile.svg' %>" alt="">
+                            <div class="user-info">
+                                <h3><%= user.username %></h3>
+                                <p>Joined <%= new Date(user.createdAt).toLocaleDateString() %></p>
+                            </div>
+                            <button class="user-actions-btn" onclick="showUserActions('<%= user._id %>')">
+                                <img src="/public/assets/dots-vertical.svg" alt="Actions">
+                            </button>
+                        </div>
+                    <% }) %>
+                </div>
+            </section>
+
+            <section class="reported-content panel">
+                <div class="panel-header">
+                    <h2>Reported Content</h2>
+                    <a href="/admin/reports" class="view-all">View All</a>
+                </div>
+                <div class="report-list">
+                    <% reports.forEach(report => { %>
+                        <div class="report-item">
+                            <div class="report-info">
+                                <span class="report-type <%= report.type %>"><%= report.type %></span>
+                                <p><%= report.reason %></p>
+                            </div>
+                            <div class="report-actions">
+                                <button onclick="handleReport('<%= report._id %>', 'dismiss')">Dismiss</button>
+                                <button onclick="handleReport('<%= report._id %>', 'remove')" class="warning">Remove Content</button>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </section>
+
+            <section class="activity-log panel">
+                <div class="panel-header">
+                    <h2>Recent Activity</h2>
+                    <a href="/admin/activity" class="view-all">View All</a>
+                </div>
+                <div class="activity-list">
+                    <% activities.forEach(activity => { %>
+                        <div class="activity-item">
+                            <span class="activity-time"><%= activity.timestamp %></span>
+                            <p><%= activity.description %></p>
+                        </div>
+                    <% }) %>
+                </div>
+            </section>
+
+            <section class="quick-actions panel">
+                <h2>Quick Actions</h2>
+                <div class="action-buttons">
+                    <button onclick="location.href='/admin/users/new'" class="action-btn">
+                        <img src="/public/assets/user-plus.svg" alt="">
+                        Add User
+                    </button>
+                    <button onclick="location.href='/admin/announcements/new'" class="action-btn">
+                        <img src="/public/assets/announcement.svg" alt="">
+                        Send Announcement
+                    </button>
+                    <button onclick="location.href='/admin/backup'" class="action-btn">
+                        <img src="/public/assets/backup.svg" alt="">
+                        Backup Database
+                    </button>
+                    <button onclick="showMaintenanceModal()" class="action-btn">
+                        <img src="/public/assets/maintenance.svg" alt="">
+                        Maintenance Mode
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="userActionsModal" class="modal">
+        <!-- User actions modal content -->
+    </div>
+
+    <div id="maintenanceModal" class="modal">
+        <!-- Maintenance mode modal content -->
+    </div>
+
+    <script src="/public/js/admin.js"></script>
 </body>
 </html>

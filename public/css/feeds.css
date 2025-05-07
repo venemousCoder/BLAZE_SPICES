@@ -758,3 +758,128 @@ select:focus {
   margin-bottom: 12px;
   background: #000;
 }
+
+/* Report button styles */
+.report-btn {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.report-btn:hover {
+  opacity: 1;
+}
+
+/* Report modal styles */
+.report-modal {
+  max-width: 480px;
+  padding: 1.5rem;
+}
+
+.report-modal .recipe-title {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.report-modal select,
+.report-modal textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.report-modal textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #f5f5f5;
+}
+
+.submit-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background: var(--secondary-color);
+}
+
+/* Report modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0; /* shorthand for top:0; right:0; bottom:0; left:0; */
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-modal {
+  position: relative;
+  max-width: 480px;
+  width: 90%;
+  max-height: 90vh;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+      opacity: 0;
+      transform: translateY(20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+/* Ensure form elements stay within modal */
+.report-modal .form-group {
+  margin-bottom: 1rem;
+}
+
+/* Mobile optimization */
+@media (max-width: 480px) {
+  .report-modal {
+      width: 95%;
+      max-height: 95vh;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .report-modal {
+      animation: none;
+  }
+}

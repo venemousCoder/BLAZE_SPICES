@@ -69,7 +69,7 @@ function userVerifyJwt(req, res, next) {
             }
             res.locals.message = "Unauthorized Access";
             console.log("Error culprit0");
-            return res.status(401).redirect("/login");
+            return res.render("error", {error: error, description: error?.message, status: 401})
           } else {
             res.locals.message = "User not found";
             console.log("Error culprit1");

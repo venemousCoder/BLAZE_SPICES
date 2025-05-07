@@ -184,8 +184,10 @@ app.use((req, res, next) => {
 //     // req.isAuthenticated(),
 //     // "SESSION TOKEN\n",
 //     // req.session.token,
-    "LOCALS: ",
-    res.locals.message
+    "URL: ",
+    req.originalUrl,
+    "USER: ",
+    req.passport
   );
   return next();
 });

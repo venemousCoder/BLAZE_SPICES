@@ -1,0 +1,84 @@
+<link rel="stylesheet" href="/css/adminsidebar.css">
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="admin-sidebar">
+    <div class="sidebar-header">
+        <img src="/public/assets/logo.svg" alt="Blaze Recipes Logo" class="sidebar-logo">
+        <button id="closeSidebarBtn" class="close-sidebar" aria-label="Close sidebar">
+            <img src="/public/assets/close.svg" alt="">
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <h2>Main</h2>
+            <a href="/admin/dashboard" class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>">
+                <img src="/public/assets/follow-icon.svg" alt="">
+                Dashboard
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <h2>Content</h2>
+            <a href="/admin/recipes" class="nav-link <%= currentPage === 'recipes' ? 'active' : '' %>">
+                <img src="/public/assets/recipe-book.svg" alt="">
+                Recipes
+                <span class="badge">New</span>
+            </a>
+            <a href="/admin/groups" class="nav-link <%= currentPage === 'groups' ? 'active' : '' %>">
+                <img src="/public/assets/groups-icon.svg" alt="">
+                Groups
+            </a>
+            <a href="/admin/reports" class="nav-link <%= currentPage === 'reports' ? 'active' : '' %>">
+                <img src="/public/assets/flag.svg" alt="">
+                Reports
+                <% if (stats.reportCount > 0) { %>
+                    <span class="count"><%= stats.reportCount %></span>
+                <% } %>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <h2>Users</h2>
+            <a href="/admin/users" class="nav-link <%= currentPage === 'users' ? 'active' : '' %>">
+                <img src="/public/assets/profile-icon.svg" alt="">
+                All Users
+            </a>
+            <a href="/admin/roles" class="nav-link <%= currentPage === 'roles' ? 'active' : '' %>">
+                <img src="/public/assets/shield.svg" alt="">
+                Roles
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <h2>System</h2>
+            <a href="/admin/settings" class="nav-link <%= currentPage === 'settings' ? 'active' : '' %>">
+                <img src="/public/assets/settings-group.svg" alt="">
+                Settings
+            </a>
+            <a href="/admin/backup" class="nav-link <%= currentPage === 'backup' ? 'active' : '' %>">
+                <img src="/public/assets/backup.svg" alt="">
+                Backup
+            </a>
+            <a href="/admin/logs" class="nav-link <%= currentPage === 'logs' ? 'active' : '' %>">
+                <img src="/public/assets/activity.svg" alt="">
+                Logs
+            </a>
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="admin-info">
+            <img src="<%= user.profileImage || '/public/assets/default-profile.svg' %>" 
+                 alt="" 
+                 class="admin-avatar">
+            <div class="admin-details">
+                <p class="admin-name"><%= user.username %></p>
+                <span class="admin-role">Administrator</span>
+            </div>
+        </div>
+        <a href="/auth/logout" class="logout-btn">
+            <img src="/public/assets/logout-icon.svg" alt="">
+            Logout
+        </a>
+    </div>
+</aside>

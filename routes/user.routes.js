@@ -181,4 +181,9 @@ router.post("/groups/:id/block", groupcontrollers.blockMember);
 
 router.post("/groups/:id/unblock", groupcontrollers.unblockMember);
 
+router.post("/report", usercontrollers.report);
+
+
+
+
 module.exports = router;

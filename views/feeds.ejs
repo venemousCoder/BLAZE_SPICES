@@ -125,6 +125,11 @@
                   class="share-icon"
                 />
                 <span><%= recipe.sharesCount%></span>
+                <button class="report-btn" 
+                onclick="showReportModal('<%= recipe._id %>', '<%= recipe.title %>')"
+                aria-label="Report recipe">
+            <img src="/public/assets/flag.svg" alt="Report icon" class="report-icon"/>
+        </button>
               </button>
             </div>
           </div>
@@ -147,6 +152,40 @@
         Profile
       </a>
     </nav>
+    <div id="reportModal" class="modal">
+      <div class="modal-content report-modal">
+          <h2>Report Recipe</h2>
+          <p class="recipe-title"></p>
+          <form id="reportForm">
+              <!-- Add hidden fields to match model -->
+              <input type="hidden" id="reportRecipeId" name="reportedItem">
+              <input type="hidden" name="itemType" value="Recipe">
+  
+              <div class="form-group">
+                  <label for="reportType">Type of Report</label>
+                  <select id="reportType" name="type" required>
+                      <option value="">Select a reason</option>
+                      <option value="spam">Spam or Misleading</option>
+                      <option value="inappropriate">Inappropriate Content</option>
+                      <option value="copyright">Copyright Violation</option>
+                  </select>
+              </div>
+  
+              <div class="form-group">
+                  <label for="reportReason">Additional Details</label>
+                  <textarea id="reportReason" 
+                      name="reason" 
+                      required 
+                      placeholder="Please provide specific details about your report"></textarea>
+              </div>
+  
+              <div class="modal-actions">
+                  <button type="button" onclick="closeReportModal()" class="cancel-btn">Cancel</button>
+                  <button type="submit" class="submit-btn">Submit Report</button>
+              </div>
+          </form>
+      </div>
+  </div>
     <nav class="bottom-nav">
       <button class="create-recipe-btn">
         <img src="../public/assets/testAddRecipe.svg" alt="Add Recipe" />
@@ -325,6 +364,7 @@
         </form>
       </div>
     </div>
+    
 
     <script>
       // Like button functionality
@@ -540,6 +580,79 @@
         steps.splice(index, 1);
         updateStepsList();
       }
+
+      // Report functionality
+function showReportModal(recipeId, recipeTitle) {
+    const modal = document.getElementById('reportModal');
+    const titleEl = modal.querySelector('.recipe-title');
+    const recipeIdInput = document.getElementById('reportRecipeId');
+    
+    titleEl.textContent = `Recipe: ${recipeTitle}`;
+    recipeIdInput.value = recipeId;
+    modal.style.display = 'flex';
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    modal.style.display = 'none';
+    document.getElementById('reportForm').reset();
+}
+
+document.getElementById('reportForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const reportData = {
+        reportedItem: document.getElementById('reportRecipeId').value,
+        itemType: 'Recipe', // Hardcoded since this is for recipes
+        type: document.getElementById('reportType').value,
+        reason: document.getElementById('reportReason').value
+    };
+    
+    try {
+        const response = await fetch('/user/report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reportData)
+        });
+
+        if (!response.ok) throw new Error('Failed to submit report');
+
+        closeReportModal();
+        // Show success notification instead of alert
+        showNotification('Report submitted successfully', 'success');
+    } catch (err) {
+        console.error('Error submitting report:', err);
+        showNotification('Failed to submit report', 'error');
+    }
+});
+
+// Add notification function if not already present
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Close modal on outside click
+document.getElementById('reportModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+        closeReportModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeReportModal();
+    }
+});
     </script>
     <script src="../public/js/sidebar.js"></script>
   </body>
