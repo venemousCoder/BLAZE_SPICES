@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const PassportLocalMongoose = require("passport-local-mongoose");
 const crypto = require("crypto");
 const { type } = require("os");
+const activity = require("./activity");
 
 const AccountScheme = mongoose.Schema(
   {
@@ -132,6 +133,13 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+  activities: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Activity",
+    },
+  ],
+  // Password reset fields
   resetPasswordToken: {
     type: String,
   },

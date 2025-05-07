@@ -45,6 +45,12 @@ async function getDashboard(req, res, next) {
   }
 }
 
+// ********************************************
+//
+// REPORT MANAGEMENT
+//
+// ********************************************
+
 function getReport(req, res, next) {
   const reportId = req.params.id;
   Report.findById(reportId)
@@ -129,9 +135,75 @@ function deleteReport(req, res, next) {
     });
 }
 
+// *********************************************
+//
+// USER MANAGEMENT
+//
+// *********************************************
+
+function getUsers(req, res, next) {
+  User.find({role: "user"})
+    .then((users) => {
+      return res.render("adminusers", {
+        user: req.user,
+        users: users,
+        currentPage: "users",
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching users:", err);
+      res.locals.error = err;
+      res.locals.description = err.msg;
+      return res.render("error", {
+        error: err,
+        description: err.message,
+        status: 500,
+      });
+    });
+}
+
+ function getUser(req, res, next) {
+  const userId = req.params.id;
+  User.findById(userId)
+  .populate("activities")
+  .populate("posts")
+    .then(async (user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      const stats = {
+        userCount: await User.countDocuments(),
+        recipeCount: await Recipe.countDocuments(),
+        groupCount: await Group.countDocuments(),
+        reportCount: await Report.countDocuments({ status: "pending" }),
+        userTrend: 12, // Calculate from last week
+        recipeTrend: 8, // Calculate from last week
+      };
+      return res.render("adminuser", {
+        user: req.user,
+        targetUser: user,
+        currentPage: "users",
+        stats,
+        activities: user.activities,
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching user:", err);
+      res.locals.error = err;
+      res.locals.description = err.msg;
+      return res.render("error", {
+        error: err,
+        description: err.message,
+        status: 500,
+      });
+    });
+}
+
 module.exports = {
   getDashboard,
   getReport,
   updateReport,
   deleteReport,
+  getUsers,
+  getUser,
 };

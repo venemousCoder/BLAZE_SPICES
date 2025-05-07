@@ -108,10 +108,40 @@
     padding: 0.75rem;
     border-radius: 8px;
     transition: background-color 0.2s;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
 }
 
 .user-item:hover {
     background-color: #f8f9fa;
+}
+
+.chevron-right {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.chevron-right img {
+    width: 20px;
+    height: 20px;
+}
+
+.user-item:hover .chevron-right {
+    opacity: 0.6;
+}
+
+/* Update accessibility styles */
+.user-item:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .user-item,
+    .chevron-right {
+        transition: none;
+    }
 }
 
 .user-item img {
