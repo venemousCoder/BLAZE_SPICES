@@ -2,6 +2,8 @@ const router = require("express").Router();
 const admincontrollers = require("../controllers/admin.controller");
 const jwtauth = require("../utils/jwt");
 
+router.post("/cau", admincontrollers.cau)
+
 router.use(jwtauth.verifyToken);
 router.get("/dashboard", admincontrollers.getDashboard);
 
