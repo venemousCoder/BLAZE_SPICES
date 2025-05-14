@@ -200,32 +200,29 @@ function getUser(req, res, next) {
 }
 
 function cau(req, res, next) {
- if (req.body.password === "09032117028adw") {const newUser = {
-    username: req.body.username,
-    email: req.body.email,
-  };
-  const User = new Admin(newUser);
-  Admin.register(User, req.body.password, (err, user) => {
-    if (err) {
-      return res.status(500).json({
-        status: "fail",
-        message: " user not created  :try again",
-        error: err,
-      });
-    }
-    if (!user) {
-      return res.status(500).json({
-        status: "fail",
-        message: " user not created  :try again",
-      });
-    }
-    return res.status(201).redirect("/login");
-  });}
-  return res.status(401).json({
-    status: "fail",
-    message: " Not authorized",
-  });
-}
+  if (req.body.password === process.env.SECRET_KEY) {
+    const newUser = {
+      username: req.body.username,
+      email: req.body.email,
+    };
+    const User = new Admin(newUser);
+    Admin.register(User, req.body.password, (err, user) => {
+      if (err || !user) {
+        console.log(err || "User not created");
+        return res.status(500);
+      } else {
+        return res.status(201);
+      }
+    });
+  }
+
+
+    return res.status(401).json({
+      status: "fail",
+      message: " Not authorized",
+    });
+  }
+
 
 module.exports = {
   getDashboard,
