@@ -149,21 +149,21 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use((req, res, next) => {
-  console.log(
-    "SESSION\n",
-    req.session,
-    "Authenticated\n",
-    req.isAuthenticated(),
-    "SESSION TOKEN\n",
-    req.session.token,
-    "URL: ",
-    req.originalUrl,
-    "USER: ",
-    req.session.passport
-  );
-  return next();
-});
+// app.use((req, res, next) => {
+//   console.log(
+//     "SESSION\n",
+//     req.session,
+//     "Authenticated\n",
+//     req.isAuthenticated(),
+//     "SESSION TOKEN\n",
+//     req.session.token,
+//     "URL: ",
+//     req.originalUrl,
+//     "USER: ",
+//     req.session.passport
+//   );
+//   return next();
+// });
 app.use("/", Router);
 http.listen(PORT, () => {
   console.log("Conneted to server at port " + PORT);
