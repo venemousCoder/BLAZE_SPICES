@@ -1,7 +1,6 @@
 const crypto = require("crypto");
 const passport = require("passport");
 const userModels = require("../models/user");
-const mongoose = require("mongoose");
 const jwt = require("../utils/jwt");
 const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
@@ -44,7 +43,6 @@ function createUser(req, res, next) {
 
 function userLogin(req, res, next) {
   passport.authenticate("local", function (err, user) {
-    // console.log("USER AUTH: ", user);
     if (!user) {
       return res.render("login", {
         error: err,
@@ -62,7 +60,8 @@ function userLogin(req, res, next) {
       if (err) {
         return res.render("login", {
           error: err,
-          description: "Session not created, check network connection and try again",
+          description:
+            "Session not created, check network connection and try again",
         });
       }
       // Successfully authenticated and session created
@@ -84,9 +83,6 @@ function userLogin(req, res, next) {
               });
             }
             console.log("Session saved successfully");
-            console.log("USER: ", user);
-            // console.log("SESSION: ", req.session);
-            // console.log("req.USER: ", req.session.user);
             if (user.role === "admin") {
               res.status(200).redirect("/admin/dashboard");
               return next();
@@ -106,12 +102,10 @@ function userLogin(req, res, next) {
 }
 
 function googleLogin(req, res, next) {
-  console.log("Before passport");
   passport.authenticate(
     "google",
     { scope: ["profile", "email"] },
     function (err, user) {
-      console.log("USER:GAUTH: ", user);
       if (err) {
         return res.status(500).json({
           status: "fail",
@@ -149,7 +143,6 @@ function googleLogin(req, res, next) {
  *
  ******************************************************************/
 function getforgetPassword(req, res) {
-  // console.log("IN GETFP",res.locals.message)
   return res.render("forgetpassword", {
     title: "Forget Password",
     message: res.locals.message,
@@ -157,71 +150,66 @@ function getforgetPassword(req, res) {
 }
 
 async function forgetPassword(req, res, next) {
-  // const oAuth2Client = new google.auth.OAuth2(
-  //   process.env.GMAIL_CLIENT_ID,
-  //   process.env.GMAIL_CLIENT_SECRET,
-  //   process.env.GMAIL_REDIRECT_URI
-  // );
-  // oAuth2Client.setCredentials({
-  //   refresh_token: process.env.GMAIL_REFRESH_TOKEN,
-  // });
+  const oAuth2Client = new google.auth.OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    process.env.GMAIL_REDIRECT_URI
+  );
+  oAuth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+  });
   const email = req.body.email;
-  // try {
-  //   const user = await userModels.Account.findOne({ email: email });
-  //   if (!user) {
-  //     return res.status(404).json({
-  //       status: "fail",
-  //       message: "User not found",
-  //     });
-  //   }
-  //   const token = crypto.randomBytes(32).toString("hex");
-  //   const expiration = Date.now() + 3600000; // 1 hour validity
-  //   console.log("TOKEN: ", token, "EXPIRATION: ", expiration, "USER", user);
-  //   // Save token & expiration in the DB without modifying schema
-  //   var updateduser = await userModels.User.findOneAndUpdate(
-  //     { email: email },
-  //     { $set: { resetPasswordToken: token, resetPasswordExpires: expiration } },
-  //     { new: true }
-  //   );
+  try {
+    const user = await userModels.Account.findOne({ email: email });
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiration = Date.now() + 3600000; // 1 hour validity;
+    // Save token & expiration in the DB without modifying schema
+    var updateduser = await userModels.User.findOneAndUpdate(
+      { email: email },
+      { $set: { resetPasswordToken: token, resetPasswordExpires: expiration } },
+      { new: true }
+    );
 
-  //   console.log("UPDATED USER", updateduser);
-  //   // Token valid for 1 hour
+    // Token valid for 1 hour
 
-  //   // Send reset email
-  //   const resetUrl = `http://localhost:4000/auth/resetpassword/${token}`;
-  //   const accessToken = await oAuth2Client.getAccessToken();
-  //   const transporter = nodemailer.createTransport({
-  //     service: "gmail",
-  //     auth: {
-  //       type: "OAuth2",
-  //       user: process.env.EMAIL,
-  //       clientId: process.env.GMAIL_CLIENT_ID,
-  //       clientSecret: process.env.GMAIL_CLIENT_SECRET,
-  //       refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-  //       accessToken: accessToken.token,
-  //     },
-  //   });
-  //   const mailOptions = {
-  //     from: process.env.EMAIL,
-  //     to: email,
-  //     subject: "Password Reset",
-  //     text: `Click on the link to reset your password: ${resetUrl}`,
-  //   };
-  //   transporter.sendMail(mailOptions, (err, info) => {
-  //     if (err) {
-  //       res.locals.message = err;
-  //       return res.status(500).redirect("/error");
-  //     }
-  res.locals.message = `Reset password link sent to email: ${email}`;
-  // console.log(res.locals.message);
-  return next();
-  // return res.status(200).redirect(`/auth/forgotpassword`);
-  //   });
-  // } catch (err) {
-  //   console.error(err);
-  //   res.locals.error = err;
-  //   return res.status(500).redirect("/error");
-  // }
+    // Send reset email
+    const resetUrl = `http://localhost:4000/auth/resetpassword/${token}`;
+    const accessToken = await oAuth2Client.getAccessToken();
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: process.env.EMAIL,
+        clientId: process.env.GMAIL_CLIENT_ID,
+        clientSecret: process.env.GMAIL_CLIENT_SECRET,
+        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+        accessToken: accessToken.token,
+      },
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "Password Reset",
+      text: `Click on the link to reset your password: ${resetUrl}`,
+    };
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        res.locals.message = err;
+        return res.status(500).redirect("/error");
+      }
+      return res.status(200).redirect(`/auth/forgotpassword`);
+    });
+  } catch (err) {
+    console.error(err);
+    res.locals.error = err;
+    return res.status(500).redirect("/error");
+  }
 }
 
 async function getResetPassword(req, res, next) {
@@ -234,7 +222,6 @@ async function getResetPassword(req, res, next) {
     console.log("Invalid or expired token");
     res.locals.message = "Invalid or expired token";
     return res.status(400).redirect("/error/");
-    // return next(res.locals.message)
   }
   res.render("resetpassword", {
     title: "Reset Password",

@@ -14,12 +14,13 @@ const path = require("path");
 const expressLayouts = require("express-ejs-layouts");
 const http = require("http").createServer(app);
 const { Server } = require("socket.io");
-const groupSockets = require('./controllers/groupsockets.controller');
+const groupSockets = require("./controllers/groupsockets.controller");
+const crypto = require("crypto");
 const io = new Server(http, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 io.on("connection", (socket) => {
@@ -70,14 +71,13 @@ mongoose
 
 const PORT = 4000 || process.env.PORT;
 app.use("/public", express.static(path.join(__dirname, "/public")));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-app.use('/css', express.static(path.join(__dirname, 'public/css')));
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
+app.use("/css", express.static(path.join(__dirname, "public/css")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(require("cors")({ origin: "*" }));
 app.set("view engine", "ejs");
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -87,62 +87,36 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:4000/auth/google/callback",
-      profileFields: ["id", "displayName", "emails"],
+      callbackURL: "/auth/google/callback",
     },
-    (accessToken, refreshToken, profile, done) => {
-      Admin.Account.findOne({ googleId: profile.id })
-
+    function (accessToken, refreshToken, profile, done) {
+      // Check if user exists
+      Admin.Account.findOne({ email: profile.emails[0].value })
         .then((user) => {
           if (user) {
-            done(null, user);
+            return done(null, user);
           } else {
-            // console.log("PROFILE: ", profile);
-            Admin.Account.findOne({
-              email:
-                profile.emails && profile.emails.length > 0
-                  ? profile.emails[0].value
-                  : null,
-            })
+            // Create new user with User discriminator
+            const newUser = new Admin.User({
+              username: profile.displayName,
+              email: profile.emails[0].value,
+              role: "user",
+              verified: true,
+            });
 
-              .then((existingUser) => {
-                if (existingUser) {
-                  existingUser.googleId = profile.id;
-
-                  existingUser
-                    .save()
-
-                    .then((user) => {
-                      done(null, user);
-                    })
-                    .catch((err) => {
-                      done(err, null);
-                    });
-                } else {
-                  new Admin.Account({
-                    username: profile.displayName,
-
-                    googleId: profile.id,
-
-                    email: profile.emails[0].value, // assuming the email is available in profile.emails
-                  })
-                    .save()
-
-                    .then((user) => {
-                      done(null, user);
-                    })
-                    .catch((err) => {
-                      done(err, null);
-                    });
-                }
-              })
-              .catch((err) => {
-                done(err, null);
-              });
+            // Generate a random password for Google users
+            Admin.User.register(
+              newUser,
+              crypto.randomBytes(16).toString("hex"),
+              (err, user) => {
+                if (err) return done(err);
+                return done(null, user);
+              }
+            );
           }
         })
         .catch((err) => {
-          done(err, null);
+          return done(err);
         });
     }
   )
@@ -175,22 +149,22 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/", Router);
 app.use((req, res, next) => {
   console.log(
-//     // "SESSION\n",
-//     // req.session,
-//     // "Authenticated\n",
-//     // req.isAuthenticated(),
-//     // "SESSION TOKEN\n",
-//     // req.session.token,
+    "SESSION\n",
+    req.session,
+    "Authenticated\n",
+    req.isAuthenticated(),
+    "SESSION TOKEN\n",
+    req.session.token,
     "URL: ",
     req.originalUrl,
     "USER: ",
-    req.passport
+    req.session.passport
   );
   return next();
 });
+app.use("/", Router);
 http.listen(PORT, () => {
   console.log("Conneted to server at port " + PORT);
 });

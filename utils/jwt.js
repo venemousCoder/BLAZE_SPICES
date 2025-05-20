@@ -73,18 +73,18 @@ function userVerifyJwt(req, res, next) {
             return res.render("error", {error: error, description: error?.message, status: 401})
           } else {
             res.locals.message = "User not found";
-            console.log("Error culprit1");
+            console.log("Error culprit01");
             return res.render("error", {error: error, description: error.message, status: 401})
           }
         });
       } else {
         res.locals.message = "Cannot verify API token";
-        console.log("Error culprit2");
+        console.log("Error culprit02");
         return res.status(401).redirect("/error/");
       }
     });
   } else {
-    console.log("Error culprit3");
+    console.log("Error culprit03");
     return res.redirect("/login")
   }
 }
