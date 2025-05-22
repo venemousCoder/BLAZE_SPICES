@@ -81,10 +81,12 @@ const userSchema = new mongoose.Schema({
       id: { type: mongoose.Schema.Types.ObjectId, ref: "group" },
     },
   ],
-  unreadMessages: [{
-    group: { type: mongoose.Schema.Types.ObjectId, ref: 'group' },
-    count: { type: Number, default: 0 }
-  }],
+  unreadMessages: [
+    {
+      group: { type: mongoose.Schema.Types.ObjectId, ref: "group" },
+      count: { type: Number, default: 0 },
+    },
+  ],
   posts: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -139,6 +141,11 @@ const userSchema = new mongoose.Schema({
       ref: "Activity",
     },
   ],
+  // AI-related fields
+  aipretexts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AI",
+  }],
   // Password reset fields
   resetPasswordToken: {
     type: String,

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Video - AI Recipe Labs</title>
+    <link rel="stylesheet" href="/css/home.css" />
+    <link rel="stylesheet" href="/css/ailabs.css" />
+    <link rel="stylesheet" href="/css/ailabsvideoupload.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="shortcut icon"
+      href="/public/public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
+    <style>
+      h1 {
+        font-size: 2rem;
+        margin: 1rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('./partials/header.ejs') %> <%-
+    include('./partials/sidebar.ejs') %>
+
+    <main class="upload-container">
+      <section class="upload-header">
+        <div class="breadcrumb">
+          <a href="/user/ailabs">AI Recipe Labs</a> / <span>Upload Video</span>
+        </div>
+        <h1>Upload Cooking Video</h1>
+        <p class="upload-description">
+          Upload your cooking tutorial or recipe video and our AI will
+          automatically extract ingredients, steps, and create a structured
+          recipe you can share with the community.
+        </p>
+      </section>
+
+      <section class="upload-form-container">
+        <form
+          id="videoUploadForm"
+          action="/user/ai/generate"
+          method="POST"
+          enctype="multipart/form-data"
+          class="upload-form"
+        >
+          <div class="video-upload-area" id="dropZone">
+            <div class="upload-icon">
+              <img
+                src="/public/assets/upload-video.svg"
+                alt="Upload icon"
+                id="uploadIcon"
+              />
+              <video id="videoPreview" controls style="display: none"></video>
+            </div>
+            <div class="upload-text" id="uploadText">
+              <h3>Drag & drop your video here</h3>
+              <p>or <span class="browse-link">browse files</span></p>
+              <p class="file-requirements">
+                Supported formats: MP4, MOV, AVI (Max 100MB)
+              </p>
+            </div>
+            <input
+              type="file"
+              name="vid"
+              id="videoInput"
+              accept="video/*"
+              class="file-input"
+              aria-label="Upload cooking video"
+              required
+            />
+          </div>
+
+          <div class="upload-details">
+            <div class="form-group">
+              <label for="videoTitle">Video Title (Optional)</label>
+              <input
+                type="text"
+                id="videoTitle"
+                name="videoTitle"
+                placeholder="E.g., Homemade Pizza Tutorial"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="videoDescription">Brief Description (Optional)</label>
+              <textarea
+                id="videoDescription"
+                name="videoDescription"
+                placeholder="Briefly describe what you're cooking in this video"
+                class="form-control"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="upload-progress" style="display: none">
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p class="progress-text">
+              Processing video... <span id="progressPercent">0%</span>
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="cancel-btn"
+              onclick="window.location.href='/user/ailabs'"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="submit-btn" id="uploadButton" disabled>
+              <span class="btn-text">Upload & Process</span>
+              <span class="spinner" style="display: none"></span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="upload-tips">
+        <h2>Tips for Best Results</h2>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <div class="tip-icon">
+              <img src="/public/assets/tip-clarity.svg" alt="Clarity icon" />
+            </div>
+            <h3>Clear Audio</h3>
+            <p>
+              Ensure your voice is clear and the ingredients and steps are
+              verbally described.
+            </p>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">
+              <img src="/public/assets/innovation.svg" alt="Lighting icon" />
+            </div>
+            <h3>Good Lighting</h3>
+            <p>
+              Film in a well-lit environment so ingredients and cooking steps
+              are visible.
+            </p>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">
+              <img src="/public/assets/tip-structure.svg" alt="Structure icon" />
+            </div>
+            <h3>Structured Process</h3>
+            <p>
+              Clearly state ingredients at the beginning and explain each step
+              in order.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="processingModal" class="modal">
+      <div class="modal-content">
+        <h2>Processing Your Recipe</h2>
+        <p>
+          Our AI is analyzing your video and extracting the recipe. This may
+          take a few minutes.
+        </p>
+
+        <div class="processing-animation">
+          <div class="cooking-pot">
+            <div class="steam"></div>
+            <div class="steam steam-2"></div>
+            <div class="steam steam-3"></div>
+            <div class="steam steam-4"></div>
+          </div>
+        </div>
+
+        <div class="processing-steps">
+          <div class="processing-step" id="step1">
+            <div class="step-icon">1</div>
+            <div class="step-text">
+              <h4>Transcribing Audio</h4>
+              <p>Converting speech to text</p>
+            </div>
+            <div class="step-status pending"></div>
+          </div>
+          <div class="processing-step" id="step2">
+            <div class="step-icon">2</div>
+            <div class="step-text">
+              <h4>Analyzing Content</h4>
+              <p>Identifying ingredients and steps</p>
+            </div>
+            <div class="step-status"></div>
+          </div>
+          <div class="processing-step" id="step3">
+            <div class="step-icon">3</div>
+            <div class="step-text">
+              <h4>Structuring Recipe</h4>
+              <p>Creating your shareable recipe</p>
+            </div>
+            <div class="step-status"></div>
+          </div>
+        </div>
+
+        <p class="processing-note">
+          Please don't close this window. You'll be redirected when processing
+          is complete.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const dropZone = document.getElementById("dropZone");
+      const videoInput = document.getElementById("videoInput");
+      const videoPreview = document.getElementById("videoPreview");
+      const uploadIcon = document.getElementById("uploadIcon");
+      const uploadText = document.getElementById("uploadText");
+      const uploadButton = document.getElementById("uploadButton");
+      const progressBar = document.getElementById("progressBar");
+      const progressPercent = document.getElementById("progressPercent");
+      const uploadProgress = document.querySelector(".upload-progress");
+      const processingModal = document.getElementById("processingModal");
+
+      // Handle drag and drop functionality
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
+
+      function highlight() {
+        dropZone.classList.add("highlight");
+      }
+
+      function unhighlight() {
+        dropZone.classList.remove("highlight");
+      }
+
+      // Handle file drop
+      dropZone.addEventListener("drop", handleDrop, false);
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+      }
+
+      // Handle file selection via input
+      videoInput.addEventListener("change", function () {
+        handleFiles(this.files);
+      });
+
+      function handleFiles(files) {
+        if (files.length > 0) {
+          const file = files[0];
+
+          // Check if file is a video
+          if (!file.type.match("video.*")) {
+            alert("Please select a video file.");
+            return;
+          }
+
+          // Check file size (max 100MB)
+          if (file.size > 100 * 1024 * 1024) {
+            alert(
+              "File size exceeds 100MB limit. Please select a smaller file."
+            );
+            return;
+          }
+
+          // Display video preview
+          const url = URL.createObjectURL(file);
+          videoPreview.src = url;
+          videoPreview.style.display = "block";
+          uploadIcon.style.display = "none";
+          uploadText.style.display = "none";
+
+          // Enable upload button
+          uploadButton.disabled = false;
+        }
+      }
+
+      // Handle form submission
+      document
+        .getElementById("videoUploadForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Show processing UI
+          uploadButton.disabled = true;
+          uploadButton.querySelector(".btn-text").textContent = "Processing...";
+          uploadButton.querySelector(".spinner").style.display = "inline-block";
+          uploadProgress.style.display = "block";
+
+          // Simulate progress (in a real app, you'd get actual progress from the server)
+          let progress = 0;
+          const interval = setInterval(() => {
+            progress += 5;
+            if (progress > 90) {
+              clearInterval(interval);
+            }
+            progressBar.style.width = `${progress}%`;
+            progressPercent.textContent = `${progress}%`;
+          }, 500);
+
+          // Show processing modal after a short delay
+          setTimeout(() => {
+            processingModal.style.display = "flex";
+
+            // Simulate processing steps
+            setTimeout(() => {
+              document
+                .getElementById("step1")
+                .querySelector(".step-status")
+                .classList.remove("pending");
+              document
+                .getElementById("step1")
+                .querySelector(".step-status")
+                .classList.add("completed");
+              document
+                .getElementById("step2")
+                .querySelector(".step-status")
+                .classList.add("pending");
+            }, 3000);
+
+            setTimeout(() => {
+              document
+                .getElementById("step2")
+                .querySelector(".step-status")
+                .classList.remove("pending");
+              document
+                .getElementById("step2")
+                .querySelector(".step-status")
+                .classList.add("completed");
+              document
+                .getElementById("step3")
+                .querySelector(".step-status")
+                .classList.add("pending");
+            }, 6000);
+
+            setTimeout(() => {
+              document
+                .getElementById("step3")
+                .querySelector(".step-status")
+                .classList.remove("pending");
+              document
+                .getElementById("step3")
+                .querySelector(".step-status")
+                .classList.add("completed");
+            }, 9000);
+          }, 2000);
+
+          // Actually submit the form
+          this.submit();
+        });
+
+      // Make the "browse files" text clickable
+      document
+        .querySelector(".browse-link")
+        .addEventListener("click", function () {
+          videoInput.click();
+        });
+    </script>
+
+    <script src="/js/sidebar.js"></script>
+    <%- include('./partials/footer.ejs') %>
+  </body>
+</html>

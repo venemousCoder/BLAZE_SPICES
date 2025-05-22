@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Labs - Blaze Recipes</title>
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link rel="stylesheet" href="/public/css/ailabs.css" />
+    <link rel="stylesheet" href="/public/css/sidebar.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="shortcut icon"
+      href="/public/assets/favicon/favicon.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <%- include('./partials/header.ejs') %>
+    <%- include('./partials/sidebar.ejs') %>
+    
+    <main class="ailabs-container">
+      <section class="ailabs-header">
+        <h1>AI Recipe Labs</h1>
+        <p class="ailabs-description">
+          Upload cooking videos and let our AI extract structured recipes automatically.
+          Perfect for turning your cooking tutorials into shareable recipes.
+        </p>
+        <div class="ailabs-actions">
+          <button class="primary-btn upload-video-btn" onclick="window.location.href='/user/ailabs/upload'">
+            <a href="/user/ailabs/upload">hi</a>
+            <img src="/public/assets/upload-icon.svg" alt="" />
+            Upload Video
+          </button>
+        </div>
+      </section>
+
+      <section class="ai-recipes">
+        <h2>Your AI-Generated Recipes</h2>
+        
+        <% if (user.aiRecipes && user.aiRecipes.length > 0) { %>
+          <div class="recipe-grid">
+            <% user.aiRecipes.forEach(recipe => { %>
+              <div class="recipe-card">
+                <div class="recipe-card-header">
+                  <span class="ai-badge">AI Generated</span>
+                  <div class="recipe-actions dropdown">
+                    <button class="action-btn">
+                      <img src="/public/assets/more-icon.svg" alt="More options" />
+                    </button>
+                    <div class="dropdown-content">
+                      <a href="/user/ailabs/edit/<%= recipe._id %>">Edit Recipe</a>
+                      <a href="#" onclick="publishRecipe('<%= recipe._id %>')">Publish Recipe</a>
+                      <a href="#" onclick="deleteAiRecipe('<%= recipe._id %>')" class="delete-action">Delete</a>
+                    </div>
+                  </div>
+                </div>
+                
+                <h3 class="recipe-title"><%= recipe.title %></h3>
+                
+                <div class="recipe-details">
+                  <span class="recipe-difficulty"><%= recipe.difficulty || 'Medium' %></span>
+                  <span class="recipe-date"><%= new Date(recipe.createdAt).toLocaleDateString() %></span>
+                </div>
+                
+                <div class="recipe-content">
+                  <div class="ingredients-section">
+                    <h4>Ingredients</h4>
+                    <ul class="ingredients-list">
+                      <% if (recipe.ingredients && recipe.ingredients.length > 0) { %>
+                        <% recipe.ingredients.slice(0, 3).forEach(ingredient => { %>
+                          <li><%= ingredient %></li>
+                        <% }) %>
+                        <% if (recipe.ingredients.length > 3) { %>
+                          <li class="more-items">+<%= recipe.ingredients.length - 3 %> more</li>
+                        <% } %>
+                      <% } else { %>
+                        <li class="empty-list">No ingredients listed</li>
+                      <% } %>
+                    </ul>
+                  </div>
+                  
+                  <div class="steps-section">
+                    <h4>Steps</h4>
+                    <ol class="steps-list">
+                      <% if (recipe.steps && recipe.steps.length > 0) { %>
+                        <% recipe.steps.slice(0, 2).forEach(step => { %>
+                          <li><%= step %></li>
+                        <% }) %>
+                        <% if (recipe.steps.length > 2) { %>
+                          <li class="more-items">+<%= recipe.steps.length - 2 %> more steps</li>
+                        <% } %>
+                      <% } else { %>
+                        <li class="empty-list">No steps listed</li>
+                      <% } %>
+                    </ol>
+                  </div>
+                </div>
+                
+                <div class="recipe-footer">
+                  <button class="view-full-btn" onclick="window.location.href='/user/ailabs/<%= recipe._id %>'">
+                    View Full Recipe
+                  </button>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty-state">
+            <img src="/public/assets/ai-empty-state.svg" alt="No AI recipes" />
+            <h3>No AI Recipes Yet</h3>
+            <p>Upload a cooking video to get started with AI-generated recipes.</p>
+            <button class="primary-btn" onclick="window.location.href='/user/ailabs/upload'">
+              Upload Your First Video
+            </button>
+          </div>
+        <% } %>
+      </section>
+      
+      <section class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps-container">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>Upload Video</h3>
+            <p>Upload your cooking tutorial or recipe video (max 100MB)</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <h3>AI Processing</h3>
+            <p>Our AI analyzes the video and extracts a structured recipe</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>Edit & Publish</h3>
+            <p>Review the generated recipe, make edits, and publish to your profile</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="deleteModal" class="modal">
+      <div class="modal-content">
+        <h2>Delete AI Recipe</h2>
+        <p>Are you sure you want to delete this AI-generated recipe? This action cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+          <button id="confirmDelete" class="delete-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let recipeToDelete = null;
+      
+      function deleteAiRecipe(recipeId) {
+        recipeToDelete = recipeId;
+        document.getElementById('deleteModal').style.display = 'flex';
+      }
+      
+      function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        recipeToDelete = null;
+      }
+      
+      document.getElementById('confirmDelete').addEventListener('click', function() {
+        if (recipeToDelete) {
+          // Send delete request
+          fetch(`/user/ailabs/${recipeToDelete}/delete`, {
+            method: 'DELETE',
+          })
+          .then(response => {
+            if (response.ok) {
+              window.location.reload();
+            } else {
+              alert('Failed to delete recipe');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the recipe');
+          });
+        }
+        closeDeleteModal();
+      });
+      
+      function publishRecipe(recipeId) {
+        fetch(`/user/ailabs/${recipeId}/publish`, {
+          method: 'POST',
+        })
+        .then(response => {
+          if (response.ok) {
+            window.location.href = '/user/recipes';
+          } else {
+            alert('Failed to publish recipe');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An error occurred while publishing the recipe');
+        });
+      }
+      
+      // Close modal if clicked outside
+      window.onclick = (event) => {
+        const modal = document.getElementById('deleteModal');
+        if (event.target === modal) {
+          closeDeleteModal();
+        }
+      }
+    </script>
+    
+    <script src="/public/js/sidebar.js"></script>
+    <%- include('./partials/footer.ejs') %>
+  </body>
+</html>

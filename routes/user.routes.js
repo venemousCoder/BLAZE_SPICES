@@ -5,6 +5,7 @@ const aicontrollers = require("../controllers/ai.controller");
 const jwtauth = require("../utils/jwt");
 const uploadd = require("../utils/multer");
 const uploadVideo = require("../utils/multerVideo");
+const upload = require("../utils/aimulter")
 
 // **********************************************/
 //*
@@ -193,11 +194,13 @@ router.post("/report", usercontrollers.report);
 //
 //******************************************** */
 
+router.get("/ailabs/upload", aicontrollers.getAilabsVideoUpload);
+router.get("/ailabs/:id", aicontrollers.getAiLabs);
 router.get("/ailabs", aicontrollers.getAiLabs);
-router.get("/ailabs/upload", aicontrollers.getAilabsVideoUpload)
+router.get("/ailabs/edit/:id", aicontrollers.getAilabsEdit);
 router.post(
   "/ai/generate",
-  uploadVideo.single("vid"),
+  upload.single("vid"),
   aicontrollers.generateRecipe
 );
 

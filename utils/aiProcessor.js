@@ -5,23 +5,29 @@ const path = require("path");
 function processRecipeVideo(videoPath) {
   return new Promise((resolve, reject) => {
     console.log("Environment variables loaded FOR AI PROCESSOR:", {
-      ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY ? "Set (not showing full key)" : "Not set",
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY ? "Set (not showing full key)" : "Not set",
+      ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY
+        ? "Set (not showing full key)"
+        : "Not set",
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY
+        ? "Set (not showing full key)"
+        : "Not set",
     });
-    
+
     // Create a copy of the current process.env and add/override specific variables
-    const env = { 
+    const env = {
       ...process.env,
-      ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY 
+      ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
     };
-    
-    console.log("Forking transcriptAgent.js with API key:", 
-      process.env.ASSEMBLYAI_API_KEY ? "Set (not showing full key)" : "Not set");
-    
+
+    console.log(
+      "Forking transcriptAgent.js with API key:",
+      process.env.ASSEMBLYAI_API_KEY ? "Set (not showing full key)" : "Not set"
+    );
+
     const transcription = fork(path.join(__dirname, "transcriptAgent.js"), {
       env: env,
     });
-    
+
     transcription.send({ videoPath });
 
     transcription.on("message", (response) => {
@@ -29,26 +35,28 @@ function processRecipeVideo(videoPath) {
         console.error("Transcription failed:", response.error);
         return reject(new Error(response.error));
       }
-      
+
       const transcript = response.text || response;
       console.log("Transcription completed successfully");
-      
+
       // Verify Gemini API key is available
       if (!process.env.GEMINI_API_KEY) {
         console.error("Gemini API key is missing");
         return reject(new Error("Gemini API key is missing"));
       }
-      
-      console.log("Forking geminiAgent.js with API key:", 
-        process.env.GEMINI_API_KEY ? "Set (not showing full key)" : "Not set");
-      
+
+      console.log(
+        "Forking geminiAgent.js with API key:",
+        process.env.GEMINI_API_KEY ? "Set (not showing full key)" : "Not set"
+      );
+
       const parser = fork(path.join(__dirname, "geminiAgent.js"), {
-        env: { 
+        env: {
           ...process.env,
-          GEMINI_API_KEY: process.env.GEMINI_API_KEY 
+          GEMINI_API_KEY: process.env.GEMINI_API_KEY,
         },
       });
-      
+
       parser.send({ transcript });
 
       parser.on("message", (parsedData) => {
@@ -58,12 +66,12 @@ function processRecipeVideo(videoPath) {
         }
         resolve(parsedData);
       });
-      
+
       parser.on("error", (err) => {
         console.error("Gemini process error:", err);
         reject(err);
       });
-      
+
       parser.on("exit", (code) => {
         if (code !== 0) {
           console.warn(`[geminiAgent] exited with code ${code}`);
@@ -71,7 +79,7 @@ function processRecipeVideo(videoPath) {
         }
       });
     });
-    
+
     transcription.on("exit", (code) => {
       if (code !== 0) {
         console.warn(`[transcribeAgent] exited with code ${code}`);
@@ -86,4 +94,4 @@ function processRecipeVideo(videoPath) {
   });
 }
 
-module.exports = { processRecipeVideo };
+module.exports = processRecipeVideo;
