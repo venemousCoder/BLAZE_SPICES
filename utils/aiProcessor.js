@@ -1,28 +1,89 @@
 // File: utils/aiProcessor.js
-// This utility will handle the IPC logic to run transcription + GPT pipeline using child_process
+const { fork } = require("child_process");
+const path = require("path");
 
-const { fork } = require('child_process');
-const path = require('path');
+function processRecipeVideo(videoPath) {
+  return new Promise((resolve, reject) => {
+    console.log("Environment variables loaded FOR AI PROCESSOR:", {
+      ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY ? "Set (not showing full key)" : "Not set",
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY ? "Set (not showing full key)" : "Not set",
+    });
+    
+    // Create a copy of the current process.env and add/override specific variables
+    const env = { 
+      ...process.env,
+      ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY 
+    };
+    
+    console.log("Forking transcriptAgent.js with API key:", 
+      process.env.ASSEMBLYAI_API_KEY ? "Set (not showing full key)" : "Not set");
+    
+    const transcription = fork(path.join(__dirname, "transcriptAgent.js"), {
+      env: env,
+    });
+    
+    transcription.send({ videoPath });
 
-function processRecipeVideo(videoPath, callback) {
-  // Fork the transcription process
-  const transcription = fork(path.join(__dirname, 'transcribeAgent.js'));
+    transcription.on("message", (response) => {
+      if (response.success === false) {
+        console.error("Transcription failed:", response.error);
+        return reject(new Error(response.error));
+      }
+      
+      const transcript = response.text || response;
+      console.log("Transcription completed successfully");
+      
+      // Verify Gemini API key is available
+      if (!process.env.GEMINI_API_KEY) {
+        console.error("Gemini API key is missing");
+        return reject(new Error("Gemini API key is missing"));
+      }
+      
+      console.log("Forking geminiAgent.js with API key:", 
+        process.env.GEMINI_API_KEY ? "Set (not showing full key)" : "Not set");
+      
+      const parser = fork(path.join(__dirname, "geminiAgent.js"), {
+        env: { 
+          ...process.env,
+          GEMINI_API_KEY: process.env.GEMINI_API_KEY 
+        },
+      });
+      
+      parser.send({ transcript });
 
-  transcription.send({ videoPath });
-
-  transcription.on('message', (transcript) => {
-    // Transcript received, now fork GPT process
-    const parser = fork(path.join(__dirname, 'gptAgent.js'));
-    parser.send({ transcript });
-
-    parser.on('message', (parsedData) => {
-      callback(null, parsedData); // All done!
+      parser.on("message", (parsedData) => {
+        if (parsedData.success === false) {
+          console.error("Gemini processing failed:", parsedData.error);
+          return reject(new Error(parsedData.error));
+        }
+        resolve(parsedData);
+      });
+      
+      parser.on("error", (err) => {
+        console.error("Gemini process error:", err);
+        reject(err);
+      });
+      
+      parser.on("exit", (code) => {
+        if (code !== 0) {
+          console.warn(`[geminiAgent] exited with code ${code}`);
+          reject(new Error(`Gemini process exited with code ${code}`));
+        }
+      });
+    });
+    
+    transcription.on("exit", (code) => {
+      if (code !== 0) {
+        console.warn(`[transcribeAgent] exited with code ${code}`);
+        reject(new Error(`Transcription process exited with code ${code}`));
+      }
     });
 
-    parser.on('error', (err) => callback(err));
+    transcription.on("error", (err) => {
+      console.error("Transcription process error:", err);
+      reject(err);
+    });
   });
-
-  transcription.on('error', (err) => callback(err));
 }
 
-module.exports = processRecipeVideo;
+module.exports = { processRecipeVideo };

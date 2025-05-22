@@ -4,6 +4,7 @@
 // Import necessary modules
 const recipe = require("../models/recipe");
 // Make sure this is the discriminator!
+const { processRecipeVideo } = require("../utils/aiProcessor");
 const { User } = require("../models/user");
 const Group = require("../models/group");
 const Activity = require("../models/activity");
@@ -629,26 +630,10 @@ function createRecipe(req, res, next) {
     });
 }
 
-function testUserAccountDetails(req, res, next) {
-  User.findById("67b30bac01a363247489e447")
-    .populate("posts")
-    .then((user) => {
-      if (!user) {
-        return res.status(404).redirect("/error");
-      }
-      console.log("USER: ", user);
-      return res.send(user);
-    })
-    .catch((err) => {
-      console.error("Error fetching user:", err);
-      res.locals.error = err;
-      res.locals.description = err.msg;
-      return res.render("error", {
-        error: err,
-        description: err.message,
-        status: 500,
-      });
-    });
+async function testUserAccountDetails(req, res, next) {
+  // console.log("BEFORE TRY env", process.env);
+
+
 }
 //**********************************************/
 //*
@@ -1795,8 +1780,6 @@ async function getGroupChat(req, res) {
 //
 //**********************************************/
 
-
-
 function report(req, res, next) {
   const { reportType, reportedItem, type, reason, itemType } = req.body;
   const userId = req.user._id;
@@ -1829,8 +1812,6 @@ function report(req, res, next) {
       });
     });
 }
-
-
 
 //*
 function hi(req, res, next) {

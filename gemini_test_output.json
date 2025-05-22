@@ -1,0 +1,50 @@
+```json
+{
+  "title": "Simple Pasta Dish",
+  "description": "A quick and easy pasta dish perfect for a weeknight meal.",
+  "difficulty": "Easy",
+  "ingredients": [
+    {
+      "name": "Spaghetti",
+      "quantity": "200g"
+    },
+    {
+      "name": "Garlic",
+      "quantity": "2 cloves"
+    },
+    {
+      "name": "Olive Oil",
+      "quantity": "3 tablespoons"
+    },
+    {
+      "name": "Salt",
+      "quantity": "to taste"
+    },
+    {
+      "name": "Pepper",
+      "quantity": "to taste"
+    },
+    {
+      "name": "Fresh Basil",
+      "quantity": "to garnish"
+    }
+  ],
+  "steps": [
+    {
+      "instruction": "Boil water in a large pot and add salt."
+    },
+    {
+      "instruction": "Add the pasta and cook for about 8-10 minutes until al dente."
+    },
+    {
+      "instruction": "Meanwhile, heat the olive oil in a pan and add minced garlic."
+    },
+    {
+      "instruction": "Drain the pasta and add it to the pan, toss well."
+    },
+    {
+      "instruction": "Season with salt and pepper, and garnish with fresh basil."
+    }
+  ]
+}
+```

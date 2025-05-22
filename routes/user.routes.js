@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const usercontrollers = require("../controllers/user.controller");
 const groupcontrollers = require("../controllers/group.controller");
+const aicontrollers = require("../controllers/ai.controller");
 const jwtauth = require("../utils/jwt");
 const uploadd = require("../utils/multer");
 const uploadVideo = require("../utils/multerVideo");
@@ -11,12 +12,15 @@ const uploadVideo = require("../utils/multerVideo");
 //*
 // **********************************************/
 
-router.get("/tua", usercontrollers.testUserAccountDetails);
+router.post(
+  "/tua",
+  // uploadVideo.single("test"),
+  usercontrollers.testUserAccountDetails
+);
 
 router.get("/explore", usercontrollers.explore);
 
 router.get("/external/recipe/:id", usercontrollers.getExternalRecipe);
-
 
 // **********************************************/
 //*
@@ -183,7 +187,18 @@ router.post("/groups/:id/unblock", groupcontrollers.unblockMember);
 
 router.post("/report", usercontrollers.report);
 
+//******************************************** */
+//
+//  AI ROUTES
+//
+//******************************************** */
 
-
+router.get("/ailabs", aicontrollers.getAiLabs);
+router.get("/ailabs/upload", aicontrollers.getAilabsVideoUpload)
+router.post(
+  "/ai/generate",
+  uploadVideo.single("vid"),
+  aicontrollers.generateRecipe
+);
 
 module.exports = router;
