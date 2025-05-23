@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit AI Recipe - Blaze Recipes</title>
+  <link rel="stylesheet" href="/public/css/home.css">
+  <link rel="stylesheet" href="/public/css/ailabs.css">
+  <link rel="stylesheet" href="/public/css/ailabsedit.css">
+  <link rel="stylesheet" href="/public/css/sidebar.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="/public/assets/favicon/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <%- include('./partials/header.ejs') %>
+  <%- include('./partials/sidebar.ejs') %>
+
+  <main class="ailabs-edit-container">
+    <section class="ailabs-edit-header">
+      <div class="breadcrumb">
+        <a href="/user/ailabs">AI Recipe Labs</a> / <span>Edit Recipe</span>
+      </div>
+      <h1>Edit AI-Generated Recipe</h1>
+      <p class="ailabs-description">Review and edit the recipe extracted by our AI. Make any necessary changes before publishing.</p>
+    </section>
+
+    <section class="ailabs-edit-form">
+      <form id="editRecipeForm" action="/user/recipes/vid" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="title">Recipe Title</label>
+          <input type="text" id="title" name="title" value="<%= recipe.ai_response.title %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="4" required><%= recipe.ai_response.description %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="difficulty">Difficulty</label>
+          <select id="difficulty" name="difficulty" required>
+            <option value="Easy" <%= recipe.ai_response.difficulty === 'Easy' ? 'selected' : '' %>>Easy</option>
+            <option value="Medium" <%= recipe.ai_response.difficulty === 'Medium' ? 'selected' : '' %>>Medium</option>
+            <option value="Hard" <%= recipe.ai_response.difficulty === 'Hard' ? 'selected' : '' %>>Hard</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="ingredients">Ingredients</label>
+          <textarea id="ingredients" name="ingredients" rows="6" required><%= recipe.ai_response.ingredients.join('\n') %></textarea>
+          <p class="form-help">Enter each ingredient on a new line.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="steps">Steps</label>
+          <textarea id="steps" name="steps" rows="8" required><%= recipe.ai_response.instructions.join('\n') %></textarea>
+          <p class="form-help">Enter each step on a new line.</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="recipeImage">Recipe Image</label>
+          <input type="file" id="recipeImage" name="recipeImage" accept="image/*">
+          <% if (recipe.ai_response.image) { %>
+            <img src="<%= recipe.ai_response.image %>" alt="Current Recipe Image" style="max-width: 200px; margin-top: 10px;">
+          <% } %>
+        </div>
+        
+        <div class="form-group">
+          <label for="recipeVideo">Recipe Video</label>
+          <input type="file" id="recipeVideo" name="recipeVideo" accept="video/*">
+          <% if (recipe.ai_response.video) { %>
+            <video src="<%= recipe.ai_response.video %>" controls style="max-width: 200px; margin-top: 10px;"></video>
+          <% } %>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" onclick="window.location.href='/user/ailabs'">Cancel</button>
+          <button type="submit" class="primary-btn">Save Changes</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/public/js/sidebar.js"></script>
+  <%- include('./partials/footer.ejs') %>
+</body>
+</html>

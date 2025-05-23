@@ -7,12 +7,12 @@ const aiSchema = mongoose.Schema({
     required: true,
   },
   ai_response: {
-    type: String,
+    type: Object,
     required: true,
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now(),
   },
 });
 

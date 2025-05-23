@@ -57,7 +57,7 @@ async function logActivity(userId, description) {
       timestamp: new Date(),
     });
   } catch (err) {
-    console.error("Failed to log activity:", err);
+    //
   }
 }
 
@@ -79,7 +79,7 @@ function getDahsboard(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching user for dashboard:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -232,10 +232,10 @@ function updatePassword(req, res, next) {
 }
 
 function logout(req, res, next) {
-  console.log("LOGOUT");
+  //
   req.logout((error, user) => {
     if (error) {
-      console.log("ERROR: ", error);
+      //
       return res.status(500).redirect("/error/");
     }
     req.session.token = "";
@@ -265,7 +265,7 @@ function getFeeds(req, res, next) {
               if (!recipes) {
                 return res.status(404).redirect("/error");
               }
-              // console.log("RECIPE.VID", recipes);
+
               return res.render("feeds", {
                 recipe: recipes,
                 user: req.user,
@@ -274,7 +274,7 @@ function getFeeds(req, res, next) {
               });
             })
             .catch((err) => {
-              console.error("Error fetching top users:", err);
+              //
               res.locals.error = err;
               res.locals.description = err.msg;
               return res.render("error", {
@@ -285,7 +285,7 @@ function getFeeds(req, res, next) {
             });
         })
         .catch((err) => {
-          console.error("Error fetching user for dashboard:", err);
+          //
           res.locals.error = err;
           res.locals.description = err.msg;
           return res.render("error", {
@@ -296,7 +296,7 @@ function getFeeds(req, res, next) {
         });
     })
     .catch((err) => {
-      console.error("Error getting top users", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -327,7 +327,7 @@ function getUpdateRecipe(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error loading recipe for edit:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -420,7 +420,7 @@ function updateRecipe(req, res, next) {
       return res.redirect(`/user/recipes`);
     })
     .catch((err) => {
-      console.error("Error updating recipe:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -497,7 +497,7 @@ function deleteRecipe(req, res, next) {
         .json({ status: "success", message: "Recipe deleted" });
     })
     .catch((err) => {
-      console.error("Error deleting recipe:", err);
+      //
       return res
         .status(500)
         .json({ status: "error", message: "Failed to delete recipe" });
@@ -524,7 +524,7 @@ function getRecipes(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching recipes:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -590,7 +590,7 @@ function createRecipe(req, res, next) {
   newRecipe.steps = Array.isArray(req.body.steps)
     ? req.body.steps
     : [req.body.steps];
-  console.log("From Create controller: ", newRecipe);
+  //
   recipe
     .create(newRecipe)
     .then((recipe) => {
@@ -615,11 +615,11 @@ function createRecipe(req, res, next) {
           res.status(201).redirect("/user/feeds");
         })
         .catch((err) => {
-          console.error("Error updating user posts:", err);
+          //
         });
     })
     .catch((err) => {
-      console.error("Error creating recipe:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -631,9 +631,7 @@ function createRecipe(req, res, next) {
 }
 
 async function testUserAccountDetails(req, res, next) {
-  // console.log("BEFORE TRY env", process.env);
-
-
+  //
 }
 //**********************************************/
 //*
@@ -656,7 +654,7 @@ function getProfile(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching user profile: ", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -682,7 +680,7 @@ function getMyProfile(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching user profile:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -711,7 +709,7 @@ async function editProfile(req, res, next) {
       });
       updateData.profileImage = result.secure_url;
     } catch (err) {
-      console.error("Cloudinary upload error:", err);
+      //
       res.locals.error = "Failed to upload profile image";
       res.locals.error = err;
       res.locals.description = err.msg;
@@ -734,7 +732,7 @@ async function editProfile(req, res, next) {
       req.user = updatedUser;
       req.session.save((err) => {
         if (err) {
-          console.error("Session save error:", err);
+          //
           res.locals.error = err;
           res.locals.description = err.msg;
           return res.render("error", {
@@ -748,7 +746,7 @@ async function editProfile(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Profile update error:", err);
+      //
       res.locals.error = "Failed to update profile";
       res.locals.error = err;
       res.locals.description = err.msg;
@@ -809,7 +807,7 @@ function followUser(req, res, next) {
       return res.redirect(req.get("Referrer") || "/");
     })
     .catch((err) => {
-      console.error("Error following user:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -856,7 +854,7 @@ function unfollowUser(req, res, next) {
       return res.location(req.get("Referrer") || "/");
     })
     .catch((err) => {
-      console.error("Error unfollowing user:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -881,7 +879,7 @@ function getFollowers(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching followers:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -906,7 +904,7 @@ function getFollowing(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching following:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -933,7 +931,7 @@ function getUserFollowers(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching followers:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -960,7 +958,7 @@ function getUserFollowing(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching following:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -1041,7 +1039,7 @@ function likeRecipe(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error liking/unliking recipe:", err);
+      //
       return res.status(500).json({
         status: "error",
         message: "Failed to update like status",
@@ -1069,7 +1067,7 @@ function getLikedRecipes(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching liked recipes:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -1098,11 +1096,11 @@ function getComments(req, res, next) {
       if (!recipe) {
         return res.status(404).redirect("/error");
       }
-      console.log(recipe);
+      //
       return res.render("comments", { recipe: recipe, user: req.user });
     })
     .catch((err) => {
-      console.error("Error fetching comments:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -1141,7 +1139,7 @@ function createComment(req, res, next) {
       return res.redirect(`/user/recipe/${recipeId}/comments`);
     })
     .catch((err) => {
-      console.error("Error adding comment:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -1170,7 +1168,7 @@ function updateComment(req, res, next) {
       return res.redirect(`/user/recipe/${recipeId}/comments`);
     })
     .catch((err) => {
-      console.error("Error updating comment:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -1192,7 +1190,7 @@ function deleteComment(req, res, next) {
     )
     .then(() => res.redirect(`/user/recipe/${recipeId}/comments`))
     .catch((err) => {
-      console.error("Error deleting comment:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       res.status(500).redirect("/error");
@@ -1220,7 +1218,7 @@ function getNotifications(req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("Error fetching notifications:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       res.status(500).redirect("/error");
@@ -1237,7 +1235,7 @@ function markAllAsRead(req, res, next) {
       return res.redirect("/user/notifications");
     })
     .catch((err) => {
-      console.error("Error marking notifications as read:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -1249,20 +1247,20 @@ function markAllAsRead(req, res, next) {
 }
 
 function markAsRead(req, res, next) {
-  console.log("MARK AS READ!!!!!");
+  //
   User.findOneAndUpdate(
     { _id: req.user._id, "notifications._id": req.params.id },
     { $set: { "notifications.$.read": true } },
     { new: true }
   )
     .then(() => {
-      console.log("JIBBERISH");
+      //
       return res.status(200).json({
         status: "success",
       });
     })
     .catch((err) => {
-      console.error("Error marking notifications as read:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {
@@ -1282,9 +1280,9 @@ function markAsRead(req, res, next) {
 // This function is used to upload a video for a recipe
 async function uploadRecipeVideo(req, res, next) {
   const recipeId = req.params.id;
-  console.log("VIDEO UPLOAD");
-  console.log("RECIPE ID: ", recipeId);
-  console.log("FILE: ", req.file);
+  //
+  //
+  //
   if (!req.file) {
     return res
       .status(400)
@@ -1303,7 +1301,7 @@ async function uploadRecipeVideo(req, res, next) {
     var video = recipeDoc.video;
     return next(video);
   } catch (err) {
-    console.error("Error uploading video:", err);
+    //
     return res
       .status(500)
       .json({ status: "error", message: "Failed to upload video" });
@@ -1318,7 +1316,7 @@ async function uploadRecipeVideo(req, res, next) {
 
 // Explore recipes from TheMealDB API
 async function explore(req, res, next) {
-  console.log("EXPLORE");
+  //
   const query = req.query.q || ""; // Search query from user input
   const category = req.query.category || ""; // Category filter
   const area = req.query.area || ""; // Cuisine/Area filter
@@ -1365,7 +1363,7 @@ async function explore(req, res, next) {
       );
       meals = randomMeals;
     }
-    // console.log(meals);
+
     return res.render("explore", {
       user: req.user,
       meals: meals,
@@ -1378,7 +1376,7 @@ async function explore(req, res, next) {
       isInitialLoad: !query && !category && !area,
     });
   } catch (err) {
-    console.error("Error fetching from TheMealDB");
+    //
     return res.render("error", {
       error: err,
       description: "Network error",
@@ -1407,7 +1405,7 @@ async function getExternalRecipe(req, res, next) {
       currentPage: "external-recipe",
     });
   } catch (err) {
-    console.error("Error fetching external recipe:", err);
+    //
     return res.status(500).render("error", {
       description: "Failed to load recipe",
       error: err,
@@ -1433,7 +1431,7 @@ async function getSavedRecipes(req, res, next) {
           );
           return response.data.meals[0];
         } catch (err) {
-          console.error(`Error fetching meal ${mealId}:`, err);
+          //
           return null;
         }
       })
@@ -1448,7 +1446,7 @@ async function getSavedRecipes(req, res, next) {
       currentPage: "saved-recipes",
     });
   } catch (err) {
-    console.error("Error fetching saved recipes:", err);
+    //
     res.locals.error = err;
     res.locals.description = err.msg;
     return res.render("error", {
@@ -1468,7 +1466,7 @@ async function saveRecipe(req, res) {
     // Here, let's assume you use /user/save/external/:id for external and /user/save/:id for internal
     const isExternal = req.originalUrl.includes("/external/");
     const user = await User.findById(userId);
-    console.log("isExternal: ", isExternal, req.originalUrl);
+    //
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -1508,7 +1506,7 @@ async function saveRecipe(req, res) {
       });
     }
   } catch (error) {
-    console.error("Error saving recipe:", error);
+    //
     return res.status(500).json({
       success: false,
       error: "Failed to save recipe",
@@ -1529,14 +1527,14 @@ async function getGroups(req, res, next) {
       "members",
       "username profileImage"
     );
-    // console.log("GROUPS", typeof groups)
+
     return res.render("groups", {
       user: req.user,
       groups: groups,
       currentPage: "groups",
     });
   } catch (err) {
-    console.error("Error fetching groups:", err);
+    //
     res.locals.error = err;
     res.locals.description = err.msg;
     return res.render("error", {
@@ -1548,10 +1546,10 @@ async function getGroups(req, res, next) {
 }
 
 async function createGroup(req, res, next) {
-  console.log("CREATE GROUP");
+  //
   try {
     const { group_name, group_description, group_type } = req.body;
-    console.log("Group Name: ", group_name);
+    //
     // Validate required fields
     if (!group_name || !group_description || !group_type) {
       return res
@@ -1598,7 +1596,7 @@ async function createGroup(req, res, next) {
       ok: true,
     });
   } catch (err) {
-    console.error("Error creating group:", err);
+    //
     res.locals.error = err;
     res.locals.description = err.msg;
     return res.render("error", {
@@ -1631,15 +1629,15 @@ async function deleteGroup(req, res, next) {
         logActivity(userId, `Deleted group: "${group.group_name}"`);
         User.updateMany({ groups: groupId }, { $pull: { groups: groupId } })
           .then((result) => {
-            console.log("Users updated:", result);
+            //
             return res.redirect("/user/groups");
           })
           .catch((err) => {
-            console.error("Error updating users:", err);
+            //
           });
       });
   } catch (err) {
-    console.error("Error deleting group:", err);
+    //
     res.locals.error = err;
     res.locals.description = err.msg;
     return res.render("error", {
@@ -1675,7 +1673,7 @@ async function updateGroup(req, res, next) {
 
     return res.redirect("/user/groups");
   } catch (err) {
-    console.error("Error updating group:", err);
+    //
     res.locals.error = err;
     res.locals.description = err.msg;
     return res.render("error", {
@@ -1733,7 +1731,7 @@ async function updateGroupRole(req, res, next) {
     await group.save();
     return res.json({ success: true });
   } catch (err) {
-    console.error("Error updating group role:", err);
+    //
     return res
       .status(500)
       .json({ success: false, message: "Failed to update role" });
@@ -1767,7 +1765,7 @@ async function getGroupChat(req, res) {
       currentPage: "groups",
     });
   } catch (err) {
-    console.error("Error loading group chat:", err);
+    //
     res.locals.error = err;
     res.locals.description = err.msg;
     res.status(500).redirect("/error");
@@ -1802,7 +1800,7 @@ function report(req, res, next) {
       return res.redirect("/user/dashboard");
     })
     .catch((err) => {
-      console.error("Error submitting report:", err);
+      //
       res.locals.error = err;
       res.locals.description = err.msg;
       return res.render("error", {

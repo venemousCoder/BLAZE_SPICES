@@ -1,4 +1,8 @@
 const aiProcessor = require("../utils/aiProcessor");
+const ai = require("../models/ai");
+const usercontroller = require("./user.controller");
+const { User } = require("../models/user");
+const { Recipe } = require("../models/recipe");
 
 function getAilab(req, res, next) {
   return res.render("ailab", {
@@ -8,10 +12,29 @@ function getAilab(req, res, next) {
 }
 
 function getAiLabs(req, res, next) {
-  return res.render("ailabs", {
-    user: req.user,
-    currentPage: "ai",
-  });
+  User.findById(req.user._id)
+    .populate("aipretexts")
+    .then((user) => {
+      if (!user) {
+        return res.status(404).redirect("/error");
+      }
+      console.log("AI: ", user.aipretexts)
+      return res.render("ailabs", {
+        user: req.user,
+        currentPage: "ai",
+        ailabs: user.aipretexts,
+      });
+    })
+    .catch((err) => {
+      console.error("Error fetching user profile: ", err);
+      res.locals.error = err;
+      res.locals.description = err.msg;
+      return res.render("error", {
+        error: err,
+        description: err.message,
+        status: 500,
+      });
+    });
 }
 
 function getAilabsVideoUpload(req, res, next) {
@@ -21,11 +44,28 @@ function getAilabsVideoUpload(req, res, next) {
   });
 }
 
-function getAilabsEdit(req, res, next) {
-  return res.render("ailabsedit", {
-    user: req.user,
-    currentPage: "ai",
-  });
+const AI = require("../models/ai"); // Assuming you have an AI model
+
+async function getAilabsEdit(req, res, next) {
+  try {
+    const recipeId = req.params.id;
+    // Fetch the AI-generated recipe from the database
+    const recipe = await AI.findById(recipeId);
+
+    if (!recipe) {
+      // Handle the case where the recipe is not found
+      return res.status(404).send("Recipe not found");
+    }
+
+    return res.render("ailabsedit", {
+      user: req.user,
+      currentPage: "ai",
+      recipe: recipe, // Pass the recipe data to the view
+    });
+  } catch (error) {
+    console.error("Error fetching recipe for edit:", error);
+    return res.status(500).send("Internal Server Error");
+  }
 }
 
 async function generateRecipe(req, res, next) {
@@ -34,52 +74,117 @@ async function generateRecipe(req, res, next) {
     const videoPath = req.file.path; // assuming multer handled the upload
     const structuredRecipe = await aiProcessor(videoPath);
     // In your geminiAgent.js or wherever you process the Gemini API response
-    const result =
-      structuredRecipe.data.candidates?.[0]?.content?.parts?.[0]?.text;
-
+    const result = structuredRecipe.data;
+    // console.log("Result of ai controller:", structuredRecipe);
     if (!result) {
       console.error(
         "No result text in response:",
-        JSON.stringify(response.data)
+        JSON.stringify(structuredRecipe.data)
       );
       throw new Error("No structured recipe returned by Gemini API");
     }
 
-    // Clean the result by removing Markdown formatting
-    let cleanedResult = result;
-
-    // Remove Markdown code block formatting if present
-    if (result.startsWith("```") && result.endsWith("```")) {
-      // Extract content between the backticks
-      cleanedResult = result
-        .substring(result.indexOf("\n") + 1, result.lastIndexOf("```"))
-        .trim();
-    } else if (result.includes("```json")) {
-      // Handle case where it's in the middle of text
-      const startIndex = result.indexOf("```json") + 7;
-      const endIndex = result.indexOf("```", startIndex);
-      if (endIndex !== -1) {
-        cleanedResult = result.substring(startIndex, endIndex).trim();
-      }
-    }
-
-    // Parse the cleaned JSON string into a JavaScript object
+    // Extract JSON using bracket positions
     let parsedResult;
     try {
-      parsedResult = JSON.parse(cleanedResult);
-      console.log("Result successfully parsed as JSON");
+      const firstBracketIndex = result.indexOf("{");
+      const lastBracketIndex = result.lastIndexOf("}\n```");
+      // If we can't find the closing pattern, try just the closing bracket
+      const endIndex =
+        lastBracketIndex !== -1
+          ? lastBracketIndex + 1
+          : result.lastIndexOf("}") + 1;
+
+      if (firstBracketIndex !== -1 && endIndex > firstBracketIndex) {
+        const cleanData = result.slice(firstBracketIndex, endIndex);
+        parsedResult = JSON.parse(cleanData);
+        console.log("Result successfully parsed as JSON");
+      } else {
+        throw new Error("Could not locate valid JSON in the response");
+      }
     } catch (parseErr) {
       console.warn("Result is not valid JSON:", parseErr.message);
-      console.warn("Cleaned result was:", cleanedResult);
-      // Return the cleaned text result if parsing fails
-      parsedResult = { error: "Failed to parse JSON", text: cleanedResult };
+      console.warn("Raw result was:", result);
+      // Return the text result if parsing fails
+      parsedResult = { error: "Failed to parse JSON", text: result };
     }
 
     // Send the parsed object back to the parent process
-    process.send({ success: true, data: parsedResult });
+    // process.send({ success: true, data: parsedResult });
+    const newAiresponse = {
+      user: req.user._id,
+      ai_response: {
+        title: parsedResult.title,
+        description: parsedResult.description,
+        ingredients: parsedResult.ingredients,
+        instructions: parsedResult.instructions,
+        owner: req.user._id,
+        preparationTime: parsedResult.preparationTime,
+        cookingTime: parsedResult.cookingTime,
+        likes: 0,
+        comments: [],
+        cuisine: parsedResult.cuisine,
+        category: parsedResult.category,
+        difficulty: parsedResult.difficulty,
+        servings: parsedResult.servings,
+        likedBy: [],
+        video: parsedResult.video,
+      },
+    };
+    ai.create(newAiresponse)
+      .then((airesponse) => {
+        if (!airesponse) {
+          res.locals.error = err;
+          res.locals.description = err.msg;
+          return res.render("error", {
+            error: err,
+            description: err.message,
+          });
+        }
+        const newNotification = {
+          read: false,
+          from: req.user._id,
+          message: "🧪AI labs created a recipe!",
+          createdAt: Date.now(),
+          reference: airesponse._id,
+          type: "ai",
+        };
+        User.findByIdAndUpdate(
+          req.user._id,
+          {
+            $push: {
+              aipretexts: airesponse._id,
+              notifications: newNotification,
+            },
+          },
+          { new: true }
+        )
+          .then((updatedUser) => {
+            req.user = updatedUser;
+            console.log("User updated successfully");
+            return res.redirect("/user/ailabs");
+          })
+          .catch((err) => {
+            console.error("Error updating user", err);
+          });
+        return res.redirect("/ailabs");
+      })
+      .catch((err) => {
+        console.error("Error creating recipe", err);
+        res.locals.error = err;
+        res.locals.description = err.msg;
+        return res.render("error", {
+          error: err,
+          description: err.message,
+        });
+      });
   } catch (err) {
     console.error("Recipe processing failed:", err);
-    res.status(500).json({ error: "Failed to process recipe video" });
+    // res.status(500).json({ error: "Failed to process recipe video" });
+    return res.render("error", {
+      error: "Failed to process recipe video",
+      description: err,
+    });
   }
 }
 
