@@ -30,14 +30,12 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../public/uploads/videos"));
+    cb(null, file.originalPath || path.dirname(file.path)); // Get original file path
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + path.extname(file.originalname).toLowerCase());
+    cb(null, file.originalname); // Keep original filename
   }
-});
-
-const upload = multer({
+});const upload = multer({
   storage: storage,
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   fileFilter: function (req, file, cb) {

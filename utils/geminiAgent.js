@@ -69,9 +69,9 @@ Return a JSON object with:
       description,
       ingredients[{item, quantity}],
       instructions[],
-      preparationTime,
-      cookingTime,
-      cuisine[
+      preparationTime(int minutes),
+      cookingTime(int minutes),      
+      cuisine: enum[
         "African"||
         "Asian"||
         "European"||
@@ -82,9 +82,16 @@ Return a JSON object with:
         "Oceania"||
         "Fusion"||
         "Other"],
-      category,
-      difficulty[easy, medium, hard],
-      servings,
+      category: enum[ "Appetizer",
+        "Main Course",
+        "Dessert",
+        "Salad",
+        "Soup",
+        "Beverage",
+        "Snack",
+        "Side Dish",],
+      difficulty: enum[easy, medium, hard],
+      servings(int),
       likedBy[]`;
 
       console.log("PROMPT INITIALIZED");

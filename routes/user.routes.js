@@ -197,7 +197,9 @@ router.post("/report", usercontrollers.report);
 router.get("/ailabs", aicontrollers.getAiLabs);
 router.get("/ailabs/upload", aicontrollers.getAilabsVideoUpload);
 router.get("/ailabs/:id", aicontrollers.getAiLabs);
-router.get("/ailabs/edit/:id", aicontrollers.getAilabsEdit);
+router.get("/ailabs/recipe/:id/edit", aicontrollers.getAilabsEdit);
+router.post("/ailabs/recipe/:id/edit", aicontrollers.updateGeneratedRecipe);
+router.delete("/ailabs/recipe/:id/delete", aicontrollers.deleteGeneratedRecipe);
 router.post(
   "/ai/generate",
   upload.single("vid"),

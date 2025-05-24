@@ -49,14 +49,14 @@
           <label for="ingredients">Ingredients</label>
           <textarea id="ingredients" name="ingredients" rows="6" required> <% if ((recipe.ai_response.ingredients && recipe.ai_response.ingredients.length > 0)&& typeof recipe.ai_response.ingredients[0]!== "object")  { %>
                         <% recipe.ai_response.ingredients.slice(0, 3).forEach(ingredient => { %>
-                          <li><%= ingredient %></li>
+                          <%= ingredient %>
                         <% }) %>                
                         <% } else if (typeof recipe.ai_response.ingredients === "object") { %>
                           <% recipe.ai_response.ingredients.forEach((ingredient) => { %>
-                            <li><%= ingredient.item %> <%= ingredient.quantity %></li>
+                            <%= ingredient.item %> <%= ingredient.quantity %>
                             <% }) %>                                        
                       <% } else { %>
-                        <li class="empty-list">No ingredients listed</li>
+                        No ingredients listed
                       <% } %></textarea>
           <p class="form-help">Enter each ingredient on a new line.</p>
         </div>
@@ -76,10 +76,16 @@
         </div>
         
         <div class="form-group">
+          
           <label for="recipeVideo">Recipe Video</label>
-          <input type="file" id="recipeVideo" name="recipeVideo" accept="video/*">
+          <input type="file" id="recipeVideo" name="recipeVideo" accept="video/mp4">
           <% if (recipe.ai_response.video) { %>
-            <video src="<%= recipe.ai_response.video %>" controls style="max-width: 200px; margin-top: 10px;"></video>
+            <video
+                controls
+                class="video-preview"
+                src="<%= recipe.ai_response.video %>"
+                
+              ></video>
           <% } %>
         </div>
 

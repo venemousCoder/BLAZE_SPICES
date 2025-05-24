@@ -18,7 +18,7 @@ function getAiLabs(req, res, next) {
       if (!user) {
         return res.status(404).redirect("/error");
       }
-      console.log("AI: ", user.aipretexts);
+      // console.log("AI: ", user.aipretexts);
       return res.render("ailabs", {
         user: req.user,
         currentPage: "ai",
@@ -128,7 +128,7 @@ async function generateRecipe(req, res, next) {
         difficulty: parsedResult.difficulty,
         servings: parsedResult.servings,
         likedBy: [],
-        video: parsedResult.video,
+        video: req.file.path,
       },
     };
 
@@ -179,10 +179,48 @@ async function generateRecipe(req, res, next) {
     });
   }
 }
+
+function updateGeneratedRecipe(req, res, next) {
+  const recipeId = req.params.id;
+  const updatedRecipeData = req.body;
+  AI.findByIdAndUpdate(recipeId, updatedRecipeData, { new: true })
+    .then((updatedRecipe) => {
+      if (!updatedRecipe) {
+        return res.status(404).send("Recipe not found");
+      }
+      return res.redirect("/user/ailabs");
+    })
+    .catch((err) => {
+      console.error("Error updating recipe:", err);
+      return res
+        .status(500)
+        .send("Internal Server Error: could not update recipe");
+    });
+}
+
+function deleteGeneratedRecipe(req, res, next) {
+  const recipeId = req.params.id;
+  AI.findByIdAndDelete(recipeId)
+    .then((deletedRecipe) => {
+      if (!deletedRecipe) {
+        return res.status(404).send("Recipe not found");
+      }
+      return res.json({ success: true });
+    })
+    .catch((err) => {
+      console.error(" Error deleting recipe:", err);
+      return res
+        .status(500)
+        .send("Internal Server Error: could not delete recipe");
+    });
+}
+
 module.exports = {
   getAilab,
   getAiLabs,
   getAilabsVideoUpload,
   getAilabsEdit,
   generateRecipe,
+  updateGeneratedRecipe,
+  deleteGeneratedRecipe,
 };

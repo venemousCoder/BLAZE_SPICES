@@ -73,6 +73,7 @@ const PORT = 4000 || process.env.PORT;
 app.use("/public", express.static(path.join(__dirname, "/public")));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/css", express.static(path.join(__dirname, "public/css")));
+app.use("/", express.static("/"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

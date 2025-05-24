@@ -51,9 +51,9 @@
                       <img src="/public/assets/menu.svg" alt="More options" />
                     </button>
                     <div class="dropdown-content">
-                      <a href="/user/ailabs/edit/<%= recipe.ai_response._id %>">Edit Recipe</a>
-                      <a href="#" onclick="publishRecipe('<%= recipe.ai_response._id %>')">Publish Recipe</a>
-                      <a href="#" onclick="deleteAiRecipe('<%= recipe.ai_response._id %>')" class="delete-action">Delete</a>
+                      <a href="/user/ailabs/recipe/<%= recipe._id %>/edit">Edit Recipe</a>
+                      <a href="#" onclick="publishRecipe('<%= recipe._id %>')">Publish Recipe</a>
+                      <a href="#" onclick="deleteAiRecipe('<%= recipe._id %>')" class="delete-action">Delete</a>
                     </div>
                   </div>
                 </div>
@@ -107,7 +107,7 @@
                 </div>
                 
                 <div class="recipe-footer">
-                  <button class="view-full-btn" onclick="window.location.href='/user/ailabs/edit/<%= recipe._id %>'">
+                  <button class="view-full-btn" onclick="window.location.href='/user/ailabs/recipe/<%= recipe._id %>/edit'">
                     View Full Recipe
                   </button>
                 </div>
@@ -173,13 +173,20 @@
       }
       
       document.getElementById('confirmDelete').addEventListener('click', function() {
+        // Check if recipeToDelete is defined
+        if (!recipeToDelete) {
+          alert('No recipe selected for deletion');
+          return;
+        }
         if (recipeToDelete) {
           // Send delete request
-          fetch(`/user/ailabs/${recipeToDelete}/delete`, {
+          fetch(`/user/ailabs/recipe/${recipeToDelete}/delete`, {
             method: 'DELETE',
           })
           .then(response => {
+            // console.log(response)
             if (response.ok) {
+              // confirm('Recipe deleted successfully?');
               window.location.reload();
             } else {
               alert('Failed to delete recipe');
