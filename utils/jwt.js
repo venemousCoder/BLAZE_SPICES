@@ -35,11 +35,19 @@ function verifyToken(req, res, next) {
             }
             res.locals.message = "Unauthorized Access";
             console.log("Error culprit0");
-            return res.render("error", {error: error, description: error.message, status: 401})
+            return res.render("error", {
+              error: error,
+              description: error.message,
+              status: 401,
+            });
           } else {
             res.locals.message = "User not found";
             console.log("Error culprit1");
-            return res.render("error", {error: error, description: error.message, status: 401})
+            return res.render("error", {
+              error: error,
+              description: error.message,
+              status: 401,
+            });
           }
         });
       } else {
@@ -52,7 +60,11 @@ function verifyToken(req, res, next) {
     res.locals.message = "Provide Token";
     console.log("Error culprit3");
     let error = new Error("Token not found");
-    return res.render("error", {error, description: error.message, status: 401})
+    return res.render("error", {
+      error,
+      description: error.message,
+      status: 401,
+    });
   }
 }
 
@@ -68,24 +80,35 @@ function userVerifyJwt(req, res, next) {
               console.log("sync");
               return next();
             }
-            res.locals.message = "Unauthorized Access";
             console.log("Error culprit0");
-            return res.render("error", {error: error, description: error?.message, status: 401})
+            return res.render("login", {
+              error: "UserException",
+              description: "Unauthorized Access",
+              status: 401,
+            });
           } else {
             res.locals.message = "User not found";
             console.log("Error culprit01");
-            return res.render("error", {error: error, description: error.message, status: 401})
+            return res.render("login", {
+              error,
+              description: error.message,
+              status: 401,
+            });
           }
         });
       } else {
-        res.locals.message = "Cannot verify API token";
         console.log("Error culprit02");
-        return res.status(401).redirect("/error/");
+        var error = "ServerError";
+        // res.locals.message = "Cannot verify API token";
+        // var status = 401;
+        req.logout((err) => {
+          return res.status(401).redirect("/signup");
+        });
       }
     });
   } else {
     console.log("Error culprit03");
-    return res.redirect("/login")
+    return res.redirect("/login");
   }
 }
 

@@ -105,26 +105,24 @@ function googleLogin(req, res, next) {
   passport.authenticate(
     "google",
     { scope: ["profile", "email"] },
-    function (err, user) {
-      if (err) {
-        return res.status(500).json({
-          status: "fail",
-          message: "Google authentication failed",
-          error: err,
+    function (error, user) {
+      if (error) {
+        return res.render("error", {
+          error,
+          description: "Google authentication failure",
         });
       }
       if (!user) {
-        return res.status(404).json({
-          status: "fail",
-          message: "User not found",
+        return res.render("error", {
+          error: "UserException ",
+          description: "User with the credentials was not found",
         });
       }
-      req.login(user, function (err) {
-        if (err) {
-          return res.status(500).json({
-            status: "fail",
-            message: "Failed to create session",
-            error: err,
+      req.login(user, function (error) {
+        if (error) {
+          return res.render("error", {
+            error: error,
+            description: "Session not set. Try again",
           });
         }
         // Successfully authenticated and session created
@@ -145,7 +143,8 @@ function googleLogin(req, res, next) {
 function getforgetPassword(req, res) {
   return res.render("forgetpassword", {
     title: "Forget Password",
-    message: res.locals.message,
+    error: "None",
+    message: "",
   });
 }
 
@@ -162,9 +161,10 @@ async function forgetPassword(req, res, next) {
   try {
     const user = await userModels.Account.findOne({ email: email });
     if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User not found",
+      return res.render("forgetpassword", {
+        error: "No user was found",
+        message: "Please enter a valid user account ",
+        status: 404,
       });
     }
     const token = crypto.randomBytes(32).toString("hex");
@@ -198,17 +198,23 @@ async function forgetPassword(req, res, next) {
       subject: "Password Reset",
       text: `Click on the link to reset your password: ${resetUrl}`,
     };
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        res.locals.message = err;
-        return res.status(500).redirect("/error");
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.render("forgetpassword", {
+          error,
+          message: "Network error: check your connection try again",
+          status: 500,
+        });
       }
       return res.status(200).redirect(`/auth/forgotpassword`);
     });
-  } catch (err) {
-    console.error(err);
-    res.locals.error = err;
-    return res.status(500).redirect("/error");
+  } catch (error) {
+    console.error(error);
+    return res.render("forgetpassword", {
+      error,
+      message: error.message,
+      status: 404,
+    });
   }
 }
 
@@ -220,13 +226,18 @@ async function getResetPassword(req, res, next) {
 
   if (!user) {
     console.log("Invalid or expired token");
-    res.locals.message = "Invalid or expired token";
-    return res.status(400).redirect("/error/");
+    return res.render("resetpassword", {
+      error: "Invalid or expired token",
+      message: "Token has expired",
+      status: 404,
+    });
   }
-  res.render("resetpassword", {
+  return res.render("resetpassword", {
     title: "Reset Password",
     token: req.params.token,
     userId: user.resetPasswordToken,
+    error: "None",
+    message: "",
   });
 }
 
@@ -238,7 +249,14 @@ async function resetPassword(req, res, next) {
     });
 
     if (!user) {
-      return res.status(400).redirect("/error/");
+      return res.render("resetpassword", {
+        title: "Reset Password",
+        token: req.params.token,
+        userId: user.resetPasswordToken,
+        error: "User not found",
+        message:
+          "Tokens have gone bad: <a href='/user/forgotpassword'>get new ones</a>",
+      });
     }
 
     // Use `await` to properly hash and set the password
@@ -254,9 +272,15 @@ async function resetPassword(req, res, next) {
     );
 
     return res.status(200).redirect("/login");
-  } catch (err) {
-    console.error("Error resetting password:", err);
-    return res.status(500).json({ message: "Internal server error" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    return res.render("resetpassword", {
+      title: "Reset Password",
+      token: req.params.token,
+      userId: user.resetPasswordToken,
+      error,
+      message: error.message,
+    });
   }
 }
 

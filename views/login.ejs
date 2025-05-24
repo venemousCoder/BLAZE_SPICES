@@ -26,7 +26,7 @@
         <div class="auth-header">
           <h1>Welcome Back</h1>
           <% if (error!==""){%>
-          <p style="color: #ff4d4f"><%= description %></p>
+          <p style="color: #ff4d4f"><%= error %>: <%= description %></p>
           <%} else {%>
           <p>Log in to continue to Blaze Recipes</p>
           <% } %>

@@ -19,6 +19,7 @@ function getSignUp(req, res) {
   return res.render("signup", {
     title: "SignUp",
     message: res.locals.message,
+    error: ""
   });
 }
 

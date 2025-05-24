@@ -45,14 +45,22 @@ router.get(
         .then((updatedUser) => {
           req.user = updatedUser;
           req.session.token = jwt.generateToken(updatedUser);
-          req.session.save((err) => {
-            if (err) console.error("Session save error:", err);
-            return res.redirect("/user/dashboard");
+          req.session.save((error) => {
+            if (error) {
+              console.error("Session save error:", err);
+              return res.render("login", {
+                error,
+                description: error.message,
+              });
+            }
           });
+          return res.status(201).redirect("/user/dashboard");
         })
-        .catch((err) => {
-          console.error("User update error:", err);
-          return res.redirect("/login");
+        .catch((error) => {
+          return res.render("login", {
+            error,
+            description: error.message,
+          });
         });
     } else {
       // Existing user, just create session and redirect
@@ -68,8 +76,10 @@ router.get(
     // console.log("USER:GAUTH: ", req.user);
 
     if (!req.user) {
-      res.locals.message = "User not found";
-      return res.status(404).redirect("/login");
+      return res.render("login", {
+        error: "UserException",
+        description: "User not found. Check credentials and try again",
+      });
     }
 
     // Successfully authenticated and session created
