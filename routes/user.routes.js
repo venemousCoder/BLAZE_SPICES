@@ -202,7 +202,7 @@ router.post("/ailabs/recipe/:id/edit", aicontrollers.updateGeneratedRecipe);
 router.delete("/ailabs/recipe/:id/delete", aicontrollers.deleteGeneratedRecipe);
 router.post(
   "/ai/generate",
-  upload.single("vid"),
+  uploadVideo.single("vid"),
   aicontrollers.generateRecipe
 );
 

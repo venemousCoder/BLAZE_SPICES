@@ -1,41 +1,18 @@
 const multer = require('multer');
 const path = require('path');
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, path.join(__dirname, "../public/uploads/profile"));
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, Date.now() + "-" + file.originalname);
-//   }
-// });
-
-// const upload = multer({ 
-//   storage: storage,
-//   limits: {
-//     fileSize: 5 * 1024 * 1024 // 5MB limit
-//   },
-//   fileFilter: function (req, file, cb) {
-//     const filetypes = /jpeg|jpg|png|gif/;
-//     const mimetype = filetypes.test(file.mimetype);
-//     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-//     if (mimetype && extname) {
-//       return cb(null, true);
-//     }
-//     cb(new Error("Only image files are allowed!"));
-//   }
-// });
-
-
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, file.originalPath || path.dirname(file.path)); // Get original file path
+    const dest = path.join(__dirname, "../public/uploads/videos"); // Define your destination folder
+    cb(null, dest);
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname); // Keep original filename
+    const filename = Date.now() + "-" + file.originalname; // Generate a unique filename
+    cb(null, filename);
   }
-});const upload = multer({
+});
+
+const upload = multer({
   storage: storage,
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   fileFilter: function (req, file, cb) {

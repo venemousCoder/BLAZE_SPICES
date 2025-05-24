@@ -53,12 +53,12 @@ process.on("message", async (data) => {
       console.log("INITIALIZING PROMPT");
 
       // For debugging purposes, let's check if the transcript is a GIMP tutorial
-      if (transcript.includes("gimp") || transcript.includes("animation")) {
-        console.log(
-          "WARNING: This appears to be a GIMP tutorial, not a cooking recipe"
-        );
-        // We'll still try to process it, but it might not give good results
-      }
+      // if (transcript.includes("gimp") || transcript.includes("animation")) {
+      //   console.log(
+      //     "WARNING: This appears to be a GIMP tutorial, not a cooking recipe"
+      //   );
+      //   // We'll still try to process it, but it might not give good results
+      // }
 
       const prompt = `Extract and structure a cooking recipe from this transcript:
 """
@@ -141,7 +141,7 @@ Return a JSON object with:
 
       const result = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-      if (!result) {
+      if (!result || result.length === 0) {
         console.error(
           "No result text in response:",
           JSON.stringify(response.data)
@@ -149,7 +149,7 @@ Return a JSON object with:
         throw new Error("No structured recipe returned by Gemini API");
       }
 
-      console.log("RESULT:", result);
+      // console.log("RESULT:", result);
 
       // Try to parse the result as JSON to verify it's valid
       try {

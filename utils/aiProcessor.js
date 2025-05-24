@@ -4,14 +4,14 @@ const path = require("path");
 
 function processRecipeVideo(videoPath) {
   return new Promise((resolve, reject) => {
-    console.log("Environment variables loaded FOR AI PROCESSOR:", {
-      ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY
-        ? "Set (not showing full key)"
-        : "Not set",
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY
-        ? "Set (not showing full key)"
-        : "Not set",
-    });
+    // console.log("Environment variables loaded FOR AI PROCESSOR:", {
+    //   ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY
+    //     ? "Set (not showing full key)"
+    //     : "Not set",
+    //   GEMINI_API_KEY: process.env.GEMINI_API_KEY
+    //     ? "Set (not showing full key)"
+    //     : "Not set",
+    // });
 
     // Create a copy of the current process.env and add/override specific variables
     const env = {
@@ -19,10 +19,7 @@ function processRecipeVideo(videoPath) {
       ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
     };
 
-    console.log(
-      "Forking transcriptAgent.js with API key:",
-      process.env.ASSEMBLYAI_API_KEY ? "Set (not showing full key)" : "Not set"
-    );
+    console.log("Forking transcriptAgent.js");
 
     const transcription = fork(path.join(__dirname, "transcriptAgent.js"), {
       env: env,
@@ -32,7 +29,11 @@ function processRecipeVideo(videoPath) {
 
     transcription.on("message", (response) => {
       if (response.success === false) {
-        console.error("Transcription failed:", response.error,response.error.message);
+        console.error(
+          "Transcription failed:",
+          response.error,
+          response.error.message
+        );
         return reject(new Error(response.error));
       }
 
@@ -45,10 +46,7 @@ function processRecipeVideo(videoPath) {
         return reject(new Error("Gemini API key is missing"));
       }
 
-      console.log(
-        "Forking geminiAgent.js with API key:",
-        process.env.GEMINI_API_KEY ? "Set (not showing full key)" : "Not set"
-      );
+      console.log("Forking geminiAgent.js");
 
       const parser = fork(path.join(__dirname, "geminiAgent.js"), {
         env: {
