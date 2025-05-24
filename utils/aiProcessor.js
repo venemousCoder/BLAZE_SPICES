@@ -32,7 +32,7 @@ function processRecipeVideo(videoPath) {
 
     transcription.on("message", (response) => {
       if (response.success === false) {
-        console.error("Transcription failed:", response.error);
+        console.error("Transcription failed:", response.error,response.error.message);
         return reject(new Error(response.error));
       }
 

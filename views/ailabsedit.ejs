@@ -47,7 +47,17 @@
 
         <div class="form-group">
           <label for="ingredients">Ingredients</label>
-          <textarea id="ingredients" name="ingredients" rows="6" required><%= recipe.ai_response.ingredients.join('\n') %></textarea>
+          <textarea id="ingredients" name="ingredients" rows="6" required> <% if ((recipe.ai_response.ingredients && recipe.ai_response.ingredients.length > 0)&& typeof recipe.ai_response.ingredients[0]!== "object")  { %>
+                        <% recipe.ai_response.ingredients.slice(0, 3).forEach(ingredient => { %>
+                          <li><%= ingredient %></li>
+                        <% }) %>                
+                        <% } else if (typeof recipe.ai_response.ingredients === "object") { %>
+                          <% recipe.ai_response.ingredients.forEach((ingredient) => { %>
+                            <li><%= ingredient.item %> <%= ingredient.quantity %></li>
+                            <% }) %>                                        
+                      <% } else { %>
+                        <li class="empty-list">No ingredients listed</li>
+                      <% } %></textarea>
           <p class="form-help">Enter each ingredient on a new line.</p>
         </div>
 

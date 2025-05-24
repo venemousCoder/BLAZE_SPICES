@@ -2,6 +2,7 @@
   --primary-color: #ff4d4d;
   --text-primary: #222;
   --text-secondary: #888;
+  --sidebar-width: 280px;
 }
 
 body {

@@ -62,20 +62,27 @@
                 
                 <div class="recipe-details">
                   <span class="recipe-difficulty"><%= recipe.ai_response.difficulty || 'Medium' %></span>
-                  <span class="recipe-date"><%= new Date(recipe.ai_response.createdAt).toLocaleDateString() %></span>
+                  <span class="recipe-date"><%= new Date(recipe.createdAt).toLocaleDateString() %></span>
                 </div>
                 
                 <div class="recipe-content">
                   <div class="ingredients-section">
                     <h4>Ingredients</h4>
                     <ul class="ingredients-list">
-                      <% if (recipe.ai_response.ingredients && recipe.ai_response.ingredients.length > 0) { %>
+                      <% if ((recipe.ai_response.ingredients && recipe.ai_response.ingredients.length > 0)&& typeof recipe.ai_response.ingredients[0]!== "object")  { %>
                         <% recipe.ai_response.ingredients.slice(0, 3).forEach(ingredient => { %>
                           <li><%= ingredient %></li>
                         <% }) %>
                         <% if (recipe.ai_response.ingredients.length > 3) { %>
                           <li class="more-items">+<%= recipe.ai_response.ingredients.length - 3 %> more</li>
                         <% } %>
+                        <% } else if (typeof recipe.ai_response.ingredients === "object") { %>
+                          <% recipe.ai_response.ingredients.forEach((ingredient) => { %>
+                            <li><%= ingredient.item %> <%= ingredient.quantity %></li>
+                            <% }) %>
+                            <% if (recipe.ai_response.ingredients.length > 3) { %>
+                          <li class="more-items">+<%= recipe.ai_response.ingredients.length - 3 %> more</li>
+                        <% } %>                  
                       <% } else { %>
                         <li class="empty-list">No ingredients listed</li>
                       <% } %>

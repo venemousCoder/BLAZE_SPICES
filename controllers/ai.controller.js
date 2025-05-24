@@ -18,7 +18,7 @@ function getAiLabs(req, res, next) {
       if (!user) {
         return res.status(404).redirect("/error");
       }
-      console.log("AI: ", user.aipretexts)
+      console.log("AI: ", user.aipretexts);
       return res.render("ailabs", {
         user: req.user,
         currentPage: "ai",
@@ -76,7 +76,7 @@ async function generateRecipe(req, res, next) {
     // In your geminiAgent.js or wherever you process the Gemini API response
     const result = structuredRecipe.data;
     // console.log("Result of ai controller:", structuredRecipe);
-    if (!result) {
+    if (result === undefined || result.length === 0) {
       console.error(
         "No result text in response:",
         JSON.stringify(structuredRecipe.data)
@@ -131,63 +131,54 @@ async function generateRecipe(req, res, next) {
         video: parsedResult.video,
       },
     };
-    ai.create(newAiresponse)
-      .then((airesponse) => {
-        if (!airesponse) {
-          res.locals.error = err;
-          res.locals.description = err.msg;
-          return res.render("error", {
-            error: err,
-            description: err.message,
-          });
-        }
-        const newNotification = {
-          read: false,
-          from: req.user._id,
-          message: "🧪AI labs created a recipe!",
-          createdAt: Date.now(),
-          reference: airesponse._id,
-          type: "ai",
-        };
-        User.findByIdAndUpdate(
-          req.user._id,
-          {
-            $push: {
-              aipretexts: airesponse._id,
-              notifications: newNotification,
-            },
-          },
-          { new: true }
-        )
-          .then((updatedUser) => {
-            req.user = updatedUser;
-            console.log("User updated successfully");
-            return res.redirect("/user/ailabs");
-          })
-          .catch((err) => {
-            console.error("Error updating user", err);
-          });
-        return res.redirect("/ailabs");
-      })
-      .catch((err) => {
-        console.error("Error creating recipe", err);
-        res.locals.error = err;
-        res.locals.description = err.msg;
-        return res.render("error", {
-          error: err,
-          description: err.message,
-        });
+
+    const airesponse = await ai.create(newAiresponse);
+    if (!airesponse) {
+      return res.render("error", {
+        error: "Failed to create AI response",
+        description: "Could not create AI response",
       });
+    }
+
+    const newNotification = {
+      read: false,
+      from: req.user._id,
+      message: "🧪AI labs created a recipe!",
+      createdAt: Date.now(),
+      reference: airesponse._id,
+      type: "ai",
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $push: {
+          aipretexts: airesponse._id,
+          notifications: newNotification,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.render("error", {
+        error: "Failed to update user",
+        description: "Could not update user with new AI response",
+      });
+    }
+
+    req.user = updatedUser;
+    console.log("User updated successfully");
+    return res.redirect("/user/ailabs");
   } catch (err) {
     console.error("Recipe processing failed:", err);
-    // res.status(500).json({ error: "Failed to process recipe video" });
     return res.render("error", {
       error: "Failed to process recipe video",
       description: err,
+      status: 500,
     });
   }
 }
-
 module.exports = {
   getAilab,
   getAiLabs,

@@ -194,10 +194,10 @@ router.post("/report", usercontrollers.report);
 //
 //******************************************** */
 
+router.get("/ailabs", aicontrollers.getAiLabs);
 router.get("/ailabs/upload", aicontrollers.getAilabsVideoUpload);
 router.get("/ailabs/:id", aicontrollers.getAiLabs);
 router.get("/ailabs/edit/:id", aicontrollers.getAilabsEdit);
-router.get("/ailabs", aicontrollers.getAiLabs);
 router.post(
   "/ai/generate",
   upload.single("vid"),

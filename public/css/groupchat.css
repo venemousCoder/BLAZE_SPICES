@@ -2,12 +2,15 @@
     --primary-color: #ff4d4d;
     --text-primary: #222;
     --text-secondary: #888;
+
 }
 .chat-container {
-    margin-left: 280px;
+    margin-left: var(--sidebar-width);
     height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-left: 20px; /* Add some extra padding to prevent text cutoff */
+    box-sizing: border-box;
 }
 
 .chat-header {
@@ -20,6 +23,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-left: -20px; /* Compensate for container padding */
+    padding-left: calc(2rem + 20px); /* Add the padding back to header */
 }
 
 .settings-btn {
@@ -94,6 +99,7 @@
     overflow-y: auto;
     padding: 2rem;
     background: #f8f8f8;
+    position: relative; /* Add this line */
 }
 
 .messages-container {

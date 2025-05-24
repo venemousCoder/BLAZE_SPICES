@@ -87,7 +87,8 @@
 <div id="groupSettingsModal" class="modal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Group Settings</h2>
+            <h2><%= group.group_name%> Group Settings</h2>
+            <!-- <div><h6>Desc: <%#= group.group_description%></h6></div> -->
             <button class="close-modal" aria-label="Close modal">&times;</button>
         </div>
         
@@ -318,16 +319,27 @@
 
     socket.on("group:newMessage", (data) => {
         appendMessage(data);
-        scrollToBottom();
+        scrollToBottom(true); // Force scroll to bottom after new message
     });
 
     // --- Scroll to Bottom (Auto-scroll) ---
     function scrollToBottom(force = false) {
-        // Only scroll if user is near the bottom or force is true
         const threshold = 100;
-        const atBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < threshold;
+        const atBottom = 
+            messagesContainer.scrollHeight - 
+            messagesContainer.scrollTop - 
+            messagesContainer.clientHeight < threshold;
+        
         if (atBottom || force) {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: force ? 'auto' : 'smooth'
+            });
+        }
+        
+        // Hide button after scrolling to bottom
+        if (force) {
+            scrollBottomBtn.classList.remove('visible');
         }
     }
 
@@ -340,7 +352,7 @@
 const scrollBottomBtn = document.getElementById('scrollBottomBtn');
 
 // Show/hide button based on scroll position
-messagesContainer.addEventListener('scroll', () => {
+messagesContainer.addEventListener('click', () => {
     const threshold = 100;
     const distanceFromBottom = 
         messagesContainer.scrollHeight - 

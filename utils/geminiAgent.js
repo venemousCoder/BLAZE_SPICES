@@ -67,7 +67,7 @@ ${transcript}
 Return a JSON object with: 
       title,
       description,
-      ingredients[],
+      ingredients[{item, quantity}],
       instructions[],
       preparationTime,
       cookingTime,
@@ -83,7 +83,7 @@ Return a JSON object with:
         "Fusion"||
         "Other"],
       category,
-      difficulty,
+      difficulty[easy, medium, hard],
       servings,
       likedBy[]`;
 
