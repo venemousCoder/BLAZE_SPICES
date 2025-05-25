@@ -116,7 +116,7 @@ function googleCallback(req, res) {
       description: "User not found. Check credentials and try again",
     });
   }
-
+  console.log("GAUTH USER: ", user);
   // If it's a new user, complete their profile
   if (!user.__t) {
     return userModels.User.findByIdAndUpdate(

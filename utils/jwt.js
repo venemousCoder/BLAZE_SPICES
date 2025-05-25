@@ -90,8 +90,8 @@ function userVerifyJwt(req, res, next) {
             res.locals.message = "User not found";
             console.log("Error culprit01");
             return res.render("login", {
-              error,
-              description: error.message,
+              error: "UserException",
+              description:"User not found",
               status: 401,
             });
           }
