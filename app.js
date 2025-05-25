@@ -60,7 +60,7 @@ app.use(
   })
 );
 
-app.use(cors({ origin: "*" }));
+// app.use(cors({ origin: "*" }));
 
 mongoose
   .connect(process.env.DBURI)

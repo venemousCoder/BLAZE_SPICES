@@ -91,7 +91,7 @@ function userVerifyJwt(req, res, next) {
             console.log("Error culprit01");
             return res.render("login", {
               error: "UserException",
-              description:"User not found",
+              description: "User not found",
               status: 401,
             });
           }
@@ -108,7 +108,11 @@ function userVerifyJwt(req, res, next) {
     });
   } else {
     console.log("Error culprit03", token);
-    return res.redirect("/login");
+    return res.render("login", {
+      error: "SERVERError",
+      description: "TOKEN NOT FOUND",
+      status: 500,
+    });
   }
 }
 

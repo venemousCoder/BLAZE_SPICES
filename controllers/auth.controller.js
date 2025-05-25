@@ -169,7 +169,7 @@ function googleCallback(req, res) {
       console.error("Session save error:", error);
       return res.render("login", {
         error,
-        description: error.message,
+        description: "Session save error",
       });
     }
     return res.redirect("/user/dashboard");
