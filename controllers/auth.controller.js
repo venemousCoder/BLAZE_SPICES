@@ -172,6 +172,7 @@ function googleCallback(req, res) {
         description: "Session save error",
       });
     }
+    console.log("Session saved successfully");
     return res.redirect("/user/dashboard");
   });
 }
