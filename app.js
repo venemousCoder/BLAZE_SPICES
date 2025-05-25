@@ -45,13 +45,15 @@ store.on("error", function (error) {
   throw new Error("Session store error: " + error);
 });
 
+app.set("trust proxy", 1);
+
 app.use(
   session({
     store: store,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
       httpOnly: true, // Ensures cookies are sent only over HTTP(S), not client JS
-      secure: process.env.NODE_ENV === "development", // Ensures cookies are sent only over HTTPS
+      secure: process.env.NODE_ENV === "production", // Ensures cookies are sent only over HTTPS
       sameSite: "lax", // Prevents CSRF attacks
     },
     resave: false,
