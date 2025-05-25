@@ -141,6 +141,7 @@ function googleCallback(req, res) {
     )
       .then((updatedUser) => {
         req.session.token = jwt.generateToken(updatedUser);
+        console.log("TOKEN: ", req.session.token);
         req.session.save((error) => {
           if (error) {
             console.error("Session save error:", error);
