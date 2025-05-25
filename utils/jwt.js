@@ -107,7 +107,7 @@ function userVerifyJwt(req, res, next) {
       }
     });
   } else {
-    console.log("Error culprit03", token);
+    console.log("Error culprit03");
     return res.render("login", {
       error: "SERVERError",
       description: "TOKEN NOT FOUND",
