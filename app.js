@@ -51,7 +51,8 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
       httpOnly: true, // Ensures cookies are sent only over HTTP(S), not client JS
-      secure: false, // Ensures cookies are sent only over HTTPS
+      secure: process.env.NODE_ENV === "production", // Ensures cookies are sent only over HTTPS
+      sameSite: "lax", // Prevents CSRF attacks
     },
     resave: false,
     saveUninitialized: false,
@@ -59,7 +60,8 @@ app.use(
   })
 );
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
+
 mongoose
   .connect(process.env.DBURI)
   .then(() => {
@@ -77,7 +79,6 @@ app.use("/", express.static("/"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(require("cors")({ origin: "*" }));
 app.set("view engine", "ejs");
 
 app.use(passport.initialize());
@@ -88,7 +89,10 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
+      callbackURL:
+        process.env.NODE_ENV === "production"
+          ? "https://your-live-domain.com/auth/google/callback"
+          : "http://localhost:4000/auth/google/callback",
     },
     function (accessToken, refreshToken, profile, done) {
       // Check if user exists
