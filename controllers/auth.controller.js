@@ -128,6 +128,7 @@ function googleLogin(req, res, next) {
         // Successfully authenticated and session created
         // res.locals.currentUser = req.user;
         req.session.token = jwt.generateToken(req.user);
+        console.log("SESSION: ", req.session.token);
         req.session.save((err) => {
           if (err) {
             return res.render("error", {
