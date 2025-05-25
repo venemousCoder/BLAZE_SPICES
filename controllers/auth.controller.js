@@ -135,8 +135,8 @@ function googleLogin(req, res, next) {
               description: "Session save failed",
             });
           }
+          return res.status(200).redirect("/user/dashboard");
         });
-        return res.status(200).redirect("/user/dashboard");
         // return next();
       });
     }
