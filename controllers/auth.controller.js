@@ -128,6 +128,14 @@ function googleLogin(req, res, next) {
         // Successfully authenticated and session created
         // res.locals.currentUser = req.user;
         req.session.token = jwt.generateToken(req.user);
+        req.session.save((err) => {
+          if (err) {
+            return res.render("error", {
+              error: err,
+              description: "Session save failed",
+            });
+          }
+        });
         return res.status(200).redirect("/user/dashboard");
         // return next();
       });
