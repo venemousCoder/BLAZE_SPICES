@@ -85,7 +85,17 @@ router.get(
 
     // Successfully authenticated and session created
     req.session.token = jwt.generateToken(req.user);
-    return res.status(200).redirect("/user/dashboard");
+    req.session.save((error) => {
+      if (error) {
+        console.error("Session save error:", err);
+        return res.render("login", {
+          error,
+          description: error.message,
+        });
+      }
+      // return res.status(201).redirect("/user/dashboard");
+      return res.status(200).redirect("/user/dashboard");
+    });
   }
 );
 

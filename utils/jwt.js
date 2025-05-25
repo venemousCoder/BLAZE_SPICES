@@ -107,7 +107,7 @@ function userVerifyJwt(req, res, next) {
       }
     });
   } else {
-    console.log("Error culprit03");
+    console.log("Error culprit03", token);
     return res.redirect("/login");
   }
 }
