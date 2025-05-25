@@ -45,6 +45,7 @@ router.get(
         .then((updatedUser) => {
           req.user = updatedUser;
           req.session.token = jwt.generateToken(updatedUser);
+          console.log("SESSION: ", req.session.token);
           req.session.save((error) => {
             if (error) {
               console.error("Session save error:", err);
@@ -53,8 +54,8 @@ router.get(
                 description: error.message,
               });
             }
+            return res.status(201).redirect("/user/dashboard");
           });
-          return res.status(201).redirect("/user/dashboard");
         })
         .catch((error) => {
           return res.render("login", {
