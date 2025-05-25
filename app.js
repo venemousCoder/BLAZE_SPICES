@@ -91,7 +91,7 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
         process.env.NODE_ENV === "production"
-          ? "https://https://blaze-spices.onrender.com/auth/google/callback"
+          ? "https://blaze-spices.onrender.com/auth/google/callback"
           : "http://localhost:4000/auth/google/callback",
     },
     function (accessToken, refreshToken, profile, done) {
