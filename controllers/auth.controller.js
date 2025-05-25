@@ -102,46 +102,76 @@ function userLogin(req, res, next) {
 }
 
 function googleLogin(req, res, next) {
-  passport.authenticate(
-    "google",
-    { scope: ["profile", "email"] },
-    function (error, user) {
-      if (error) {
-        return res.render("error", {
-          error,
-          description: "Google authentication failure",
-        });
-      }
-      if (!user) {
-        return res.render("error", {
-          error: "UserException ",
-          description: "User with the credentials was not found",
-        });
-      }
-      req.login(user, function (error) {
-        if (error) {
-          return res.render("error", {
-            error: error,
-            description: "Session not set. Try again",
-          });
-        }
-        // Successfully authenticated and session created
-        // res.locals.currentUser = req.user;
-        req.session.token = jwt.generateToken(req.user);
-        console.log("SESSION: ", req.session.token);
-        req.session.save((err) => {
-          if (err) {
-            return res.render("error", {
-              error: err,
-              description: "Session save failed",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })(req, res, next);
+}
+
+function googleCallback(req, res) {
+  const user = req.user;
+
+  if (!user) {
+    return res.render("login", {
+      error: "UserException",
+      description: "User not found. Check credentials and try again",
+    });
+  }
+
+  // If it's a new user, complete their profile
+  if (!user.__t) {
+    return userModels.User.findByIdAndUpdate(
+      user._id,
+      {
+        followers: [],
+        following: [],
+        likes: [],
+        savedRecipes: [],
+        savedExternalRecipes: [],
+        bio: "",
+        profileImage: "/uploads/profile/default-profile.png",
+        posts: [],
+        tag: "Food Enthusiast",
+        activities: [],
+        verified: true,
+        groups: [],
+        unreadMessages: [],
+        notifications: [],
+      },
+      { new: true }
+    )
+      .then((updatedUser) => {
+        req.session.token = jwt.generateToken(updatedUser);
+        req.session.save((error) => {
+          if (error) {
+            console.error("Session save error:", error);
+            return res.render("login", {
+              error,
+              description: error.message,
             });
           }
-          return res.status(200).redirect("/user/dashboard");
+          return res.redirect("/user/dashboard");
         });
-        // return next();
+      })
+      .catch((error) => {
+        return res.render("login", {
+          error,
+          description: error.message,
+        });
+      });
+  }
+
+  // Existing user
+  req.session.token = jwt.generateToken(user);
+  req.session.save((error) => {
+    if (error) {
+      console.error("Session save error:", error);
+      return res.render("login", {
+        error,
+        description: error.message,
       });
     }
-  )(req, res, next);
+    return res.redirect("/user/dashboard");
+  });
 }
 
 /******************************************************************
@@ -299,6 +329,8 @@ module.exports = {
   googleLogin,
   getforgetPassword,
   forgetPassword,
+  getResetPassword,
+  googleCallback,
   resetPassword,
   getResetPassword,
 };
