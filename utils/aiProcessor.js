@@ -37,7 +37,15 @@ function processRecipeVideo(videoPath) {
         return reject(new Error(response.error));
       }
 
-      const transcript = response.text || response;
+      const transcript =
+        typeof data.text === "string"
+          ? data.text
+          : typeof data.transcript === "string"
+          ? data.transcript
+          : typeof data.transcript === "object" &&
+            typeof data.transcript.text === "string"
+          ? data.transcript.text
+          : null;
       console.log("Transcription completed successfully");
 
       // Verify Gemini API key is available
