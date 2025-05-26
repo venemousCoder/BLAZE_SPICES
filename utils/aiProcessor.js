@@ -38,13 +38,13 @@ function processRecipeVideo(videoPath) {
       }
 
       const transcript =
-        typeof data.text === "string"
-          ? data.text
-          : typeof data.transcript === "string"
-          ? data.transcript
-          : typeof data.transcript === "object" &&
-            typeof data.transcript.text === "string"
-          ? data.transcript.text
+        typeof response.text === "string"
+          ? response.text
+          : typeof response.transcript === "string"
+          ? response.transcript
+          : typeof response.transcript === "object" &&
+            typeof response.transcript.text === "string"
+          ? response.transcript.text
           : null;
       console.log("Transcription completed successfully");
 
