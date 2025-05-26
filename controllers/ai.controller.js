@@ -183,6 +183,7 @@ async function generateRecipe(req, res, next) {
 function updateGeneratedRecipe(req, res, next) {
   const recipeId = req.params.id;
   const updatedRecipeData = req.body;
+  console.log("UPDATEDATA: ", updatedRecipeData);
   AI.findByIdAndUpdate(recipeId, updatedRecipeData, { new: true })
     .then((updatedRecipe) => {
       if (!updatedRecipe) {

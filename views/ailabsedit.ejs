@@ -25,7 +25,7 @@
     </section>
 
     <section class="ailabs-edit-form">
-      <form id="editRecipeForm" action="/user/recipes/vid" method="POST" enctype="multipart/form-data">
+      <form id="editRecipeForm" action="/user/ailabs/recipe/<%= recipe._id%>/edit" method="POST" enctype="multipart/form-data">
         <div class="form-group">
           <label for="title">Recipe Title</label>
           <input type="text" id="title" name="title" value="<%= recipe.ai_response.title %>" required>
