@@ -183,12 +183,13 @@ async function generateRecipe(req, res, next) {
 function updateGeneratedRecipe(req, res, next) {
   const recipeId = req.params.id;
   const updatedRecipeData = req.body;
-  console.log("UPDATEDATA: ", updatedRecipeData);
-  AI.findByIdAndUpdate(recipeId, updatedRecipeData, { new: true })
+  // console.log("UPDATEDATA: ", updatedRecipeData);
+  AI.findByIdAndUpdate(recipeId, {ai_response: updatedRecipeData}, { new: true })
     .then((updatedRecipe) => {
       if (!updatedRecipe) {
         return res.status(404).send("Recipe not found");
       }
+      // console.log(updatedRecipe);
       return res.redirect("/user/ailabs");
     })
     .catch((err) => {

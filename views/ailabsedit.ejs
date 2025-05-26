@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit AI Recipe - Blaze Recipes</title>
   <link rel="stylesheet" href="/public/css/home.css">
-  <link rel="stylesheet" href="/public/css/ailabs.css">
-  <link rel="stylesheet" href="/public/css/ailabsedit.css">
   <link rel="stylesheet" href="/public/css/sidebar.css">
+  <link rel="stylesheet" href="/public/css/newrecipe.css"> <!-- Use newrecipe.css -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="shortcut icon" href="/public/assets/favicon/favicon.ico" type="image/x-icon">
 </head>
@@ -15,88 +14,138 @@
   <%- include('./partials/header.ejs') %>
   <%- include('./partials/sidebar.ejs') %>
 
-  <main class="ailabs-edit-container">
-    <section class="ailabs-edit-header">
-      <div class="breadcrumb">
-        <a href="/user/ailabs">AI Recipe Labs</a> / <span>Edit Recipe</span>
+  <main class="newrecipe-page"> <!-- Use newrecipe-page class -->
+    <form class="recipe-form" id="editRecipeForm" action="/user/ailabs/recipe/<%= recipe._id%>/edit" method="POST" enctype="multipart/form-data" data-recipe="<%=JSON.stringify(recipe)%>" data-recipe-ingredient-length="<%= recipe.ai_response.ingredients.length %>">
+      <div class="form-header"> <!-- Use form-header class -->
+        <h1>Edit AI-Generated Recipe</h1>
+        <p>Review and edit the recipe extracted by our AI. Make any necessary changes before publishing.</p>
       </div>
-      <h1>Edit AI-Generated Recipe</h1>
-      <p class="ailabs-description">Review and edit the recipe extracted by our AI. Make any necessary changes before publishing.</p>
-    </section>
 
-    <section class="ailabs-edit-form">
-      <form id="editRecipeForm" action="/user/ailabs/recipe/<%= recipe._id%>/edit" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-          <label for="title">Recipe Title</label>
-          <input type="text" id="title" name="title" value="<%= recipe.ai_response.title %>" required>
-        </div>
+      <div class="form-grid">
+        <div class="form-section">
+          <h2>Basic Information</h2>
+          <div class="form-group">
+            <label for="title">Recipe Title</label>
+            <input type="text" id="title" name="title" value="<%= recipe.ai_response.title %>" required>
+          </div>
 
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea id="description" name="description" rows="4" required><%= recipe.ai_response.description %></textarea>
-        </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4" required><%= recipe.ai_response.description %></textarea>
+          </div>
 
-        <div class="form-group">
-          <label for="difficulty">Difficulty</label>
-          <select id="difficulty" name="difficulty" required>
-            <option value="Easy" <%= recipe.ai_response.difficulty === 'Easy' ? 'selected' : '' %>>Easy</option>
-            <option value="Medium" <%= recipe.ai_response.difficulty === 'Medium' ? 'selected' : '' %>>Medium</option>
-            <option value="Hard" <%= recipe.ai_response.difficulty === 'Hard' ? 'selected' : '' %>>Hard</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="ingredients">Ingredients</label>
-          <textarea id="ingredients" name="ingredients" rows="6" required> <% if ((recipe.ai_response.ingredients && recipe.ai_response.ingredients.length > 0)&& typeof recipe.ai_response.ingredients[0]!== "object")  { %>
-                        <% recipe.ai_response.ingredients.slice(0, 3).forEach(ingredient => { %>
-                          <%= ingredient %>
-                        <% }) %>                
-                        <% } else if (typeof recipe.ai_response.ingredients === "object") { %>
-                          <% recipe.ai_response.ingredients.forEach((ingredient) => { %>
-                            <%= ingredient.item %> <%= ingredient.quantity %>
-                            <% }) %>                                        
-                      <% } else { %>
-                        No ingredients listed
-                      <% } %></textarea>
-          <p class="form-help">Enter each ingredient on a new line.</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="difficulty">Difficulty</label>
+              <select id="difficulty" name="difficulty" required>
+                <option value="Easy" <%= recipe.ai_response.difficulty === 'Easy' ? 'selected' : '' %>>Easy</option>
+                <option value="Medium" <%= recipe.ai_response.difficulty === 'Medium' ? 'selected' : '' %>>Medium</option>
+                <option value="Hard" <%= recipe.ai_response.difficulty === 'Hard' ? 'selected' : '' %>>Hard</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="steps">Steps</label>
-          <textarea id="steps" name="steps" rows="8" required><%= recipe.ai_response.instructions.join('\n') %></textarea>
-          <p class="form-help">Enter each step on a new line.</p>
+        <div class="form-section">
+          <h2>Ingredients</h2>
+          <div id="ingredients-container">
+            <% recipe.ai_response.ingredients.forEach((ingredient, index) => { %>
+              <div class="ingredient-item">
+                <input type="text" name="ingredients[<%= index %>][item]" placeholder="Item" value="<%= ingredient.item %>" required>
+                <input type="text" name="ingredients[<%= index %>][quantity]" placeholder="Quantity" value="<%= ingredient.quantity %>" required>
+                <button type="button" class="remove-btn" onclick="removeIngredient(this)">×</button>
+              </div>
+            <% }) %>
+            <button type="button" class="add-btn" onclick="addIngredient()">+ Add Ingredient</button>
+          </div>
         </div>
-        
-        <div class="form-group">
-          <label for="recipeImage">Recipe Image</label>
-          <input type="file" id="recipeImage" name="recipeImage" accept="image/*">
-          <% if (recipe.ai_response.image) { %>
-            <img src="<%= recipe.ai_response.image %>" alt="Current Recipe Image" style="max-width: 200px; margin-top: 10px;">
-          <% } %>
+
+        <div class="form-section">
+          <h2>Steps</h2>
+          <div id="instructions-container">
+            <% recipe.ai_response.instructions.forEach((step, index) => { %>
+              <div class="step-item">
+                <span class="step-number"><%= index + 1 %></span>
+                <textarea name="instructions[]" rows="3" placeholder="Step <%= index + 1 %>" required><%= step %></textarea>
+                <button type="button" class="remove-btn" onclick="removeInstruction(this)">×</button>
+              </div>
+            <% }) %>
+            <button type="button" class="add-btn" onclick="addStep()">+ Add Step</button>
+          </div>
+          <p class="form-help">Each step will be saved in order.</p>
         </div>
-        
-        <div class="form-group">
+
+        <div class="form-section">
+          <h2>Recipe Media</h2>
+          <div class="form-group">
+            <label for="recipeImage">Recipe Image</label>
+            <input type="file" id="recipeImage" name="recipeImage" accept="image/*">
+            <% if (recipe.ai_response.image) { %>
+              <img src="<%= recipe.ai_response.image %>" alt="Current Recipe Image" style="max-width: 200px; margin-top: 10px;">
+            <% } %>
+          </div>
           
-          <label for="recipeVideo">Recipe Video</label>
-          <input type="file" id="recipeVideo" name="recipeVideo" accept="video/mp4">
-          <% if (recipe.ai_response.video) { %>
-            <video
-                controls
-                class="video-preview"
-                src="<%= recipe.ai_response.video %>"
-                
-              ></video>
-          <% } %>
+          <div class="form-group">
+            <label for="recipeVideo">Recipe Video</label>
+            <input type="file" id="recipeVideo" name="recipeVideo" accept="video/mp4">
+            <% if (recipe.ai_response.video) { %>
+              <video controls class="video-preview" src="<%= recipe.ai_response.video %>"></video>
+            <% } %>
+          </div>
         </div>
+      </div>
 
-        <div class="form-actions">
-          <button type="button" class="cancel-btn" onclick="window.location.href='/user/ailabs'">Cancel</button>
-          <button type="submit" class="primary-btn">Save Changes</button>
-        </div>
-      </form>
-    </section>
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" onclick="window.location.href='/user/ailabs'">Cancel</button>
+        <button type="submit" class="primary-btn">Save Changes</button>
+      </div>
+    </form>
   </main>
 
+  <script>
+    const recipe = JSON.parse(document.getElementById("editRecipeForm").dataset.recipe);
+    
+    // console.log(recipe);
+    let ingredientIndex = document.querySelector('input[name="ingredients[0][item]"]') ? recipe.ai_response.ingredients.length : 0;
+
+    function addIngredient() {
+      const container = document.getElementById("ingredients-container");
+      const div = document.createElement("div");
+      div.className = "ingredient-item";
+      div.innerHTML = `
+        <input type="text" name="ingredients[${ingredientIndex}][item]" placeholder="Item" required>
+        <input type="text" name="ingredients[${ingredientIndex}][quantity]" placeholder="Quantity" required>
+        <button type="button" class="remove-btn" onclick="removeIngredient(this)">×</button>
+      `;
+      container.appendChild(div);
+      ingredientIndex++;
+    }
+
+    function addStep() {
+      const container = document.getElementById("instructions-container");
+      const div = document.createElement("div");
+      div.className = "step-item";
+      const stepNumber = container.querySelectorAll(".step-item").length + 1;
+      div.innerHTML = `
+        <span class="step-number">${stepNumber}</span>
+        <textarea name="instructions[]" rows="3" placeholder="Step ${stepNumber}" required></textarea>
+        <button type="button" class="remove-btn" onclick="removeInstruction(this)">×</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeIngredient(button) {
+      const container = document.getElementById("ingredients-container");
+      const div = button.parentElement;
+      container.removeChild(div);
+    }
+
+    function removeInstruction(button) {
+      const container = document.getElementById("instructions-container");
+      const div = button.parentElement;
+      container.removeChild(div);
+    }
+  </script>
   <script src="/public/js/sidebar.js"></script>
   <%- include('./partials/footer.ejs') %>
 </body>
