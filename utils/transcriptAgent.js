@@ -166,6 +166,7 @@ process.on("message", (message) => {
 
   transcribeAudioFromFile(videoPath)
     .then((text) => {
+      console.log("Transcription completed:", text);
       // Send the transcription result back to the parent process
       process.send({ success: true, text });
     })

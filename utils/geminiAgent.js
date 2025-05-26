@@ -24,7 +24,15 @@ process.on("message", async (data) => {
   console.log("READING LINES");
 
   // Get the transcript text from the data object
-  const transcriptText = data.text || data.transcript;
+  const transcriptText =
+    typeof data.text === "string"
+      ? data.text
+      : typeof data.transcript === "string"
+      ? data.transcript
+      : typeof data.transcript === "object" &&
+        typeof data.transcript.text === "string"
+      ? data.transcript.text
+      : null;
 
   if (!transcriptText) {
     console.error("No transcript text provided");
@@ -152,13 +160,13 @@ Return a JSON object with:
       // console.log("RESULT:", result);
 
       // Try to parse the result as JSON to verify it's valid
-      try {
-        const parsedResult = JSON.parse(result);
-        console.log("Result successfully parsed as JSON");
-      } catch (parseErr) {
-        console.warn("Result is not valid JSON:", parseErr.message);
-        // We'll still return the text result
-      }
+      // try {
+      //   const parsedResult = JSON.parse(result);
+      //   console.log("Result successfully parsed as JSON");
+      // } catch (parseErr) {
+      //   console.warn("Result is not valid JSON:", parseErr.message);
+      //   // We'll still return the text result
+      // }
 
       // Send the result back to the parent process
       process.send({ success: true, data: result });
