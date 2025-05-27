@@ -323,8 +323,8 @@ function aiLabsPublish(req, res, next) {
       Recipe.create({
         title: recipe.ai_response.title,
         description: recipe.ai_response.description,
-        ingredients: ingredients ? ingredients : [],
-        steps: recipe.ai_response.steps ? recipe.ai_response.steps : [],
+        ingredients: ingredients ? ingredients : ["water"],
+        steps: recipe.ai_response.steps ? recipe.ai_response.steps : ["cook"],
         owner: recipe.ai_response.owner
           ? recipe.ai_response.owner
           : req.user._id,
