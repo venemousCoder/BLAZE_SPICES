@@ -55,7 +55,7 @@
                             <label for="category">Category</label>
                             <select id="category" name="category" required>
                                 <option value="">Select category</option>
-                                <% ['Appetizer', 'Main Course', 'Dessert', 'Salad', 'Soup', 'Beverage', 'Snack', 'Side Dish'].forEach(cat => { %>
+                                <% ['Appetizer', 'Main Course', 'Dessert', 'Salad', 'Soup', 'Beverage', 'Snack', 'Side Dish', 'Other'].forEach(cat => { %>
                                     <option value="<%= cat %>" <%= recipe.category === cat ? 'selected' : '' %>><%= cat %></option>
                                 <% }) %>
                             </select>
@@ -305,7 +305,7 @@ document.getElementById('recipeForm').addEventListener('submit', async function(
     // Show loader
     document.getElementById('loaderOverlay').style.display = 'flex';
     
-    const recipeId = document.getElementById('recipeId').value;
+    const recipeId = document.getElementById('recipeForm').dataset.recipeId;
     const isVideo = document.querySelector('.media-type-btn[data-type="video"].active');
     this.action = isVideo ? 
         `/user/recipes/${recipeId}/edit/vid` : 

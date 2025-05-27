@@ -337,97 +337,83 @@ function getUpdateRecipe(req, res, next) {
 }
 
 // Handle the update recipe form submission
-function updateRecipe(req, res, next) {
-  const recipeId = req.params.id;
-  recipe
-    .findById(recipeId)
-    .then(async (recipeDoc) => {
-      if (!recipeDoc) {
-        return res.status(404).redirect("/error");
-      }
-      // Only allow the owner to update
-      if (String(recipeDoc.owner) !== String(req.user._id)) {
-        return res.status(403).redirect("/error");
-      }
+async function updateRecipe(req, res, next) {
+  try {
+    const recipeId = req.params.id;
+    const recipeDoc = await recipe.findById(recipeId);
+      console.log("Recipe Doc001:", recipeDoc);
+    if (!recipeDoc) return res.status(404).redirect("/error");
+    if (String(recipeDoc.owner) !== String(req.user._id))
+      return res.status(403).redirect("/error");
 
-      // Update fields
-      recipeDoc.title = req.body.title;
-      recipeDoc.description = req.body.description;
-      recipeDoc.ingredients = Array.isArray(req.body.ingredients)
-        ? req.body.ingredients
-        : [req.body.ingredients];
-      recipeDoc.steps = Array.isArray(req.body.steps)
-        ? req.body.steps
-        : [req.body.steps];
-      recipeDoc.preparationTime = req.body.preparationTime;
-      recipeDoc.cookingTime = req.body.cookingTime;
-      recipeDoc.cuisine = req.body.cuisine;
-      recipeDoc.category = req.body.category;
-      recipeDoc.difficulty = req.body.difficulty;
-      recipeDoc.servings = req.body.servings;
-
-      // Handle image or video update if a new file is uploaded
-      if (req.file) {
-        if (req.file.mimetype.startsWith("image/")) {
-          recipeDoc.image = req.file.path; // Cloudinary URL
-        } else if (req.file.mimetype.startsWith("video/")) {
-          recipeDoc.video = req.file.path; // Cloudinary URL
-        }
-      }
-      // Optionally delete the old image or video file
-      if (req.file) {
-        // Delete old image if new image uploaded
-        if (req.file.mimetype.startsWith("image/") && recipeDoc.image) {
-          if (recipeDoc.image.startsWith("/uploads/recipes/")) {
-            // Local file
-            const oldPath = path.join(__dirname, "../public", recipeDoc.image);
-            fs.unlink(oldPath, (err) => {
-              if (err) console.warn("Could not delete old image:", err);
-            });
-          } else if (recipeDoc.image.startsWith("http")) {
-            // Cloudinary
-            deleteCloudinaryMedia(recipeDoc.image);
+    // Update fields
+    recipeDoc.title = req.body.title;
+    recipeDoc.description = req.body.description;
+    recipeDoc.ingredients = Array.isArray(req.body.ingredients)
+      ? req.body.ingredients
+      : [req.body.ingredients];
+    recipeDoc.steps = Array.isArray(req.body.steps)
+      ? req.body.steps
+      : [req.body.steps];
+    recipeDoc.preparationTime = req.body.preparationTime;
+    recipeDoc.cookingTime = req.body.cookingTime;
+    recipeDoc.cuisine = req.body.cuisine;
+    recipeDoc.category = req.body.category;
+    recipeDoc.difficulty = req.body.difficulty;
+    recipeDoc.servings = req.body.servings;
+  console.log("recipeDoc", recipeDoc);
+    if (req.file) {
+      if (req.file.mimetype.startsWith("image/")) {
+        // delete old image
+        if (recipeDoc.image) {
+          try {
+            if (recipeDoc.image.startsWith("/uploads/recipes/")) {
+              const oldPath = path.join(__dirname, "../public", recipeDoc.image);
+              await fs.promises.unlink(oldPath);
+            } else if (recipeDoc.image.startsWith("http")) {
+               deleteCloudinaryMedia(recipeDoc.image);
+            }
+          } catch (err) {
+            console.warn("Image deletion error:", err);
           }
         }
-        // Delete old video if new video uploaded
-        if (req.file.mimetype.startsWith("video/") && recipeDoc.video) {
-          if (recipeDoc.video.startsWith("/uploads/videos/")) {
-            // Local file
-            const oldPath = path.join(__dirname, "../public", recipeDoc.video);
-            fs.unlink(oldPath, (err) => {
-              if (err) console.warn("Could not delete old video:", err);
-            });
-          } else if (recipeDoc.video.startsWith("http")) {
-            // Cloudinary
-            deleteCloudinaryMedia(recipeDoc.video);
-          }
-        }
+        recipeDoc.image = req.file.path;
       }
 
-      //LOCAL UPLOAD FOR MULTER
-      // if (req.file) {
-      //   if (req.file.mimetype.startsWith("image/")) {
-      //     recipeDoc.image = `/uploads/recipes/${req.file.filename}`;
-      //   } else if (req.file.mimetype.startsWith("video/")) {
-      //     recipeDoc.video = `/uploads/videos/${req.file.filename}`;
-      //   }
-      // }
+      if (req.file.mimetype.startsWith("video/")) {
+        // delete old video
+        if (recipeDoc.video) {
+          try {
+            if (recipeDoc.video.startsWith("/uploads/videos/")) {
+              const oldPath = path.join(__dirname, "../public", recipeDoc.video);
+              await fs.promises.unlink(oldPath);
+            } else if (recipeDoc.video.startsWith("http")) {
+               deleteCloudinaryMedia(recipeDoc.video);
+            }
+          } catch (err) {
+            console.warn("Video deletion error:", err);
+          }
+        }
+        recipeDoc.video = req.file.path;
+      }
+    }
 
-      await recipeDoc.save();
-      await logActivity(req.user._id, `Updated recipe: "${recipeDoc.title}"`);
-      return res.redirect(`/user/recipes`);
-    })
-    .catch((err) => {
-      //
-      res.locals.error = err;
-      res.locals.description = err.msg;
-      return res.render("error", {
-        error: err,
-        description: err.message,
-        status: 500,
-      });
+    await recipeDoc.save();
+    await logActivity(req.user._id, `Updated recipe: "${recipeDoc.title}"`);
+    return res.redirect(`/user/recipes`);
+
+  } catch (err) {
+    console.error("Update recipe error:", err);
+    res.locals.error = err;
+    res.locals.description = err.message || "Something went wrong";
+    return res.status(500).render("error", {
+      error: err,
+      description: err.message,
+      status: 500,
     });
+  }
 }
+
 
 // Delete a recipe (and remove from user's posts)
 function deleteRecipe(req, res, next) {
