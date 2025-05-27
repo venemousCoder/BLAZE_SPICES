@@ -416,7 +416,7 @@ async function updateRecipe(req, res, next) {
       createdAt: new Date(),
     };
     User.updateMany(
-      { followers: updatedUser._id },
+      { followers: recipeDoc.owner },
       {
         $push: {
           notifications: {
