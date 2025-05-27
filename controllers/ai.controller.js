@@ -2,7 +2,8 @@ const aiProcessor = require("../utils/aiProcessor");
 const ai = require("../models/ai");
 const usercontroller = require("./user.controller");
 const { User } = require("../models/user");
-const { Recipe } = require("../models/recipe");
+const Recipe = require("../models/recipe");
+const cloudinary = require("../utils/cloudinary");
 
 function getAilab(req, res, next) {
   return res.render("ailab", {
@@ -180,11 +181,50 @@ async function generateRecipe(req, res, next) {
   }
 }
 
-function updateGeneratedRecipe(req, res, next) {
+async function updateGeneratedRecipe(req, res, next) {
   const recipeId = req.params.id;
   const updatedRecipeData = req.body;
   // console.log("UPDATEDATA: ", updatedRecipeData);
-  AI.findByIdAndUpdate(recipeId, {ai_response: updatedRecipeData}, { new: true })
+  const aiRecipe = await AI.findById(recipeId);
+  if (!aiRecipe) {
+    return res.status(404).send("Recipe not found");
+  }
+  console.log("AI RECIPE: ", aiRecipe);
+  // Optionally delete the old image or video file
+  if (req.file) {
+    // Delete old image if new image uploaded
+    if (req.file.mimetype.startsWith("image/") && aiRecipe.image) {
+      if (aiRecipe.image.startsWith("/uploads/recipes/")) {
+        // Local file
+        const oldPath = path.join(__dirname, "../public", aiRecipe.image);
+        fs.unlink(oldPath, (err) => {
+          if (err) console.warn("Could not delete old image:", err);
+        });
+      } else if (aiRecipe.image.startsWith("http")) {
+        // Cloudinary
+        usercontroller.deleteCloudinaryMedia(aiRecipe.image);
+      }
+    }
+    if (req.file.mimetype.startsWith("video/") && aiRecipe.video) {
+      if (aiRecipe.video.startsWith("/uploads/videos/")) {
+        // Local file
+        const oldPath = path.join(__dirname, "../public", aiRecipe.video);
+        fs.unlink(oldPath, (err) => {
+          if (err) console.warn("Could not delete old video:", err);
+        });
+      } else if (aiRecipe.video.startsWith("http")) {
+        // Cloudinary
+        deleteCloudinaryMedia(aiRecipe.video);
+      }
+    }
+  }
+  req.body.image = req.file ? req.file.path : aiRecipe.image;
+  req.body.video = req.file ? req.file.path : aiRecipe.video;
+  AI.findByIdAndUpdate(
+    recipeId,
+    { ai_response: updatedRecipeData },
+    { new: true }
+  )
     .then((updatedRecipe) => {
       if (!updatedRecipe) {
         return res.status(404).send("Recipe not found");
@@ -217,6 +257,132 @@ function deleteGeneratedRecipe(req, res, next) {
     });
 }
 
+function aiLabsPublish(req, res, next) {
+  const recipeId = req.params.id;
+  AI.findById(recipeId)
+    .then(async (recipe) => {
+      if (!recipe) {
+        return res.status(404).send("Recipe not found");
+      }
+      console.log("Recipe found:", recipe);
+      if (
+        recipe.ai_response.image &&
+        recipe.ai_response.image.startsWith("/")
+      ) {
+        console.log("LOCAL img");
+        try {
+          const result = await cloudinary.uploader.upload(
+            recipe.ai_response.image,
+            {
+              folder: "blaze_spices/profile",
+              resource_type: "image",
+            }
+          );
+          recipe.ai_response.image = result.secure_url; // Assign but don't return
+        } catch (err) {
+          res.locals.error = "Failed to upload profile image";
+          res.locals.description = err.message;
+          return res.json({
+            error: err,
+            description: err.message,
+            status: "fail",
+          });
+        }
+      } else if (
+        recipe.ai_response.video &&
+        recipe.ai_response.video.startsWith("http")
+      ) {
+        try {
+          const result = await cloudinary.uploader.upload(
+            recipe.ai_response.video,
+            {
+              folder: "blaze_spices/profile",
+              resource_type: "video",
+            }
+          );
+          recipe.ai_response.video = result.secure_url; // Assign but don't return
+        } catch (err) {
+          res.locals.error = "Failed to upload profile video";
+          res.locals.description = err.message;
+          return res.json({
+            error: err,
+            description: err.message,
+            status: "fail",
+          });
+        }
+      }
+
+      if (!recipe.ai_response.image && !recipe.ai_response.video) {
+        recipe.ai_response.image = "/public/assets/place-holder.png";
+      }
+
+      const ingredients = recipe.ai_response.ingredients.map(
+        (ingredient) => ingredient.item + " " + ingredient.quantity
+      );
+      console.log("INGREDIENTS: ", ingredients);
+      Recipe.create({
+        title: recipe.ai_response.title,
+        description: recipe.ai_response.description,
+        ingredients: ingredients ? ingredients : [],
+        steps: recipe.ai_response.steps ? recipe.ai_response.steps : [],
+        owner: recipe.ai_response.owner
+          ? recipe.ai_response.owner
+          : req.user._id,
+        preparationTime: recipe.ai_response.preparationTime
+          ? recipe.ai_response.preparationTime
+          : 1,
+        cookingTime: recipe.ai_response.cookingTime
+          ? recipe.ai_response.cookingTime
+          : 1,
+        likes: recipe.ai_response.likes ? recipe.ai_response.likes : 0,
+        comments: recipe.ai_response.comments
+          ? recipe.ai_response.comments
+          : [],
+        cuisine: recipe.ai_response.cuisine
+          ? recipe.ai_response.cuisine
+          : "Other",
+        category: recipe.ai_response.category
+          ? recipe.ai_response.category
+          : "Other",
+        difficulty: recipe.ai_response.difficulty
+          ? recipe.ai_response.difficulty
+          : "Easy",
+        servings: recipe.ai_response.servings ? recipe.ai_response.servings : 1,
+        likedBy: recipe.ai_response.likedBy ? recipe.ai_response.likedBy : [],
+        video: recipe.ai_response.video,
+        image: recipe.ai_response.image,
+      })
+        .then((createdRecipe) => {
+          if (!createdRecipe) {
+            return res.json({
+              error: "Could not create recipe",
+              // description: err.message,
+              status: "fail",
+            });
+          }
+          console.log("CREATED RECIPE: ", createdRecipe);
+          return res.json({
+            status: "ok",
+          });
+        })
+        .catch((err) => {
+          return res.json({
+            error: err,
+            description: err.message,
+            status: "fail",
+          });
+        });
+    })
+    .catch((err) => {
+      console.error("Error fetching recipe:", err);
+      return res.json({
+        error: err,
+        description: err.message,
+        status: "fail",
+      });
+    });
+}
+
 module.exports = {
   getAilab,
   getAiLabs,
@@ -225,4 +391,5 @@ module.exports = {
   generateRecipe,
   updateGeneratedRecipe,
   deleteGeneratedRecipe,
+  aiLabsPublish,
 };

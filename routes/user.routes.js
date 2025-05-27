@@ -5,7 +5,7 @@ const aicontrollers = require("../controllers/ai.controller");
 const jwtauth = require("../utils/jwt");
 const uploadd = require("../utils/multer");
 const uploadVideo = require("../utils/multerVideo");
-const upload = require("../utils/aimulter")
+const upload = require("../utils/aimulter");
 
 // **********************************************/
 //*
@@ -198,12 +198,17 @@ router.get("/ailabs", aicontrollers.getAiLabs);
 router.get("/ailabs/upload", aicontrollers.getAilabsVideoUpload);
 router.get("/ailabs/:id", aicontrollers.getAiLabs);
 router.get("/ailabs/recipe/:id/edit", aicontrollers.getAilabsEdit);
-router.post("/ailabs/recipe/:id/edit",upload.single("recipeVideo") ,aicontrollers.updateGeneratedRecipe);
+router.post(
+  "/ailabs/recipe/:id/edit",
+  upload.single("recipeVideo"),
+  aicontrollers.updateGeneratedRecipe
+);
 router.delete("/ailabs/recipe/:id/delete", aicontrollers.deleteGeneratedRecipe);
 router.post(
   "/ai/generate",
   uploadVideo.single("vid"),
   aicontrollers.generateRecipe
 );
-// router.post("/ailabs/${recipeId}/publish")
+router.post("/ailabs/:id/publish", aicontrollers.aiLabsPublish);
+// router.post("/ailabs/:id/publish/video",uploadVideo.single(""),aicontrollers.aiLabsPublish);
 module.exports = router;

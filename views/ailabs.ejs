@@ -92,12 +92,12 @@
                   <div class="steps-section">
                     <h4>Steps</h4>
                     <ol class="steps-list">
-                      <% if (recipe.ai_response.instructions && recipe.ai_response.instructions.length > 0) { %>
-                        <% recipe.ai_response.instructions.slice(0, 1).forEach(step => { %>
+                      <% if (recipe.ai_response.steps && recipe.ai_response.steps.length > 0) { %>
+                        <% recipe.ai_response.steps.slice(0, 1).forEach(step => { %>
                           <li><%= step %></li>
                         <% }) %>
-                        <% if (recipe.ai_response.instructions.length > 1) { %>
-                          <li class="more-items">+<%= recipe.ai_response.instructions.length - 1 %> more steps</li>
+                        <% if (recipe.ai_response.steps.length > 1) { %>
+                          <li class="more-items">+<%= recipe.ai_response.steps.length - 1 %> more steps</li>
                         <% } %>
                       <% } else { %>
                         <li class="empty-list">No steps listed</li>
@@ -200,7 +200,7 @@
         closeDeleteModal();
       });
       
-      function publishRecipe(recipeId) {
+      function publishRecipe(recipeId) {      
         fetch(`/user/ailabs/${recipeId}/publish`, {
           method: 'POST',
         })

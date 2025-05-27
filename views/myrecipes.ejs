@@ -25,7 +25,7 @@
       <div class="myrecipes-header">
         <h1>My Recipes</h1>
         <p class="recipes-count">
-          <%= user.posts.length %> <%= user.posts.length === 1 ? 'Recipe' :
+          <%= recipes.length %> <%= user.posts.length === 1 ? 'Recipe' :
           'Recipes' %>
         </p>
         <a href="/user/newrecipe" class="create-recipe-btn">
@@ -100,7 +100,7 @@
                 onclick="deleteRecipe('<%= recipe._id %>')"
                 aria-label="Delete recipe"
               >
-                <img src="/public/assets/delete.svg" alt="Delete" />
+                <img src="/public/assets/delete-all.svg" alt="Delete" />
               </button>
             </div>
           </div>

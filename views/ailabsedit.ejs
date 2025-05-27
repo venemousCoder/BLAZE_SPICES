@@ -63,10 +63,10 @@
         <div class="form-section">
           <h2>Steps</h2>
           <div id="instructions-container">
-            <% recipe.ai_response.instructions.forEach((step, index) => { %>
+            <% recipe.ai_response.steps.forEach((step, index) => { %>
               <div class="step-item">
                 <span class="step-number"><%= index + 1 %></span>
-                <textarea name="instructions[]" rows="3" placeholder="Step <%= index + 1 %>" required><%= step %></textarea>
+                <textarea name="steps[]" rows="3" placeholder="Step <%= index + 1 %>" required><%= step %></textarea>
                 <button type="button" class="remove-btn" onclick="removeInstruction(this)">×</button>
               </div>
             <% }) %>
@@ -78,8 +78,12 @@
         <div class="form-section">
           <h2>Recipe Media</h2>
           <div class="form-group">
+            <label>Recipe Media (Choose one)</label>
+          </div>
+          
+          <div class="form-group">
             <label for="recipeImage">Recipe Image</label>
-            <input type="file" id="recipeImage" name="recipeImage" accept="image/*">
+            <input type="file" id="recipeImage" name="recipeMedia" accept="image/*" onchange="clearVideoInput()">
             <% if (recipe.ai_response.image) { %>
               <img src="<%= recipe.ai_response.image %>" alt="Current Recipe Image" style="max-width: 200px; margin-top: 10px;">
             <% } %>
@@ -87,7 +91,7 @@
           
           <div class="form-group">
             <label for="recipeVideo">Recipe Video</label>
-            <input type="file" id="recipeVideo" name="recipeVideo" accept="video/mp4">
+            <input type="file" id="recipeVideo" name="recipeMedia" accept="video/mp4" onchange="clearImageInput()">
             <% if (recipe.ai_response.video) { %>
               <video controls class="video-preview" src="<%= recipe.ai_response.video %>"></video>
             <% } %>
@@ -128,7 +132,7 @@
       const stepNumber = container.querySelectorAll(".step-item").length + 1;
       div.innerHTML = `
         <span class="step-number">${stepNumber}</span>
-        <textarea name="instructions[]" rows="3" placeholder="Step ${stepNumber}" required></textarea>
+        <textarea name="steps[]" rows="3" placeholder="Step ${stepNumber}" required></textarea>
         <button type="button" class="remove-btn" onclick="removeInstruction(this)">×</button>
       `;
       container.appendChild(div);
@@ -144,6 +148,14 @@
       const container = document.getElementById("instructions-container");
       const div = button.parentElement;
       container.removeChild(div);
+    }
+
+    function clearImageInput() {
+        document.getElementById("recipeImage").value = "";
+    }
+
+    function clearVideoInput() {
+        document.getElementById("recipeVideo").value = "";
     }
   </script>
   <script src="/public/js/sidebar.js"></script>

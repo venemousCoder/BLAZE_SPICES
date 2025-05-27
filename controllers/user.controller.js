@@ -4,13 +4,11 @@
 // Import necessary modules
 const recipe = require("../models/recipe");
 // Make sure this is the discriminator!
-const { processRecipeVideo } = require("../utils/aiProcessor");
 const { User } = require("../models/user");
 const Group = require("../models/group");
 const Activity = require("../models/activity");
 const path = require("path");
 const fs = require("fs");
-const Message = require("../models/messages");
 const Report = require("../models/report");
 // Cloudinary configuration
 const cloudinary = require("../utils/cloudinary");
@@ -505,21 +503,22 @@ function deleteRecipe(req, res, next) {
 }
 
 function getRecipes(req, res, next) {
-  User.findById(req.user._id)
-    .populate({
-      path: "posts",
-      populate: {
-        path: "owner",
-        select: "username profileImage",
-      },
-    })
-    .then((user) => {
-      if (!user) {
+  // .populate({
+    //   path: "posts",
+    //   populate: {
+    //     path: "owner",
+    //     select: "username profileImage",
+    //   },
+    // })
+  recipe
+    .find({ owner: req.user._id })
+    .then((recipes) => {
+      if (!recipes) {
         return res.status(404).redirect("/error");
       }
       return res.render("myrecipes", {
         user: req.user,
-        recipes: user.posts,
+        recipes,
         currentPage: "recipes",
       });
     })
@@ -1818,6 +1817,7 @@ function hi(req, res, next) {
 
 module.exports = {
   testUserAccountDetails,
+  deleteCloudinaryMedia,
   getDahsboard,
   getFeeds,
   deleteUserAndEverything,

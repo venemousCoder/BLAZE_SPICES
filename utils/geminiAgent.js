@@ -76,7 +76,7 @@ Return a JSON object with:
       title,
       description,
       ingredients[{item, quantity}],
-      instructions[],
+      steps[],
       preparationTime(int minutes),
       cookingTime(int minutes),      
       cuisine: enum[
