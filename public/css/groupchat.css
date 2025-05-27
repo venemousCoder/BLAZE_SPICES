@@ -5,12 +5,20 @@
 
 }
 .chat-container {
-    margin-left: var(--sidebar-width);
+    margin-left: calc(var(--sidebar-width) + 30px);
     height: 100vh;
     display: flex;
     flex-direction: column;
     padding-left: 20px; /* Add some extra padding to prevent text cutoff */
     box-sizing: border-box;
+    margin-right: 20px; /* Add right margin for spacing */
+}
+
+@media (min-width: 1440px) {
+    .chat-container {
+        margin-left: calc(var(--sidebar-width) + 20px); /* Increased spacing */
+        margin-right: 20px; /* Further spacing on larger screens */
+    }
 }
 
 .chat-header {
