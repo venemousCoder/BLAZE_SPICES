@@ -341,7 +341,7 @@ async function updateRecipe(req, res, next) {
   try {
     const recipeId = req.params.id;
     const recipeDoc = await recipe.findById(recipeId);
-      console.log("Recipe Doc001:", recipeDoc);
+    console.log("Recipe Doc001:", recipeDoc);
     if (!recipeDoc) return res.status(404).redirect("/error");
     if (String(recipeDoc.owner) !== String(req.user._id))
       return res.status(403).redirect("/error");
@@ -361,17 +361,21 @@ async function updateRecipe(req, res, next) {
     recipeDoc.category = req.body.category;
     recipeDoc.difficulty = req.body.difficulty;
     recipeDoc.servings = req.body.servings;
-  console.log("recipeDoc", recipeDoc);
+    console.log("recipeDoc", recipeDoc);
     if (req.file) {
       if (req.file.mimetype.startsWith("image/")) {
         // delete old image
         if (recipeDoc.image) {
           try {
             if (recipeDoc.image.startsWith("/uploads/recipes/")) {
-              const oldPath = path.join(__dirname, "../public", recipeDoc.image);
+              const oldPath = path.join(
+                __dirname,
+                "../public",
+                recipeDoc.image
+              );
               await fs.promises.unlink(oldPath);
             } else if (recipeDoc.image.startsWith("http")) {
-               deleteCloudinaryMedia(recipeDoc.image);
+              deleteCloudinaryMedia(recipeDoc.image);
             }
           } catch (err) {
             console.warn("Image deletion error:", err);
@@ -385,10 +389,14 @@ async function updateRecipe(req, res, next) {
         if (recipeDoc.video) {
           try {
             if (recipeDoc.video.startsWith("/uploads/videos/")) {
-              const oldPath = path.join(__dirname, "../public", recipeDoc.video);
+              const oldPath = path.join(
+                __dirname,
+                "../public",
+                recipeDoc.video
+              );
               await fs.promises.unlink(oldPath);
             } else if (recipeDoc.video.startsWith("http")) {
-               deleteCloudinaryMedia(recipeDoc.video);
+              deleteCloudinaryMedia(recipeDoc.video);
             }
           } catch (err) {
             console.warn("Video deletion error:", err);
@@ -399,9 +407,35 @@ async function updateRecipe(req, res, next) {
     }
 
     await recipeDoc.save();
-    await logActivity(req.user._id, `Updated recipe: "${recipeDoc.title}"`);
-    return res.redirect(`/user/recipes`);
-
+    const notification = {
+      read: false,
+      from: recipeDoc.owner,
+      message: `updated their recipe 🆙`,
+      type: "recipe",
+      reference: recipeDoc._id, // ID of the user who followed
+      createdAt: new Date(),
+    };
+    User.updateMany(
+      { followers: updatedUser._id },
+      {
+        $push: {
+          notifications: {
+            notification,
+          },
+        },
+      }
+    )
+      .then(async () => {
+        await logActivity(req.user._id, `Updated recipe: "${recipeDoc.title}"`);
+        return res.redirect(`/user/recipes`);
+      })
+      .catch((err) => {
+        return res.render("error", {
+          error: err,
+          description: err.message,
+          status: 500,
+        });
+      });
   } catch (err) {
     console.error("Update recipe error:", err);
     res.locals.error = err;
@@ -413,7 +447,6 @@ async function updateRecipe(req, res, next) {
     });
   }
 }
-
 
 // Delete a recipe (and remove from user's posts)
 function deleteRecipe(req, res, next) {
@@ -490,12 +523,12 @@ function deleteRecipe(req, res, next) {
 
 function getRecipes(req, res, next) {
   // .populate({
-    //   path: "posts",
-    //   populate: {
-    //     path: "owner",
-    //     select: "username profileImage",
-    //   },
-    // })
+  //   path: "posts",
+  //   populate: {
+  //     path: "owner",
+  //     select: "username profileImage",
+  //   },
+  // })
   recipe
     .find({ owner: req.user._id })
     .then((recipes) => {
@@ -592,15 +625,49 @@ function createRecipe(req, res, next) {
       User.findByIdAndUpdate(req.user._id, {
         $addToSet: { posts: recipe._id },
       })
-        .then(() => {
-          logActivity(
-            req.user._id,
-            `Created a new recipe: "${newRecipe.title}"`
-          );
-          res.status(201).redirect("/user/feeds");
+        .then((updatedUser) => {
+          if (!updatedUser) {
+            return res.status(404).redirect("/error");
+          }
+          const notification = {
+            read: false,
+            from: updatedUser._id,
+            message: `created a new recipe 🆕`,
+            type: "recipe",
+            reference: recipe._id, // ID of the user who followed
+            createdAt: new Date(),
+          };
+          User.updateMany(
+            { followers: updatedUser._id },
+            {
+              $push: {
+                notifications: {
+                  notification,
+                },
+              },
+            }
+          )
+            .then(() => {
+              logActivity(
+                req.user._id,
+                `Created a new recipe: "${newRecipe.title}"`
+              );
+              res.status(201).redirect("/user/feeds");
+            })
+            .catch((err) => {
+              return res.render("error", {
+                error: err,
+                description: err.message,
+                status: 500,
+              });
+            });
         })
         .catch((err) => {
-          //
+          return res.render("error", {
+            error: err,
+            description: err.message,
+            status: 500,
+          });
         });
     })
     .catch((err) => {
