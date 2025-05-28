@@ -413,19 +413,19 @@ async function updateRecipe(req, res, next) {
       message: `updated their recipe 🆙`,
       type: "recipe",
       reference: recipeDoc._id, // ID of the user who followed
-      createdAt: new Date(),
+      createdAt: Date.now(),
     };
+    console.log("UPDATE NOTIFICATION: ", notification);
     User.updateMany(
-      { followers: recipeDoc.owner },
+      { following: recipeDoc.owner },
       {
         $push: {
-          notifications: {
-            notification,
-          },
+          notifications: notification,
         },
       }
     )
-      .then(async () => {
+      .then(async (users) => {
+        console.log("Updated notifications for users:", users);
         await logActivity(req.user._id, `Updated recipe: "${recipeDoc.title}"`);
         return res.redirect(`/user/recipes`);
       })
@@ -631,20 +631,22 @@ function createRecipe(req, res, next) {
           }
           const notification = {
             read: false,
-            from: updatedUser._id,
+            from: req.user._id,
             message: `created a new recipe 🆕`,
             type: "recipe",
             reference: recipe._id, // ID of the user who followed
-            createdAt: new Date(),
+            createdAt: Date.now(),
           };
+          console.log("UPDATE NOTIFICATION: ", notification);
           User.updateMany(
             { followers: updatedUser._id },
             {
               $push: {
-                notifications: {
-                  notification,
-                },
+                notifications: notification,
               },
+            },
+            {
+              new: true,
             }
           )
             .then(() => {
@@ -1259,6 +1261,7 @@ function getNotifications(req, res, next) {
   User.findById(req.user._id)
     .populate("notifications.from")
     .then((user) => {
+      console.log("User:", user);
       // Sort notifications by createdAt descending (newest first)
       const notifications = (user.notifications || []).sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -1271,9 +1274,11 @@ function getNotifications(req, res, next) {
     })
     .catch((err) => {
       //
-      res.locals.error = err;
-      res.locals.description = err.msg;
-      res.status(500).redirect("/error");
+      return res.render("error", {
+        error: err,
+        description: err.message,
+        status: 500,
+      });
     });
 }
 

@@ -87,7 +87,7 @@ function userLogin(req, res, next) {
               res.status(200).redirect("/admin/dashboard");
               return next();
             }
-            res.status(200).redirect("/user/dashboard");
+            res.status(200).redirect("/user/feeds");
             return next();
           });
         })
@@ -116,7 +116,7 @@ function googleCallback(req, res) {
       description: "User not found. Check credentials and try again",
     });
   }
-  console.log("GAUTH USER: ", user);
+  // console.log("GAUTH USER: ", user);/
   // If it's a new user, complete their profile
   if (!user.__t) {
     return userModels.User.findByIdAndUpdate(
@@ -150,7 +150,7 @@ function googleCallback(req, res) {
               description: error.message,
             });
           }
-          return res.redirect("/user/dashboard");
+          return res.redirect("/user/feeds");
         });
       })
       .catch((error) => {
@@ -173,7 +173,7 @@ function googleCallback(req, res) {
       });
     }
     console.log("Session saved successfully");
-    return res.redirect("/user/dashboard");
+    return res.redirect("/user/feeds");
   });
 }
 

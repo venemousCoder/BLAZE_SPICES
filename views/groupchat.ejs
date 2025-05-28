@@ -49,6 +49,7 @@
                         <span class="timestamp"><%= msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : '' %></span>
                       </div>
                       <p class="message-text"><%= msg.content %></p>
+                      <span class="timestamp"><%= msg.createdAt ? new Date(msg.createdAt).toLocaleDateString() : '' %></span>
                     </div>
                   </div>
                 <% }) %>

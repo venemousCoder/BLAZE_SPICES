@@ -51,7 +51,7 @@
           >
             <div class="notification-avatar">
               <img
-                src="<%= notification.from && notification.from.profileImage ? 
+                src="<%= notification?.from && notification?.from?.profileImage ? 
                                notification.from.profileImage : 
                                '/public/assets/default-profile.png' %>"
                 alt="<%= notification.from && notification.from.username ? 
@@ -60,7 +60,7 @@
             </div>
             <div class="notification-content">
               <p>
-                <strong><%= notification.from.username %></strong>
+                <strong><%= notification?.from?.username %></strong>
                 <%= notification.message %>
               </p>
               <span class="notification-time">

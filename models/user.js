@@ -116,6 +116,7 @@ const userSchema = new mongoose.Schema({
       from: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        required: true,
       },
       message: {
         type: String,
@@ -132,6 +133,7 @@ const userSchema = new mongoose.Schema({
       reference: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        required: true,
       },
     },
   ],
