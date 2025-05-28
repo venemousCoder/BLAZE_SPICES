@@ -247,11 +247,11 @@ function getFeeds(req, res, next) {
     .find()
     .populate("owner")
     .then((recipes) => {
-      User.findById(req.user._id)
-        .populate("posts")
-        .populate("posts.comments.user")
-        .then((user) => {
-          if (!user) return res.status(404).redirect("/error");
+      // User.findById(req.user._id)
+      //   .populate("posts")
+      //   .populate("posts.comments.user")
+      //   .then((user) => {
+      //     if (!user) return res.status(404).redirect("/error");
           // Fetch users with more than 10 followers, sorted by follower count descending
           User.aggregate([
             { $addFields: { followerCount: { $size: "$followers" } } },
@@ -270,17 +270,17 @@ function getFeeds(req, res, next) {
                 topUsers,
                 currentPage: "feeds",
               });
-            })
-            .catch((err) => {
-              //
-              res.locals.error = err;
-              res.locals.description = err.msg;
-              return res.render("error", {
-                error: err,
-                description: err.message,
-                status: 500,
-              });
-            });
+            // })
+            // .catch((err) => {
+            //   //
+            //   res.locals.error = err;
+            //   res.locals.description = err.msg;
+            //   return res.render("error", {
+            //     error: err,
+            //     description: err.message,
+            //     status: 500,
+            //   });
+            // });
         })
         .catch((err) => {
           //
