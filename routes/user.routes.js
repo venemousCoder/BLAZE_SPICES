@@ -47,7 +47,7 @@ router.get("/delete/everything", usercontrollers.deleteUserAndEverything);
 
 router.put("/updatepass", usercontrollers.updatePassword);
 
-router.get("/updatepass", usercontrollers.getUpdatePassword);
+router.post("/updatepass", usercontrollers.getUpdatePassword);
 
 router.post(
   "/profile/update",
